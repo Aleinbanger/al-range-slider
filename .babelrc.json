@@ -1,0 +1,20 @@
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "useBuiltIns": "usage",
+        "corejs": { "version": 3.6 }
+        // "targets": {
+        //   "node": "current" // for jest
+        // }
+      }
+    ],
+    "@babel/typescript"
+  ],
+  "plugins": [
+    ["@babel/plugin-proposal-decorators", { "legacy": true }],
+    ["@babel/proposal-class-properties", { "loose": true }],
+    "@babel/proposal-object-rest-spread"
+  ]
+}

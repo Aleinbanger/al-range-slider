@@ -1,0 +1,32 @@
+$font-family_h1: 'Open Sans', sans-serif;
+$font-family_h2: 'Open Sans', sans-serif;
+$font-family_h3: 'Open Sans', sans-serif;
+$font-family_body: 'Open Sans', sans-serif;
+
+$font-size_h1: 2.4rem;
+$font-size_h2: 1.9rem;
+$font-size_h3: 1.2rem;
+$font-size_body: 1.4rem;
+
+$width-container_main: 116rem;
+
+$breakpoint_laptop: 'screen and (max-width: 1024px)';
+$breakpoint_tablet: 'screen and (max-width: 768px)';
+$breakpoint_mobile-l: 'screen and (max-width: 425px)';
+$breakpoint_mobile-m: 'screen and (max-width: 375px)';
+$breakpoint_mobile-s: 'screen and (max-width: 320px)';
+
+$color_back: #FFF;
+$color_main: #1F2041;
+$color_prim: #BC9CFF;
+$color_sec: #6FCF97;
+$color-grad_prim: linear-gradient(180deg, #BC9CFF 0%, #8BA4F9 100%);
+$color-grad_prim-50: linear-gradient(180deg, rgba($color: #BC9CFF, $alpha: 0.5) 0%, rgba($color: #8BA4F9, $alpha: 0.5) 100%);
+$color-grad_prim-25: linear-gradient(180deg, rgba($color: #BC9CFF, $alpha: 0.25) 0%, rgba($color: #8BA4F9, $alpha: 0.25) 100%);
+$color-grad_sec: linear-gradient(180deg, #6FCF97 0%, #66D2EA 100%);
+
+$color_main-75: rgba($color: $color_main, $alpha: 0.75);
+$color_main-50: rgba($color: $color_main, $alpha: 0.5);
+$color_main-25: rgba($color: $color_main, $alpha: 0.25);
+$color_main-10: rgba($color: $color_main, $alpha: 0.1);
+$color_main-5: rgba($color: $color_main, $alpha: 0.05);

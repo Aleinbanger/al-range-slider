@@ -1,0 +1,5 @@
+.vscode/
+build/
+node_modules/
+source/temp/
+Thumbs.db

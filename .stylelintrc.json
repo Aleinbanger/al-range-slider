@@ -1,0 +1,17 @@
+{
+  "extends": "stylelint-config-sass-guidelines",
+  "plugins": [
+    "stylelint-order"
+  ],
+  "rules": {
+    "order/order": [
+      "custom-properties",
+      "declarations"
+    ],
+    "color-hex-case": "upper",
+    "selector-max-compound-selectors": null,
+    "max-nesting-depth": null,
+    "order/properties-alphabetical-order": null,
+    "scss/dollar-variable-pattern": null
+  }
+}

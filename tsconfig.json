@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "esnext", // Target latest version of ECMAScript.
+    "moduleResolution": "node", // Search under node_modules for non-relative imports.
+    "noEmit": true, // Don't emit; allow Babel to transform files.
+    "allowJs": true, // Process & infer types from .js files.
+    "esModuleInterop": true, // Import non-ES modules as default imports.
+    "isolatedModules": true, // Disallow features that require cross-file information for emit.
+    "strict": true, // Enable strictest settings like strictNullChecks & noImplicitAny.
+    "experimentalDecorators": true,
+    "types": [
+      "jquery",
+      "node",
+      "webpack-env"
+    ]
+  },
+  "include": [
+    "source"
+  ]
+}

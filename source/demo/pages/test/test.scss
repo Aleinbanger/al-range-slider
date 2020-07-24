@@ -1,0 +1,32 @@
+@import '../../../shared/styles/variables';
+
+.form-elements {
+  display: flex;
+  justify-content: space-between;
+  align-content: flex-start;
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: 1440px;
+  margin: auto;
+  padding: 14.3rem 14.1rem 14rem;
+  // background: url('')
+  //   3rem 3rem/4.8rem 4.8rem no-repeat;
+
+  &__column {
+    width: 32rem;
+    min-height: 31.7rem;
+  }
+
+  &__item {
+    margin-bottom: 4.1rem;
+  }
+
+  &__title {
+    margin-bottom: 1.5rem;
+    color: $color_main;
+    font-family: $font-family_h3;
+    font-size: $font-size_h3;
+    line-height: 1.5rem;
+    text-transform: uppercase;
+  }
+}

@@ -1,0 +1,52 @@
+@import '../shared/styles/variables';
+
+.al-range-slider {
+  height: 5rem; // temp
+
+  &__input {
+    margin-bottom: 1rem; // temp
+  }
+
+  &__track {
+    position: relative;
+    width: 100%;
+    height: 1rem;
+    border: 0.1rem solid #000;
+    border-radius: 1rem;
+    user-select: none;
+    cursor: pointer;
+  }
+
+  &__knob {
+    position: absolute;
+    left: 0%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+    width: 2rem;
+    height: 2rem;
+    background: #F00;
+    border: 0.1rem solid #000;
+    border-radius: 50%;
+    user-select: none;
+    cursor: pointer;
+
+    &:hover {
+      background: rgb(156, 2, 2);
+    }
+
+    &_active {
+      background: rgb(156, 2, 2);
+    }
+  }
+
+  &__range {
+    position: absolute;
+    left: 0%;
+    width: 0%;
+    height: 100%;
+    background: #F00;
+    border-radius: 1rem;
+  }
+
+}
