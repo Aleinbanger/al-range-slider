@@ -1,4 +1,4 @@
-@import '../shared/styles/variables';
+@import '~shared/styles/variables';
 
 .al-range-slider {
   height: 5rem; // temp
@@ -48,5 +48,4 @@
     background: #F00;
     border-radius: 1rem;
   }
-
 }

@@ -1,3 +1,5 @@
+/* eslint-disable import/prefer-default-export */
+
 interface IViewState {
   currentPositionRatio: {
     from: number;
@@ -5,4 +7,4 @@ interface IViewState {
   };
 }
 
-export default IViewState;
+export type { IViewState };

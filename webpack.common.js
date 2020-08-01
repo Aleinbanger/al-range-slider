@@ -24,6 +24,7 @@ const PAGES = fs.readdirSync(PATHS.demo.pages);
 module.exports = {
   resolve: {
     extensions: ['.ts', '.js'],
+    modules: [path.resolve(__dirname, './source'), 'node_modules'],
     alias: {
       // node_modules: path.resolve(__dirname, './node_modules'),
       // scripts: PATHS.scripts,

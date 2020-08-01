@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": "./source",
     "target": "esnext", // Target latest version of ECMAScript.
     "moduleResolution": "node", // Search under node_modules for non-relative imports.
     "noEmit": true, // Don't emit; allow Babel to transform files.
