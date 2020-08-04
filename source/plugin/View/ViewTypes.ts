@@ -1,10 +1,24 @@
 /* eslint-disable import/prefer-default-export */
 
-interface IViewState {
-  currentPositionRatio: {
-    from: number;
-    to?: number;
-  };
+type TPointValue = number | string;
+
+interface IPointValue {
+  from: TPointValue;
+  to?: TPointValue;
 }
 
-export type { IViewState };
+interface IPositionRatio {
+  from: number;
+  to?: number;
+}
+
+interface IViewState {
+  positionRatio: IPositionRatio;
+}
+
+export type {
+  TPointValue,
+  IPointValue,
+  IPositionRatio,
+  IViewState,
+};

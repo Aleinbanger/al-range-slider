@@ -1,28 +1,43 @@
 /* eslint-disable import/prefer-default-export */
 
-interface IModelState {
-  value: {
-    min: number;
-    max: number;
-    step: number;
-  };
-  currentPositionRatio: {
-    from: number;
-    to?: number;
-  };
-  currentPoint: {
-    from: number | string;
-    to?: number | string;
-  };
-  pointsMap: Record<number, number | string>; // also can be defined from config
-  pointsArray?: number[] | string[];
+type TPointValue = number | string;
+
+interface IPointValue {
+  from: TPointValue;
+  to?: TPointValue;
+}
+
+interface IPositionRatio {
+  from: number;
+  to?: number;
+}
+
+interface IModelConfig {
   type: 'single' | 'double';
   orientation: 'horizontal' | 'vertical';
   showInput: boolean;
-  showScale: boolean;
+  showGrid: boolean;
   showTooltips: boolean;
+  range?: {
+    min: number;
+    max: number;
+    step: number;
+    callback?: (point: number) => number;
+  };
+  pointsArray?: number[] | string[]; // also can be defined from config
+  pointsMap?: Record<number, TPointValue>; // also can be defined from config
+  pointsMapPrecision?: number;
 }
 
-export type { IModelState };
+interface IModelState {
+  pointValue: IPointValue;
+  positionRatio: IPositionRatio;
+}
 
-// move static properties to config (including Map and Array)
+export type {
+  TPointValue,
+  IPointValue,
+  IPositionRatio,
+  IModelConfig,
+  IModelState,
+};

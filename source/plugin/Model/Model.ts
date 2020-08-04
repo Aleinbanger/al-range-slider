@@ -1,105 +1,155 @@
-import { getKeyByValue, getClosestNumber } from 'shared/scripts/utils';
+import {
+  getKeyByValue,
+  getClosestNumber,
+  isNumberArray,
+  isStringArray,
+} from 'shared/scripts/utils';
 
 import Observable from '../Observable/Observable';
-import { IModelState } from './ModelTypes';
+import {
+  TPointValue,
+  IPointValue,
+  IPositionRatio,
+  IModelConfig,
+  IModelState,
+} from './ModelTypes';
 
-class Model extends Observable {
-  private state: IModelState = {
-    value: {
-      min: 415,
-      max: 687,
-      step: 17,
-    },
-    currentPositionRatio: {
-      from: 0,
-    },
-    currentPoint: {
-      from: 503,
-      // to: 0,
-    },
-    pointsMap: {},
-    type: 'single',
-    orientation: 'horizontal',
-    showInput: true,
-    showScale: false,
-    showTooltips: false,
-  };
+class Model extends Observable<IModelState> {
+  private config: IModelConfig;
 
-  private temp: Record<string, unknown> = {};
+  private state: IModelState;
 
   constructor() {
     super();
+    this.config = {
+      type: 'single',
+      orientation: 'horizontal',
+      showInput: true,
+      showGrid: false,
+      showTooltips: false,
+      range: {
+        min: -152,
+        max: 937,
+        step: 76.37,
+      },
+    };
+
+    this.state = {
+      pointValue: {
+        from: 132,
+        // to: 0,
+      },
+      positionRatio: {
+        from: 0,
+      },
+    };
+
     this.initialize();
-  }
-
-  public setCurrentPointFromPosition(positionRatio: number): void {
-    const fromFixed = Number(positionRatio.toFixed(Number(this.temp.positionRatioPrecision)));
-    if (typeof this.state.pointsMap[fromFixed] !== 'undefined') {
-      this.state.currentPositionRatio.from = fromFixed;
-      this.state.currentPoint.from = this.state.pointsMap[fromFixed];
-
-      this.notifyObservers(this.state); // improve
-    }
-
-    // add methods w/o pointsMap
-  }
-
-  public setCurrentPositionFromPoint(point: number | string): void | never {
-    let closestPoint: number | string;
-    if (typeof point === 'number') {
-      closestPoint = getClosestNumber(point, Object.values(this.state.pointsMap) as number[]);
-    } else {
-      closestPoint = point;
-    }
-    this.state.currentPoint.from = closestPoint;
-
-    const positionRatio = getKeyByValue(this.state.pointsMap, closestPoint);
-    if (typeof positionRatio !== 'undefined') {
-      this.state.currentPositionRatio.from = Number(positionRatio);
-
-      this.notifyObservers(this.state); // improve
-    } else {
-      throw new Error('The position is not found');
-    }
-
-    // will also be used for setting position from input
   }
 
   public getState(): IModelState {
     return JSON.parse(JSON.stringify(this.state));
   }
 
-  private initialize(): void {
-    this.populatePointsMap(this.state.value);
+  public getStatePointValue(): IPointValue {
+    return JSON.parse(JSON.stringify(this.state.pointValue));
   }
 
-  private populatePointsMap({ max, min, step }:
-  { max: number; min: number; step: number }): void {
-    const pointsNumber = Math.ceil((max - min) / step);
-    console.log('pointsNumber', pointsNumber);
+  // pointsMap
+  public setCurrentPointFromPosition({ from, to }: IPositionRatio): void | never {
+    if (this.config.pointsMap && this.config.pointsMapPrecision) {
+      const fromFixed = Number(from.toFixed(Number(this.config.pointsMapPrecision)));
+      if (typeof this.config.pointsMap[fromFixed] !== 'undefined') {
+        this.state.positionRatio.from = fromFixed;
+        this.state.pointValue.from = this.config.pointsMap[fromFixed];
 
-    // move to config
-    if (pointsNumber <= 10) {
-      this.temp.positionRatioPrecision = 2;
+        this.notifyObservers(this.state); // improve?
+      }
     } else {
-      this.temp.positionRatioPrecision = Math.ceil(Math.log10(pointsNumber));
+      throw new Error('pointsMap is not defined'); // add methods w/o pointsMap
     }
-    console.log('positionRatioPrecision', this.temp.positionRatioPrecision);
+  }
+
+  // pointsMap
+  public setCurrentPositionFromPoint({ from, to }: IPointValue): void | never {
+    let fromClosest: TPointValue;
+    if (typeof from === 'number' && isNumberArray(this.config.pointsArray)) {
+      fromClosest = getClosestNumber(from, this.config.pointsArray);
+    } else {
+      fromClosest = from; // improve // add methods w/o pointsArray
+    }
+    this.state.pointValue.from = fromClosest;
+
+    // add methods for string[]
+
+    if (this.config.pointsMap) {
+      const positionRatioFrom = getKeyByValue(this.config.pointsMap, this.state.pointValue.from);
+      this.state.positionRatio.from = Number(positionRatioFrom);
+
+      this.notifyObservers(this.state); // improve? // move to the bottom
+    } else {
+      throw new Error('pointsMap is not defined'); // add methods w/o pointsMap
+    }
+
+    // will also be used for setting position from input
+  }
+
+  private initialize(): void {
+    if (this.config.range) { // improve?
+      this.generatePointsArrayFromRange(this.config.range);
+    }
+    if (isNumberArray(this.config.pointsArray)) {
+      this.generatePointsMapFromNumberArray(this.config.pointsArray);
+    }
+    // allow only number[] | string[], for the latter use equal step
+    // (number | string)[] can only be initialized from pointsMap?
+  }
+
+  private generatePointsArrayFromRange({ max, min, step }:
+  { max: number; min: number; step: number }): void {
+    this.config.pointsArray = [] as number[];
+    const pointsNumber = Math.ceil((max - min) / step);
 
     for (let index = 0; index < pointsNumber; index += 1) {
       const point = index * step + min;
-      this.addNumberPoint(point, { max, min, step });
+      this.config.pointsArray.push(Number(point.toFixed(5)));
     }
-    this.addNumberPoint(max, { max, min, step });
-
-    console.log(this.state.pointsMap);
+    this.config.pointsArray.push(Number(max.toFixed(5)));
   }
 
-  private addNumberPoint(point: number, { max, min }:
-  { max: number; min: number; step: number }): void {
-    const positionRatio = Number(((point - min)
-        / (max - min)).toFixed(Number(this.temp.positionRatioPrecision)));
-    this.state.pointsMap[positionRatio] = Number(point.toFixed(4));
+  private generatePointsMapFromNumberArray(pointsArray: number[]): void {
+    this.config.pointsMap = {};
+
+    const pointsNumber = pointsArray.length;
+    this.calculatePointsMapPrecision(pointsNumber);
+
+    const max = pointsArray[pointsNumber - 1];
+    const min = pointsArray[0];
+    pointsArray.forEach((point) => {
+      this.addNumberPointToPointsMap(point, { max, min });
+    });
+
+    console.log(this.config.pointsMap);
+  }
+
+  private calculatePointsMapPrecision(pointsNumber: number): void {
+    if (pointsNumber <= 10) {
+      this.config.pointsMapPrecision = 2;
+    } else {
+      this.config.pointsMapPrecision = Math.ceil(Math.log10(pointsNumber));
+    }
+    console.log('pointsMapPrecision', this.config.pointsMapPrecision);
+  }
+
+  private addNumberPointToPointsMap(point: number, { max, min }:
+  { max: number; min: number }): void | never {
+    if (this.config.pointsMap && this.config.pointsMapPrecision) {
+      const positionRatio = Number(((point - min)
+          / (max - min)).toFixed(Number(this.config.pointsMapPrecision)));
+      this.config.pointsMap[positionRatio] = Number(point.toFixed(5));
+    } else {
+      throw new Error('pointsMap is not defined');
+    }
   }
 }
 

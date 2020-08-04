@@ -1,18 +1,17 @@
-type ObserverData = any; // temp
-type ObserverMethod = (data?: ObserverData) => void;
+type TObserverMethod<TData> = (data: TData) => void;
 
-abstract class Observable {
-  private observers: ObserverMethod[] = [];
+abstract class Observable<TData = undefined> {
+  private observers: TObserverMethod<TData>[] = [];
 
-  public addObserver(observer: ObserverMethod): void {
+  public addObserver(observer: TObserverMethod<TData>): void {
     this.observers.push(observer);
   }
 
-  public removeObserver(observer: ObserverMethod): void {
+  public removeObserver(observer: TObserverMethod<TData>): void {
     this.observers.filter((obs) => obs !== observer);
   }
 
-  public notifyObservers(data?: ObserverData): void {
+  public notifyObservers(data: TData): void {
     const observersSnapshot = [...this.observers];
     observersSnapshot.forEach((obs) => obs(data));
   }

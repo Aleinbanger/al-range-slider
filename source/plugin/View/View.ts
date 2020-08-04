@@ -1,10 +1,14 @@
 import bind from 'bind-decorator';
 
 import Observable from '../Observable/Observable';
-import { IViewState } from './ViewTypes';
+import {
+  IPointValue,
+  IPositionRatio,
+  IViewState,
+} from './ViewTypes';
 import './View.scss';
 
-class View extends Observable {
+class View extends Observable<IViewState> {
   private $input: JQuery<HTMLElement>;
 
   private $wrapper!: JQuery<HTMLElement>;
@@ -19,35 +23,37 @@ class View extends Observable {
 
   private $range!: JQuery<HTMLElement>;
 
-  private state: IViewState = {
-    currentPositionRatio: {
-      from: 0,
-    },
-  };
+  private state: IViewState;
 
   constructor(input: HTMLElement) {
     super();
+    this.state = {
+      positionRatio: {
+        from: 0,
+      },
+    };
+
     this.$input = $(input);
     this.initialize();
     this.bindEventListeners();
-  }
-
-  public setInputValue(value: number | string): void {
-    this.$input.val(value);
-  }
-
-  public setCurrentPositionRatio({ from, to }: {from: number; to?: number}): void {
-    this.state.currentPositionRatio = { from, to };
   }
 
   public getState(): IViewState {
     return JSON.parse(JSON.stringify(this.state));
   }
 
-  public renderPosition(positionRatio: number): void {
-    const percent = positionRatio * 100;
-    this.$knob.css('left', `${percent}%`);
-    this.$range.css('width', `${percent}%`);
+  public setInputValue({ from, to }: IPointValue): void {
+    this.$input.val(from);
+  }
+
+  public setCurrentPositionRatio({ from, to }: IPositionRatio): void {
+    this.state.positionRatio = { from, to };
+  }
+
+  public renderPosition({ from, to }: IPositionRatio): void {
+    const percentFrom = from * 100;
+    this.$knob.css('left', `${percentFrom}%`);
+    this.$range.css('width', `${percentFrom}%`);
   }
 
   private initialize(): void {
@@ -103,19 +109,24 @@ class View extends Observable {
   @bind
   private handleKnobMouseMove(event: JQuery.Event): void {
     event.preventDefault();
-    const positionRatio = this.getRelativeMousePositionRatio(event);
-    // if (smooth === true)
-    this.renderPosition(positionRatio);
+    const positionRatioFrom = this.getRelativeMousePositionRatio(event);
+    const tempState = this.getState();
+    tempState.positionRatio = {
+      from: positionRatioFrom,
+    };
 
-    this.notifyObservers(positionRatio); // improve, use distinct types
+    // if (smooth === true)
+    this.renderPosition(tempState.positionRatio);
+
+    this.notifyObservers(tempState);
   }
 
   @bind
   private handleKnobMouseUp(): void {
     this.$knob.removeClass('al-range-slider__knob_active');
 
-    console.log(this.state.currentPositionRatio.from);
-    this.renderPosition(this.state.currentPositionRatio.from);
+    console.log(this.state.positionRatio.from);
+    this.renderPosition(this.state.positionRatio);
 
     $(document).off('mousemove', this.handleKnobMouseMove);
     $(document).off('mouseup', this.handleKnobMouseUp);
@@ -123,7 +134,7 @@ class View extends Observable {
 
   private getRelativeMousePositionRatio(event: JQuery.Event): number {
     // if (orientation === 'vertical') {
-    //   const percent = ((Number(event.pageY) - this.$trackOffset.top) / this.$trackWidth);
+    //   const ratio = ((Number(event.pageY) - this.$trackOffset.top) / this.$trackWidth);
     // }
     const ratio = (Number(event.pageX) - this.$trackOffset.left) / this.$trackWidth;
 

@@ -10,10 +10,6 @@ class Presenter {
 
   private view: View;
 
-  private modelState!: IModelState;
-
-  private viewState!: IViewState;
-
   constructor(model: Model, view: View) {
     this.model = model;
     this.view = view;
@@ -24,25 +20,19 @@ class Presenter {
     this.model.addObserver(this.updateView);
     this.view.addObserver(this.updateModel);
 
-    this.modelState = this.model.getState();
-    this.viewState = this.view.getState();
-
-    this.model.setCurrentPositionFromPoint(this.modelState.currentPoint.from);
+    const pointValue = this.model.getStatePointValue();
+    this.model.setCurrentPositionFromPoint(pointValue);
   }
 
   @bind
-  private updateView(modelState: IModelState): void {
-    // temp, change to separate values
-    this.modelState = modelState;
-    this.view.setCurrentPositionRatio(this.modelState.currentPositionRatio);
-    this.view.renderPosition(this.modelState.currentPositionRatio.from);
-    this.view.setInputValue(this.modelState.currentPoint.from);
-    // not supposed to know inner state structure, get from and to values using public methods
+  private updateView({ pointValue, positionRatio }: IModelState): void {
+    this.view.setCurrentPositionRatio(positionRatio);
+    this.view.renderPosition(positionRatio);
+    this.view.setInputValue(pointValue);
   }
 
   @bind
-  private updateModel(positionRatio: number): void {
-    // temp, change to separate values
+  private updateModel({ positionRatio }: IViewState): void {
     this.model.setCurrentPointFromPosition(positionRatio);
   }
 }
