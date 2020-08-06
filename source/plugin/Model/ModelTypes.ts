@@ -12,7 +12,7 @@ interface IPositionRatio {
   to?: number;
 }
 
-interface IModelConfig {
+interface IModelProps {
   type: 'single' | 'double';
   orientation: 'horizontal' | 'vertical';
   showInput: boolean;
@@ -38,6 +38,6 @@ export type {
   TPointValue,
   IPointValue,
   IPositionRatio,
-  IModelConfig,
+  IModelProps,
   IModelState,
 };
