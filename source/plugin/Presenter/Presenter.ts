@@ -6,9 +6,9 @@ import View from '../View/View';
 import { IViewState } from '../View/ViewTypes';
 
 class Presenter {
-  private model: Model;
+  private readonly model: Model;
 
-  private view: View;
+  private readonly view: View;
 
   constructor(model: Model, view: View) {
     this.model = model;
@@ -21,19 +21,18 @@ class Presenter {
     this.view.addObserver(this.updateModel);
 
     const pointValue = this.model.getStatePointValue();
-    this.model.setCurrentPositionFromPoint(pointValue);
+    this.model.setStateFromPoint(pointValue);
   }
 
   @bind
   private updateView({ pointValue, positionRatio }: IModelState): void {
     this.view.setCurrentPositionRatio(positionRatio);
-    this.view.renderPosition(positionRatio);
     this.view.setInputValue(pointValue);
   }
 
   @bind
   private updateModel({ positionRatio }: IViewState): void {
-    this.model.setCurrentPointFromPosition(positionRatio);
+    this.model.setStateFromPosition(positionRatio);
   }
 }
 

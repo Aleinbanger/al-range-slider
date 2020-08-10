@@ -56,7 +56,7 @@ class Model extends Observable<IModelState> {
   }
 
   // pointsMap
-  public setCurrentPointFromPosition({ from, to }: IPositionRatio): void | never {
+  public setStateFromPosition({ from, to }: IPositionRatio): void | never {
     if (this.props.pointsMap && this.props.pointsMapPrecision) {
       const fromFixed = Number(from.toFixed(Number(this.props.pointsMapPrecision)));
       if (typeof this.props.pointsMap[fromFixed] !== 'undefined') {
@@ -71,7 +71,7 @@ class Model extends Observable<IModelState> {
   }
 
   // pointsMap
-  public setCurrentPositionFromPoint({ from, to }: IPointValue): void | never {
+  public setStateFromPoint({ from, to }: IPointValue): void | never {
     let fromClosest: TPointValue;
     if (typeof from === 'number' && isNumberArray(this.props.pointsArray)) {
       fromClosest = getClosestNumber(from, this.props.pointsArray);
@@ -105,8 +105,9 @@ class Model extends Observable<IModelState> {
     // (number | string)[] can only be initialized from pointsMap?
   }
 
-  private generatePointsArrayFromRange({ max, min, step }:
-  { max: number; min: number; step: number }): void {
+  private generatePointsArrayFromRange(
+    { max, min, step }: { max: number; min: number; step: number },
+  ): void {
     this.props.pointsArray = [] as number[];
     const pointsNumber = Math.ceil((max - min) / step);
 
@@ -141,8 +142,10 @@ class Model extends Observable<IModelState> {
     console.log('pointsMapPrecision', this.props.pointsMapPrecision);
   }
 
-  private addNumberPointToPointsMap(point: number, { max, min }:
-  { max: number; min: number }): void | never {
+  private addNumberPointToPointsMap(
+    point: number,
+    { max, min }: { max: number; min: number },
+  ): void | never {
     if (this.props.pointsMap && this.props.pointsMapPrecision) {
       const positionRatio = Number(((point - min)
           / (max - min)).toFixed(Number(this.props.pointsMapPrecision)));

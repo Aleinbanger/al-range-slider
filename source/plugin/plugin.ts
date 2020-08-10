@@ -6,7 +6,7 @@ function renderSliders() {
   const sliderInputs = document.querySelectorAll('.js-temp-input');
   sliderInputs.forEach((input) => {
     const model = new Model();
-    const view = new View(input as HTMLElement);
+    const view = new View(input as HTMLInputElement);
     const presenter = new Presenter(model, view);
   });
 }

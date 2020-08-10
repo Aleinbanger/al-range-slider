@@ -1,7 +1,7 @@
 type TObserverMethod<TData> = (data: TData) => void;
 
 abstract class Observable<TData = undefined> {
-  private observers: TObserverMethod<TData>[] = [];
+  private readonly observers: TObserverMethod<TData>[] = [];
 
   public addObserver(observer: TObserverMethod<TData>): void {
     this.observers.push(observer);
@@ -11,7 +11,7 @@ abstract class Observable<TData = undefined> {
     this.observers.filter((obs) => obs !== observer);
   }
 
-  public notifyObservers(data: TData): void {
+  protected notifyObservers(data: TData): void {
     const observersSnapshot = [...this.observers];
     observersSnapshot.forEach((obs) => obs(data));
   }
