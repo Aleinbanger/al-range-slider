@@ -7,7 +7,7 @@
     "stylelint": "npx stylelint **/*.scss",
     "eslint": "eslint . --ext .js,.ts --fix",
     "ts-test": "tsc",
-    "prod": "webpack --config webpack.prod.js"
+    "prod": "tsc && webpack --config webpack.prod.js"
   },
   "author": "Aleinbanger",
   "license": "MIT",

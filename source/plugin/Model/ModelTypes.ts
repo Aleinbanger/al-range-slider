@@ -2,15 +2,9 @@
 
 type TPointValue = number | string;
 
-interface IPointValue {
-  from: TPointValue;
-  to?: TPointValue;
-}
+type TPoint = [number, TPointValue];
 
-interface IPositionRatio {
-  from: number;
-  to?: number;
-}
+type TSelectedPoint = [string, TPoint];
 
 interface IModelProps {
   type: 'single' | 'double';
@@ -24,20 +18,19 @@ interface IModelProps {
     step: number;
     callback?: (point: number) => number;
   };
-  pointsArray?: number[] | string[]; // also can be defined from config
+  valuesArray?: number[] | string[]; // also can be defined from config
   pointsMap?: Record<number, TPointValue>; // also can be defined from config
   pointsMapPrecision?: number;
 }
 
 interface IModelState {
-  pointValue: IPointValue;
-  positionRatio: IPositionRatio;
+  selectedPoints: Record<string, TPoint>;
 }
 
 export type {
   TPointValue,
-  IPointValue,
-  IPositionRatio,
+  TPoint,
+  TSelectedPoint,
   IModelProps,
   IModelState,
 };

@@ -17,5 +17,10 @@
   },
   "include": [
     "source"
+  ],
+  "exclude": [
+    "node_modules",
+    "source/temp",
+    "**/*.test.ts"
   ]
 }

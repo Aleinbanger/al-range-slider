@@ -1,19 +1,23 @@
 type TObserverMethod<TData> = (data: TData) => void;
 
 abstract class Observable<TData = undefined> {
-  private readonly observers: TObserverMethod<TData>[] = [];
+  private readonly observers: Map<TObserverMethod<TData>, string> = new Map();
 
-  public addObserver(observer: TObserverMethod<TData>): void {
-    this.observers.push(observer);
+  public addObserver(event: string, observer: TObserverMethod<TData>): void {
+    this.observers.set(observer, event);
   }
 
   public removeObserver(observer: TObserverMethod<TData>): void {
-    this.observers.filter((obs) => obs !== observer);
+    this.observers.delete(observer);
   }
 
-  protected notifyObservers(data: TData): void {
-    const observersSnapshot = [...this.observers];
-    observersSnapshot.forEach((obs) => obs(data));
+  protected notifyObservers(event: string, data: TData): void {
+    const observersSnapshot = new Map(this.observers);
+    observersSnapshot.forEach((evn, observer) => {
+      if (evn === event) {
+        observer(data);
+      }
+    });
   }
 }
 

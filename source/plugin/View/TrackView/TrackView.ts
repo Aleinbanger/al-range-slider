@@ -7,8 +7,6 @@ class TrackView extends SubView {
     return element;
   }
 
-  protected renderState(): void {}
-
   protected bindEventListeners(): void {}
 }
 

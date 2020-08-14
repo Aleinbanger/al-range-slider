@@ -3,8 +3,9 @@ import { TOrientation, ISubViewProps } from './ViewTypes';
 
 abstract class SubView<
   TState = undefined,
+  TData = TState,
   TProps extends ISubViewProps = ISubViewProps,
-> extends Observable<TState> {
+> extends Observable<TData> {
   public readonly element: HTMLElement;
 
   protected readonly props: TProps;
@@ -18,16 +19,11 @@ abstract class SubView<
     this.props.parent.appendChild(this.element);
 
     this.bindEventListeners();
-    this.setOrientation('horizontal'); // need it here?
+    this.setOrientation('horizontal');
   }
 
   public getState(): TState {
     return JSON.parse(JSON.stringify(this.state));
-  }
-
-  public setState(state: TState): void {
-    this.state = state;
-    this.renderState(state);
   }
 
   public setOrientation(orientation: TOrientation): void {
@@ -36,30 +32,24 @@ abstract class SubView<
 
   protected abstract renderMarkup(): HTMLElement;
 
-  protected abstract renderState(state?: TState): void;
-
   protected abstract bindEventListeners(): void;
 
   protected setReferenceFrame(reference: HTMLElement): void | never {
-    if (this.state) {
-      const rect = reference.getBoundingClientRect();
-      const offsetX = rect.x;
-      const offsetY = rect.y;
-      const width = reference.clientWidth;
-      const height = reference.clientHeight;
-      this.props.referenceFrame = {
-        offsetX,
-        offsetY,
-        width,
-        height,
-      };
-    } else {
-      throw new Error('State is not initialized');
-    }
+    const rect = reference.getBoundingClientRect();
+    const offsetX = rect.x;
+    const offsetY = rect.y;
+    const width = reference.clientWidth;
+    const height = reference.clientHeight;
+    this.props.referenceFrame = {
+      offsetX,
+      offsetY,
+      width,
+      height,
+    };
   }
 
   protected getRelativeMousePositionRatio(event: MouseEvent): number | never {
-    if (this.props?.referenceFrame) {
+    if (this.props.referenceFrame) {
       const {
         offsetX,
         offsetY,
@@ -76,7 +66,7 @@ abstract class SubView<
           ratio = (event.clientY - offsetY) / height;
           break;
         default:
-          throw new Error('Invalid orientation value');
+          throw new Error('Invalid "orientation" value');
       }
 
       if (ratio < 0) {

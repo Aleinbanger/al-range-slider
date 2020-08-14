@@ -1,7 +1,5 @@
 /* eslint-disable import/prefer-default-export */
 
-type TPointValue = number | string;
-
 type TOrientation = 'horizontal' | 'vertical';
 
 type TReferenceFrame = {
@@ -11,32 +9,26 @@ type TReferenceFrame = {
   height: number;
 };
 
-interface IPointValue {
-  from: TPointValue;
-  to?: TPointValue;
-}
+type TSelectedPosition = [string, number];
 
-interface IPositionRatio {
-  from: number;
-  to?: number;
+interface IViewProps {
+  readonly cssClass: string;
 }
 
 interface IViewState {
-  positionRatio: IPositionRatio;
+  selectedPositions: Record<string, number>;
 }
 
-interface ISubViewProps {
+interface ISubViewProps extends IViewProps {
   readonly parent: HTMLElement;
-  readonly cssClass: string;
   orientation?: TOrientation;
   referenceFrame?: TReferenceFrame;
 }
 
 export type {
-  TPointValue,
   TOrientation,
-  IPointValue,
-  IPositionRatio,
+  TSelectedPosition,
+  IViewProps,
   IViewState,
   ISubViewProps,
 };

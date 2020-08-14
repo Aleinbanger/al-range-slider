@@ -6,10 +6,15 @@ interface IKnobViewState {
   positionRatio: number;
 }
 
-class KnobView extends SubView<IKnobViewState> {
+class KnobView extends SubView<IKnobViewState, number> {
   protected state: IKnobViewState = {
     positionRatio: 0,
   };
+
+  public setPosition(positionRatio: number): void {
+    this.state.positionRatio = positionRatio;
+    this.renderPosition(positionRatio);
+  }
 
   protected renderMarkup(): HTMLElement {
     const element = document.createElement('span');
@@ -17,7 +22,7 @@ class KnobView extends SubView<IKnobViewState> {
     return element;
   }
 
-  protected renderState({ positionRatio }: IKnobViewState): void {
+  protected renderPosition(positionRatio: number): void {
     const percent = positionRatio * 100;
     this.element.style.left = `${percent}%`;
   }
@@ -41,27 +46,22 @@ class KnobView extends SubView<IKnobViewState> {
   private handleDocumentMouseMove(event: MouseEvent): void {
     event.preventDefault();
     const positionRatio = this.getRelativeMousePositionRatio(event);
-    const tempState = this.getState();
-    tempState.positionRatio = positionRatio;
 
     // if (smooth)
-    this.renderState(tempState);
+    this.renderPosition(positionRatio);
 
-    this.notifyObservers(tempState);
+    this.notifyObservers('positionChange', positionRatio);
   }
 
   @bind
   private handleDocumentMouseUp(): void {
     this.element.classList.remove(`${this.props.cssClass}_active`);
 
-    this.renderState(this.state);
-
-    this.notifyObservers(this.state);
+    this.notifyObservers('positionChange', this.state.positionRatio);
 
     document.removeEventListener('mousemove', this.handleDocumentMouseMove);
     document.removeEventListener('mouseup', this.handleDocumentMouseUp);
   }
 }
 
-export type { IKnobViewState };
 export default KnobView;
