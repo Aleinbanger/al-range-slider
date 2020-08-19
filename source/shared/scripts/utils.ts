@@ -10,15 +10,15 @@ function requireAll(context: __WebpackModuleApi.RequireContext): Record<string, 
 }
 
 function getKeyByValue(object: Record<number | string, number | string>, value: number | string):
-string | never {
+string | undefined {
   const keyByValue = Object.keys(object).find((key) => object[key] === value);
   if (typeof keyByValue !== 'undefined') {
     return keyByValue;
   }
-  throw new Error('The object does not contain specified value');
+  return undefined;
 }
 
-function getClosestNumber(number: number, array: (number | string)[]): number | never {
+function getClosestNumber(number: number, array: (number | string)[]): number | undefined {
   const numbers = array.filter((el) => typeof el === 'number') as number[];
   if (numbers.length > 0) {
     const closestNumber = numbers.reduce((prev, curr) => (
@@ -26,7 +26,17 @@ function getClosestNumber(number: number, array: (number | string)[]): number | 
     ));
     return closestNumber;
   }
-  throw new Error('The array does not contain any numbers');
+  return undefined;
+}
+
+function isNumeric(value: unknown): boolean {
+  if (typeof value === 'number') {
+    return true;
+  }
+  if (typeof value === 'string') {
+    return !Number.isNaN(Number.parseFloat(value));
+  }
+  return false;
 }
 
 function isNumberArray(value: unknown): value is number[] {
@@ -47,6 +57,7 @@ export {
   requireAll,
   getKeyByValue,
   getClosestNumber,
+  isNumeric,
   isNumberArray,
   isStringArray,
 };

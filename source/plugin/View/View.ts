@@ -1,43 +1,47 @@
 import bind from 'bind-decorator';
 
 import Observable from '../Observable/Observable';
+import WrapperView from './WrapperView/WrapperView';
 import TrackView from './TrackView/TrackView';
 import RangeView from './RangeView/RangeView';
-import KnobView from './KnobView/KnobView';
+import KnobView, { IKnobViewState } from './KnobView/KnobView';
+import InputView, { IInputViewState } from './InputView/InputView';
 import {
   TOrientation,
-  TSelectedPosition,
   IViewProps,
   IViewState,
 } from './ViewTypes';
 import './View.scss';
 
-class View extends Observable<TSelectedPosition> {
-  private input: HTMLInputElement;
+class View extends Observable<IViewState> {
+  private readonly props: IViewProps;
 
-  private wrapper!: HTMLElement;
+  private state: IViewState;
+
+  private wrapper: WrapperView;
 
   private track!: TrackView;
 
   private range!: RangeView;
 
-  private knobs: Record<string, KnobView>;
+  private knobs!: Record<string, KnobView>;
 
-  private readonly props: IViewProps;
+  private inputs!: Record<string, InputView>;
 
-  private state: IViewState;
-
-  constructor(input: HTMLInputElement) {
+  constructor(parent: HTMLElement) {
     super();
-    this.input = input;
-    this.knobs = {};
-
     this.props = {
       cssClass: 'al-range-slider',
     };
     this.state = {
-      selectedPositions: {},
+      selectedPosition: ['', 0],
+      selectedValue: ['', ''],
     };
+
+    this.wrapper = new WrapperView({
+      parent,
+      cssClass: this.props.cssClass,
+    });
 
     this.initialize();
   }
@@ -46,36 +50,31 @@ class View extends Observable<TSelectedPosition> {
     return JSON.parse(JSON.stringify(this.state));
   }
 
-  public setInputValue(id: string, value: string): void {
-    this.input.value = value;
-  }
-
-  public setSelectedPosition(id: string, positionRatio: number): void {
-    if (positionRatio < 0 || positionRatio > 1) {
-      throw new Error('Invalid "positionRatio" value, must be in between 0 and 1');
+  public setState({ selectedPosition, selectedValue }: IViewState): void {
+    if (selectedPosition) {
+      this.state.selectedPosition = selectedPosition;
+      const [id, positionRatio] = selectedPosition;
+      this.knobs[id].setState({ positionRatio });
+      if (id === 'from' || id === 'to') {
+        this.range.setState({ [id]: positionRatio });
+      }
     }
-    this.state.selectedPositions[id] = positionRatio;
-    this.knobs[id].setPosition(positionRatio);
-    if (id === 'from' || id === 'to') {
-      this.range.setSelectedPosition(id, positionRatio);
+
+    if (selectedValue) {
+      this.state.selectedValue = selectedValue;
+      const [id, value] = selectedValue;
+      this.inputs[id].setState({ value });
     }
   }
 
   public initializePoint(id: string): void {
     this.addKnob(id);
-    // addInput
+    this.addInput(id);
   }
 
   private initialize(): void {
-    this.input.classList.add(`${this.props.cssClass}__input`, `js-${this.props.cssClass}__input`);
-
-    this.wrapper = document.createElement('div');
-    this.wrapper.setAttribute('class', `${this.props.cssClass} js-${this.props.cssClass}`);
-    this.input.parentNode?.appendChild(this.wrapper);
-    this.wrapper.appendChild(this.input);
-
     this.track = new TrackView({
-      parent: this.wrapper,
+      parent: this.wrapper.element,
       cssClass: `${this.props.cssClass}__track`,
     });
 
@@ -83,6 +82,9 @@ class View extends Observable<TSelectedPosition> {
       parent: this.track.element,
       cssClass: `${this.props.cssClass}__range`,
     });
+
+    this.knobs = {};
+    this.inputs = {};
   }
 
   private addKnob(id: string): void {
@@ -91,19 +93,40 @@ class View extends Observable<TSelectedPosition> {
       cssClass: `${this.props.cssClass}__knob`,
     });
 
-    const handleKnobPositionChange = (positionRatio: number) => {
-      this.handleKnobPositionChange(id, positionRatio);
+    const handleKnobPositionChange = (state: IKnobViewState) => {
+      this.handleKnobPositionChange(id, state);
     };
-    this.knobs[id].addObserver('positionChange', handleKnobPositionChange);
+    this.knobs[id].addObserver(handleKnobPositionChange);
   }
 
-  private handleKnobPositionChange(id: string, positionRatio: number): void {
-    // if (smooth)
-    if (id === 'from' || id === 'to') {
-      this.range.setSelectedPosition(id, positionRatio);
-    }
+  private handleKnobPositionChange(id: string, { positionRatio }: IKnobViewState): void {
+    if (typeof positionRatio !== 'undefined') {
+      // if (smooth)
+      if (id === 'from' || id === 'to') {
+        this.range.setState({ [id]: positionRatio });
+      }
 
-    this.notifyObservers('selectedPositionChange', [id, positionRatio]);
+      this.notifyObservers({ selectedPosition: [id, positionRatio] });
+    }
+  }
+
+  private addInput(id: string): void {
+    this.inputs[id] = new InputView({
+      name: id,
+      parent: this.wrapper.element,
+      cssClass: `${this.props.cssClass}__input`,
+    });
+
+    const handleInputValueChange = (state: IInputViewState) => {
+      this.handleInputValueChange(id, state);
+    };
+    this.inputs[id].addObserver(handleInputValueChange);
+  }
+
+  private handleInputValueChange(id: string, { value }: IInputViewState): void {
+    if (typeof value !== 'undefined') {
+      this.notifyObservers({ selectedValue: [id, value] });
+    }
   }
 }
 

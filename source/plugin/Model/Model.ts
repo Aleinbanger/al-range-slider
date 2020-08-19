@@ -1,6 +1,7 @@
 import {
   getKeyByValue,
   getClosestNumber,
+  isNumeric,
   isNumberArray,
   isStringArray,
 } from 'shared/scripts/utils';
@@ -8,13 +9,13 @@ import {
 import Observable from '../Observable/Observable';
 import {
   TPointValue,
-  TPoint,
   TSelectedPoint,
   IModelProps,
   IModelState,
+  IModelData,
 } from './ModelTypes';
 
-class Model extends Observable<TSelectedPoint> {
+class Model extends Observable<IModelData> {
   private readonly props: IModelProps;
 
   private state: IModelState;
@@ -24,7 +25,7 @@ class Model extends Observable<TSelectedPoint> {
     this.props = {
       type: 'single',
       orientation: 'horizontal',
-      showInput: true,
+      showInputs: true,
       showGrid: false,
       showTooltips: false,
       range: {
@@ -36,8 +37,9 @@ class Model extends Observable<TSelectedPoint> {
 
     this.state = {
       selectedPoints: {
-        to: [0, 100],
         from: [0, 0],
+        to: [0, 100],
+        asdo: [0, 300],
       },
     };
 
@@ -53,9 +55,9 @@ class Model extends Observable<TSelectedPoint> {
   }
 
   // pointsMap
-  public selectPointByPosition(id: string, positionRatio: number): void | never {
+  public selectPointByPosition([id, positionRatio]: [string, number]): void | never {
     if (positionRatio < 0 || positionRatio > 1) {
-      throw new Error('Invalid "positionRatio" value, must be between 0 and 1');
+      throw new Error('Invalid "positionRatio" value, must be in between 0 and 1');
     }
 
     if (this.props.pointsMap && this.props.pointsMapPrecision) {
@@ -65,7 +67,7 @@ class Model extends Observable<TSelectedPoint> {
         this.state.selectedPoints[id][0] = positionRatioFixed;
         this.state.selectedPoints[id][1] = this.props.pointsMap[positionRatioFixed];
 
-        this.notifyObservers('selectedPointChange', [id, this.state.selectedPoints[id]]);
+        this.notifyObservers({ selectedPoint: [id, this.state.selectedPoints[id]] });
       }
     } else {
       throw new Error('"pointsMap" is not defined'); // add methods w/o pointsMap
@@ -73,14 +75,18 @@ class Model extends Observable<TSelectedPoint> {
   }
 
   // pointsMap
-  public selectPointByValue(id: string, value: TPointValue): void | never {
-    let valueClosest: TPointValue;
-    if (typeof value === 'number' && isNumberArray(this.props.valuesArray)) {
-      valueClosest = getClosestNumber(value, this.props.valuesArray);
+  public selectPointByValue([id, value]: [string, TPointValue]): void | never {
+    let valueClosest: TPointValue | undefined;
+    if (isNumeric(value) && isNumberArray(this.props.valuesArray)) {
+      valueClosest = getClosestNumber(Number(value), this.props.valuesArray);
     } else {
       valueClosest = value; // improve // add methods w/o pointsArray
     }
-    this.state.selectedPoints[id][1] = valueClosest;
+    if (typeof valueClosest !== 'undefined') {
+      this.state.selectedPoints[id][1] = valueClosest;
+    } else {
+      throw new Error('Could not find the closest value in "valuesArray"');
+    }
 
     // add methods for string[]
 
@@ -89,9 +95,11 @@ class Model extends Observable<TSelectedPoint> {
         this.props.pointsMap,
         this.state.selectedPoints[id][1],
       );
-      this.state.selectedPoints[id][0] = Number(positionRatio);
+      if (typeof positionRatio !== 'undefined') {
+        this.state.selectedPoints[id][0] = Number(positionRatio);
 
-      this.notifyObservers('selectedPointChange', [id, this.state.selectedPoints[id]]); // move to the bottom
+        this.notifyObservers({ selectedPoint: [id, this.state.selectedPoints[id]] }); // move to the bottom
+      }
     } else {
       throw new Error('"pointsMap" is not defined'); // add methods w/o pointsMap
     }

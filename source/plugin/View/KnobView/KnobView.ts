@@ -3,18 +3,13 @@ import bind from 'bind-decorator';
 import SubView from '../SubView';
 
 interface IKnobViewState {
-  positionRatio: number;
+  positionRatio?: number;
 }
 
-class KnobView extends SubView<IKnobViewState, number> {
+class KnobView extends SubView<IKnobViewState> {
   protected state: IKnobViewState = {
     positionRatio: 0,
   };
-
-  public setPosition(positionRatio: number): void {
-    this.state.positionRatio = positionRatio;
-    this.renderPosition(positionRatio);
-  }
 
   protected renderMarkup(): HTMLElement {
     const element = document.createElement('span');
@@ -22,9 +17,14 @@ class KnobView extends SubView<IKnobViewState, number> {
     return element;
   }
 
-  protected renderPosition(positionRatio: number): void {
-    const percent = positionRatio * 100;
-    this.element.style.left = `${percent}%`;
+  protected renderState({ positionRatio }: IKnobViewState): void {
+    if (typeof positionRatio !== 'undefined') {
+      if (positionRatio < 0 || positionRatio > 1) {
+        throw new Error('Invalid "positionRatio" value, must be in between 0 and 1');
+      }
+      const percent = positionRatio * 100;
+      this.element.style.left = `${percent}%`;
+    }
   }
 
   protected bindEventListeners(): void {
@@ -48,20 +48,21 @@ class KnobView extends SubView<IKnobViewState, number> {
     const positionRatio = this.getRelativeMousePositionRatio(event);
 
     // if (smooth)
-    this.renderPosition(positionRatio);
+    this.renderState({ positionRatio });
 
-    this.notifyObservers('positionChange', positionRatio);
+    this.notifyObservers({ positionRatio });
   }
 
   @bind
   private handleDocumentMouseUp(): void {
     this.element.classList.remove(`${this.props.cssClass}_active`);
 
-    this.notifyObservers('positionChange', this.state.positionRatio);
+    this.notifyObservers(this.state);
 
     document.removeEventListener('mousemove', this.handleDocumentMouseMove);
     document.removeEventListener('mouseup', this.handleDocumentMouseUp);
   }
 }
 
+export type { IKnobViewState };
 export default KnobView;

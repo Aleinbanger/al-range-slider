@@ -9,7 +9,7 @@ type TSelectedPoint = [string, TPoint];
 interface IModelProps {
   type: 'single' | 'double';
   orientation: 'horizontal' | 'vertical';
-  showInput: boolean;
+  showInputs: boolean;
   showGrid: boolean;
   showTooltips: boolean;
   range?: {
@@ -27,10 +27,15 @@ interface IModelState {
   selectedPoints: Record<string, TPoint>;
 }
 
+interface IModelData {
+  selectedPoint?: TSelectedPoint;
+}
+
 export type {
   TPointValue,
   TPoint,
   TSelectedPoint,
   IModelProps,
   IModelState,
+  IModelData,
 };

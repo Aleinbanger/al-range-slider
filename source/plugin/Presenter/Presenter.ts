@@ -1,9 +1,9 @@
 import bind from 'bind-decorator';
 
 import Model from '../Model/Model';
-import { TSelectedPoint } from '../Model/ModelTypes';
+import { IModelData } from '../Model/ModelTypes';
 import View from '../View/View';
-import { TSelectedPosition } from '../View/ViewTypes';
+import { IViewState } from '../View/ViewTypes';
 
 class Presenter {
   private readonly model: Model;
@@ -17,25 +17,40 @@ class Presenter {
   }
 
   private initialize(): void {
-    this.model.addObserver('selectedPointChange', this.handleSelectedPointChange);
-    this.view.addObserver('selectedPositionChange', this.handleSelectedPositionChange);
+    this.model.addObserver(this.handleSelectedPointChange);
+    this.view.addObserver(this.handleSelectedPositionChange);
+    this.view.addObserver(this.handleSelectedValueChange);
 
     const selectedPoints = this.model.getSelectedPoints();
     selectedPoints.forEach(([id, point]) => {
       this.view.initializePoint(id);
-      this.model.selectPointByValue(id, point[1]);
+      this.model.selectPointByValue([id, point[1]]);
     });
   }
 
   @bind
-  private handleSelectedPointChange([id, point]: TSelectedPoint): void {
-    this.view.setSelectedPosition(id, point[0]);
-    this.view.setInputValue(id, String(point[1]));
+  private handleSelectedPointChange({ selectedPoint }: IModelData): void {
+    if (selectedPoint) {
+      const [id, point] = selectedPoint;
+      this.view.setState({
+        selectedPosition: [id, point[0]],
+        selectedValue: [id, String(point[1])],
+      });
+    }
   }
 
   @bind
-  private handleSelectedPositionChange([id, positionRatio]: TSelectedPosition): void {
-    this.model.selectPointByPosition(id, positionRatio);
+  private handleSelectedPositionChange({ selectedPosition }: IViewState): void {
+    if (selectedPosition) {
+      this.model.selectPointByPosition(selectedPosition);
+    }
+  }
+
+  @bind
+  private handleSelectedValueChange({ selectedValue }: IViewState): void {
+    if (selectedValue) {
+      this.model.selectPointByValue(selectedValue);
+    }
   }
 }
 

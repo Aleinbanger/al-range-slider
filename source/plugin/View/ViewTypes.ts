@@ -9,14 +9,13 @@ type TReferenceFrame = {
   height: number;
 };
 
-type TSelectedPosition = [string, number];
-
 interface IViewProps {
   readonly cssClass: string;
 }
 
 interface IViewState {
-  selectedPositions: Record<string, number>;
+  selectedPosition?: [string, number];
+  selectedValue?: [string, string];
 }
 
 interface ISubViewProps extends IViewProps {
@@ -27,7 +26,6 @@ interface ISubViewProps extends IViewProps {
 
 export type {
   TOrientation,
-  TSelectedPosition,
   IViewProps,
   IViewState,
   ISubViewProps,

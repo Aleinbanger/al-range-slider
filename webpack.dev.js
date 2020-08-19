@@ -3,7 +3,7 @@ const common = require('./webpack.common');
 
 module.exports = merge(common, {
   mode: 'development',
-  devtool: 'none',
+  // devtool: 'none',
 
   module: {
     rules: [

@@ -1,21 +1,15 @@
 import SubView from '../SubView';
 
 interface IRangeViewState {
-  positionRatio: {
-    from: number;
-    to: number;
-  }
+  from?: number;
+  to?: number;
 }
 
-class RangeView extends SubView<IRangeViewState, number> {
+class RangeView extends SubView<IRangeViewState> {
   protected state: IRangeViewState = {
-    positionRatio: { from: 0, to: 1 },
+    from: 0,
+    to: 1,
   };
-
-  public setSelectedPosition(id: 'from' | 'to', positionRatio: number): void {
-    this.state.positionRatio[id] = positionRatio;
-    this.renderSelectedPosition(id, positionRatio);
-  }
 
   protected renderMarkup(): HTMLElement {
     const element = document.createElement('span');
@@ -23,23 +17,25 @@ class RangeView extends SubView<IRangeViewState, number> {
     return element;
   }
 
-  protected renderSelectedPosition(id: 'from' | 'to', positionRatio: number): void {
+  protected renderState({ from, to }: IRangeViewState): void {
     let percentFrom: number;
     let percentTo: number;
-    switch (id) {
-      case 'from':
-        percentFrom = positionRatio * 100;
-        percentTo = this.state.positionRatio.to * 100;
-        this.element.style.left = `${percentFrom}%`;
-        this.element.style.width = `${percentTo - percentFrom}%`;
-        break;
-      case 'to':
-        percentFrom = this.state.positionRatio.from * 100;
-        percentTo = positionRatio * 100;
-        this.element.style.width = `${percentTo - percentFrom}%`;
-        break;
-      default:
-        throw new Error('Range can only have the following ID values: "from", "to"');
+    if (typeof from !== 'undefined' && typeof this.state.to !== 'undefined') {
+      if (from < 0 || from > 1) {
+        throw new Error('Invalid "from" value, must be in between 0 and 1');
+      }
+      percentFrom = from * 100;
+      percentTo = this.state.to * 100;
+      this.element.style.left = `${percentFrom}%`;
+      this.element.style.width = `${percentTo - percentFrom}%`;
+    }
+    if (typeof to !== 'undefined' && typeof this.state.from !== 'undefined') {
+      if (to < 0 || to > 1) {
+        throw new Error('Invalid "to" value, must be in between 0 and 1');
+      }
+      percentFrom = this.state.from * 100;
+      percentTo = to * 100;
+      this.element.style.width = `${percentTo - percentFrom}%`;
     }
   }
 

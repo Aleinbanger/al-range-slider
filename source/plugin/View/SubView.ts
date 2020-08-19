@@ -3,9 +3,8 @@ import { TOrientation, ISubViewProps } from './ViewTypes';
 
 abstract class SubView<
   TState = undefined,
-  TData = TState,
   TProps extends ISubViewProps = ISubViewProps,
-> extends Observable<TData> {
+> extends Observable<TState> {
   public readonly element: HTMLElement;
 
   protected readonly props: TProps;
@@ -26,11 +25,25 @@ abstract class SubView<
     return JSON.parse(JSON.stringify(this.state));
   }
 
+  public setState(state: TState): void {
+    Object.entries(state).forEach(([key, value]) => {
+      if (this.state) {
+        const isValidState = key in this.state && typeof value !== 'undefined';
+        if (isValidState) {
+          this.state[key as keyof TState] = value as TState[keyof TState];
+        }
+      }
+    });
+    this.renderState(state);
+  }
+
   public setOrientation(orientation: TOrientation): void {
     this.props.orientation = orientation;
   }
 
   protected abstract renderMarkup(): HTMLElement;
+
+  protected abstract renderState(state?: TState): void;
 
   protected abstract bindEventListeners(): void;
 
