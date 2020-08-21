@@ -2,9 +2,9 @@
 
 type TPointValue = number | string;
 
-type TPoint = [number, TPointValue];
+type TPoint = [position: number, value: TPointValue];
 
-type TSelectedPoint = [string, TPoint];
+type TSelectedPoint = [id: string, point: TPoint];
 
 interface IModelProps {
   type: 'single' | 'double';
@@ -33,7 +33,6 @@ interface IModelData {
 
 export type {
   TPointValue,
-  TPoint,
   TSelectedPoint,
   IModelProps,
   IModelState,

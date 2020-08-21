@@ -98,7 +98,8 @@ class Model extends Observable<IModelData> {
       if (typeof positionRatio !== 'undefined') {
         this.state.selectedPoints[id][0] = Number(positionRatio);
 
-        this.notifyObservers({ selectedPoint: [id, this.state.selectedPoints[id]] }); // move to the bottom
+        this.notifyObservers({ selectedPoint: [id, this.state.selectedPoints[id]] });
+        // move to the bottom
       }
     } else {
       throw new Error('"pointsMap" is not defined'); // add methods w/o pointsMap
@@ -161,7 +162,7 @@ class Model extends Observable<IModelData> {
   ): void | never {
     if (this.props.pointsMap && this.props.pointsMapPrecision) {
       const positionRatio = Number(((value - min)
-          / (max - min)).toFixed(Number(this.props.pointsMapPrecision)));
+        / (max - min)).toFixed(Number(this.props.pointsMapPrecision)));
       this.props.pointsMap[positionRatio] = Number(value.toFixed(5));
     } else {
       throw new Error('"pointsMap" is not defined');

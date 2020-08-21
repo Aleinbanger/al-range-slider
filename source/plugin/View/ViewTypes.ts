@@ -14,8 +14,8 @@ interface IViewProps {
 }
 
 interface IViewState {
-  selectedPosition?: [string, number];
-  selectedValue?: [string, string];
+  selectedPosition?: [id: string, position: number];
+  selectedValue?: [id: string, value: string];
 }
 
 interface ISubViewProps extends IViewProps {
