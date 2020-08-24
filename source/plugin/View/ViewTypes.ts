@@ -14,8 +14,10 @@ interface IViewProps {
 }
 
 interface IViewState {
-  selectedPosition?: [id: string, position: number];
-  selectedValue?: [id: string, value: string];
+  currentPosition?: [id: string, position: number];
+  currentPositionLimits?: [id: string, limits: { min: number; max: number }];
+  currentActiveStatus?: [id: string, active: boolean];
+  currentValue?: [id: string, value: string];
 }
 
 interface ISubViewProps extends IViewProps {

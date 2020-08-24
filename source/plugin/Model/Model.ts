@@ -9,7 +9,7 @@ import {
 import Observable from '../Observable/Observable';
 import {
   TPointValue,
-  TSelectedPoint,
+  TCurrentPoint,
   IModelProps,
   IModelState,
   IModelData,
@@ -29,17 +29,17 @@ class Model extends Observable<IModelData> {
       showGrid: false,
       showTooltips: false,
       range: {
-        min: -152,
-        max: 937,
-        step: 76.37,
+        min: -100,
+        max: 100,
+        step: 1,
       },
     };
 
     this.state = {
       selectedPoints: {
         from: [0, 0],
-        to: [0, 100],
-        asdo: [0, 300],
+        to: [0, 20],
+        asdo: [0, 40],
       },
     };
 
@@ -50,8 +50,9 @@ class Model extends Observable<IModelData> {
     return JSON.parse(JSON.stringify(this.state));
   }
 
-  public getSelectedPoints(): TSelectedPoint[] {
-    return Object.entries(this.state.selectedPoints);
+  public getSelectedPoints(): TCurrentPoint[] {
+    const entries = Object.entries(this.state.selectedPoints);
+    return entries.sort((a, b) => a[1][0] - b[1][0]);
   }
 
   // pointsMap
@@ -61,13 +62,13 @@ class Model extends Observable<IModelData> {
     }
 
     if (this.props.pointsMap && this.props.pointsMapPrecision) {
-      const positionRatioFixed = Number(positionRatio
-        .toFixed(Number(this.props.pointsMapPrecision)));
+      const positionRatioFixed = Number(positionRatio.toFixed(this.props.pointsMapPrecision));
       if (typeof this.props.pointsMap[positionRatioFixed] !== 'undefined') {
-        this.state.selectedPoints[id][0] = positionRatioFixed;
-        this.state.selectedPoints[id][1] = this.props.pointsMap[positionRatioFixed];
-
-        this.notifyObservers({ selectedPoint: [id, this.state.selectedPoints[id]] });
+        if (this.checkPointLimits([id, positionRatio])) {
+          this.state.selectedPoints[id][0] = positionRatioFixed;
+          this.state.selectedPoints[id][1] = this.props.pointsMap[positionRatioFixed];
+        }
+        this.notifyObservers({ currentPoint: [id, this.state.selectedPoints[id]] });
       }
     } else {
       throw new Error('"pointsMap" is not defined'); // add methods w/o pointsMap
@@ -98,7 +99,7 @@ class Model extends Observable<IModelData> {
       if (typeof positionRatio !== 'undefined') {
         this.state.selectedPoints[id][0] = Number(positionRatio);
 
-        this.notifyObservers({ selectedPoint: [id, this.state.selectedPoints[id]] });
+        this.notifyObservers({ currentPoint: [id, this.state.selectedPoints[id]] });
         // move to the bottom
       }
     } else {
@@ -106,6 +107,45 @@ class Model extends Observable<IModelData> {
     }
 
     // will also be used for setting position from input
+  }
+
+  public selectPointLimits(selectedId: string): void {
+    const selectedPoints = this.getSelectedPoints();
+    const selectedIndex = selectedPoints.findIndex(([id]) => id === selectedId);
+    let positions: number[] | undefined;
+    if (this.props.pointsMap) {
+      positions = Object.keys(this.props.pointsMap).map((key) => Number(key))
+        .sort((a, b) => a - b);
+    }
+
+    let min = 0;
+    let newMin = min;
+    let max = 1;
+    let newMax = max;
+    if (selectedPoints[selectedIndex - 1]) {
+      min = Number(selectedPoints[selectedIndex - 1][1][0]);
+      if (positions) {
+        newMin = positions[positions.indexOf(min) + 1];
+      } else if (this.props.range) {
+        newMin = min; // improve + positionRatio step
+      }
+    }
+    if (selectedPoints[selectedIndex + 1]) {
+      max = Number(selectedPoints[selectedIndex + 1][1][0]);
+      if (positions) {
+        newMax = positions[positions.indexOf(max) - 1];
+      } else if (this.props.range) {
+        newMax = max; // improve - positionRatio step
+      }
+    }
+
+    this.state.selectedPointsLimits = {};
+    // if (!allowSameSelection)
+    this.state.selectedPointsLimits[selectedId] = { min: newMin, max: newMax };
+
+    this.notifyObservers({ currentPointLimits: [selectedId, { min, max }] });
+
+    console.log({ selectedId, newMin, newMax });
   }
 
   private initialize(): void {
@@ -162,11 +202,23 @@ class Model extends Observable<IModelData> {
   ): void | never {
     if (this.props.pointsMap && this.props.pointsMapPrecision) {
       const positionRatio = Number(((value - min)
-        / (max - min)).toFixed(Number(this.props.pointsMapPrecision)));
+        / (max - min)).toFixed(this.props.pointsMapPrecision));
       this.props.pointsMap[positionRatio] = Number(value.toFixed(5));
     } else {
       throw new Error('"pointsMap" is not defined');
     }
+  }
+
+  private checkPointLimits([id, positionRatio]: [string, number]): boolean {
+    if (this.state.selectedPointsLimits) {
+      const { min, max } = this.state.selectedPointsLimits[id];
+      const isInsideLimits = positionRatio >= min && positionRatio <= max;
+      if (isInsideLimits) {
+        return true;
+      }
+      return false;
+    }
+    return true;
   }
 }
 

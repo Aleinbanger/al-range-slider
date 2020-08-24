@@ -1,5 +1,3 @@
-import bind from 'bind-decorator';
-
 import Observable from '../Observable/Observable';
 import WrapperView from './WrapperView/WrapperView';
 import TrackView from './TrackView/TrackView';
@@ -33,10 +31,7 @@ class View extends Observable<IViewState> {
     this.props = {
       cssClass: 'al-range-slider',
     };
-    this.state = {
-      selectedPosition: ['', 0],
-      selectedValue: ['', ''],
-    };
+    this.state = {};
 
     this.wrapper = new WrapperView({
       parent,
@@ -50,19 +45,38 @@ class View extends Observable<IViewState> {
     return JSON.parse(JSON.stringify(this.state));
   }
 
-  public setState({ selectedPosition, selectedValue }: IViewState): void {
-    if (selectedPosition) {
-      this.state.selectedPosition = selectedPosition;
-      const [id, positionRatio] = selectedPosition;
+  public setState(state: IViewState): void {
+    const {
+      currentPosition,
+      currentPositionLimits,
+      currentActiveStatus,
+      currentValue,
+    } = state;
+
+    if (currentPosition) {
+      this.state.currentPosition = currentPosition;
+      const [id, positionRatio] = currentPosition;
       this.knobs[id].setState({ positionRatio });
       if (id === 'from' || id === 'to') {
         this.range.setState({ [id]: positionRatio });
       }
     }
 
-    if (selectedValue) {
-      this.state.selectedValue = selectedValue;
-      const [id, value] = selectedValue;
+    if (currentPositionLimits) {
+      this.state.currentPositionLimits = currentPositionLimits;
+      const [id, positionRatioLimits] = currentPositionLimits;
+      this.knobs[id].setState({ positionRatioLimits });
+    }
+
+    if (currentActiveStatus) {
+      this.state.currentActiveStatus = currentActiveStatus;
+      const [id, active] = currentActiveStatus;
+      this.knobs[id].setState({ active });
+    }
+
+    if (currentValue) {
+      this.state.currentValue = currentValue;
+      const [id, value] = currentValue;
       this.inputs[id].setState({ value });
     }
   }
@@ -93,20 +107,30 @@ class View extends Observable<IViewState> {
       cssClass: `${this.props.cssClass}__knob`,
     });
 
+    const handleKnobActiveStatusChange = (state: IKnobViewState) => {
+      this.handleKnobActiveStatusChange(id, state);
+    };
     const handleKnobPositionChange = (state: IKnobViewState) => {
       this.handleKnobPositionChange(id, state);
     };
+    this.knobs[id].addObserver(handleKnobActiveStatusChange);
     this.knobs[id].addObserver(handleKnobPositionChange);
+  }
+
+  private handleKnobActiveStatusChange(id: string, { active }: IKnobViewState): void {
+    if (active) {
+      this.notifyObservers({ currentActiveStatus: [id, active] });
+    }
   }
 
   private handleKnobPositionChange(id: string, { positionRatio }: IKnobViewState): void {
     if (typeof positionRatio !== 'undefined') {
+      this.notifyObservers({ currentPosition: [id, positionRatio] });
+
       // if (smooth)
       if (id === 'from' || id === 'to') {
         this.range.setState({ [id]: positionRatio });
       }
-
-      this.notifyObservers({ selectedPosition: [id, positionRatio] });
     }
   }
 
@@ -125,7 +149,7 @@ class View extends Observable<IViewState> {
 
   private handleInputValueChange(id: string, { value }: IInputViewState): void {
     if (typeof value !== 'undefined') {
-      this.notifyObservers({ selectedValue: [id, value] });
+      this.notifyObservers({ currentValue: [id, value] });
     }
   }
 }

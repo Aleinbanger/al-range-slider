@@ -17,9 +17,11 @@ class Presenter {
   }
 
   private initialize(): void {
-    this.model.addObserver(this.handleSelectedPointChange);
-    this.view.addObserver(this.handleSelectedPositionChange);
-    this.view.addObserver(this.handleSelectedValueChange);
+    this.view.addObserver(this.handleCurrentActiveStatusChange);
+    this.view.addObserver(this.handleCurrentPositionChange);
+    this.view.addObserver(this.handleCurrentValueChange);
+    this.model.addObserver(this.handleCurrentPointLimitsChange);
+    this.model.addObserver(this.handleCurrentPointChange);
 
     const selectedPoints = this.model.getSelectedPoints();
     selectedPoints.forEach(([id, point]) => {
@@ -29,27 +31,44 @@ class Presenter {
   }
 
   @bind
-  private handleSelectedPointChange({ selectedPoint }: IModelData): void {
-    if (selectedPoint) {
-      const [id, point] = selectedPoint;
+  private handleCurrentActiveStatusChange({ currentActiveStatus }: IViewState): void {
+    if (currentActiveStatus) {
+      const [id, active] = currentActiveStatus;
+      if (active) {
+        this.model.selectPointLimits(id);
+      }
+    }
+  }
+
+  @bind
+  private handleCurrentPositionChange({ currentPosition }: IViewState): void {
+    if (currentPosition) {
+      this.model.selectPointByPosition(currentPosition);
+    }
+  }
+
+  @bind
+  private handleCurrentValueChange({ currentValue }: IViewState): void {
+    if (currentValue) {
+      this.model.selectPointByValue(currentValue);
+    }
+  }
+
+  @bind
+  private handleCurrentPointLimitsChange({ currentPointLimits }: IModelData): void {
+    if (currentPointLimits) {
+      this.view.setState({ currentPositionLimits: currentPointLimits });
+    }
+  }
+
+  @bind
+  private handleCurrentPointChange({ currentPoint }: IModelData): void {
+    if (currentPoint) {
+      const [id, point] = currentPoint;
       this.view.setState({
-        selectedPosition: [id, point[0]],
-        selectedValue: [id, String(point[1])],
+        currentPosition: [id, point[0]],
+        currentValue: [id, String(point[1])],
       });
-    }
-  }
-
-  @bind
-  private handleSelectedPositionChange({ selectedPosition }: IViewState): void {
-    if (selectedPosition) {
-      this.model.selectPointByPosition(selectedPosition);
-    }
-  }
-
-  @bind
-  private handleSelectedValueChange({ selectedValue }: IViewState): void {
-    if (selectedValue) {
-      this.model.selectPointByValue(selectedValue);
     }
   }
 }

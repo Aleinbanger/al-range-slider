@@ -4,7 +4,7 @@ type TPointValue = number | string;
 
 type TPoint = [position: number, value: TPointValue];
 
-type TSelectedPoint = [id: string, point: TPoint];
+type TCurrentPoint = [id: string, point: TPoint];
 
 interface IModelProps {
   type: 'single' | 'double';
@@ -25,15 +25,17 @@ interface IModelProps {
 
 interface IModelState {
   selectedPoints: Record<string, TPoint>;
+  selectedPointsLimits?: Record<string, { min: number; max: number }>;
 }
 
 interface IModelData {
-  selectedPoint?: TSelectedPoint;
+  currentPoint?: TCurrentPoint;
+  currentPointLimits?: [id: string, limits: { min: number; max: number }];
 }
 
 export type {
   TPointValue,
-  TSelectedPoint,
+  TCurrentPoint,
   IModelProps,
   IModelState,
   IModelData,
