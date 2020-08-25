@@ -141,10 +141,23 @@ class View extends Observable<IViewState> {
       cssClass: `${this.props.cssClass}__input`,
     });
 
+    const handleInputActiveStatusChange = (state: IInputViewState) => {
+      this.handleInputActiveStatusChange(id, state);
+    };
     const handleInputValueChange = (state: IInputViewState) => {
       this.handleInputValueChange(id, state);
     };
+    this.inputs[id].addObserver(handleInputActiveStatusChange);
     this.inputs[id].addObserver(handleInputValueChange);
+  }
+
+  private handleInputActiveStatusChange(id: string, { active }: IInputViewState): void {
+    if (active) {
+      this.notifyObservers({ currentActiveStatus: [id, active] });
+      this.setState({ currentActiveStatus: [id, active] });
+    } else {
+      this.setState({ currentActiveStatus: [id, false] });
+    }
   }
 
   private handleInputValueChange(id: string, { value }: IInputViewState): void {

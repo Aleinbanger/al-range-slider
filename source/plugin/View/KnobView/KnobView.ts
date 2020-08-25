@@ -54,7 +54,7 @@ class KnobView extends SubView<IKnobViewState> {
     event.preventDefault();
     this.setReferenceFrame(this.props.parent);
     this.setState({ active: true });
-    this.notifyObservers(this.state);
+    this.notifyObservers({ active: true });
 
     document.addEventListener('mousemove', this.handleDocumentMouseMove);
     document.addEventListener('mouseup', this.handleDocumentMouseUp);

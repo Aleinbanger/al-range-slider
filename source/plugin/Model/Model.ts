@@ -97,7 +97,16 @@ class Model extends Observable<IModelData> {
         this.state.selectedPoints[id][1],
       );
       if (typeof positionRatio !== 'undefined') {
-        this.state.selectedPoints[id][0] = Number(positionRatio);
+        if (this.checkPointLimits([id, Number(positionRatio)])) {
+          this.state.selectedPoints[id][0] = Number(positionRatio);
+        } else if (this.state.selectedPointsLimits) {
+          const { min, max } = this.state.selectedPointsLimits[id];
+          this.state.selectedPoints[id][0] = getClosestNumber(Number(positionRatio), [min, max])
+            ?? min;
+          this.state.selectedPoints[id][1] = this.props.pointsMap[this.state.selectedPoints[id][0]];
+        } else {
+          throw new Error('"selectedPointsLimits" is not defined');
+        }
 
         this.notifyObservers({ currentPoint: [id, this.state.selectedPoints[id]] });
         // move to the bottom

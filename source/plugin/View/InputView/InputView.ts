@@ -9,11 +9,13 @@ interface IInputViewProps extends ISubViewProps {
 
 interface IInputViewState {
   value?: string;
+  active?: boolean;
 }
 
 class InputView extends SubView<IInputViewState, IInputViewProps> {
   protected state: IInputViewState = {
     value: '',
+    active: false,
   };
 
   protected renderMarkup(): HTMLInputElement {
@@ -31,7 +33,21 @@ class InputView extends SubView<IInputViewState, IInputViewProps> {
   }
 
   protected bindEventListeners(): void {
+    this.element.addEventListener('focus', this.handleInputFocus);
+    this.element.addEventListener('blur', this.handleInputBlur);
     this.element.addEventListener('change', this.handleInputChange);
+  }
+
+  @bind
+  private handleInputFocus(): void {
+    this.setState({ active: true });
+    this.notifyObservers({ active: true });
+  }
+
+  @bind
+  private handleInputBlur(): void {
+    this.setState({ active: false });
+    this.notifyObservers({ active: false });
   }
 
   @bind
