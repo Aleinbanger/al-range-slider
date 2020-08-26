@@ -1,3 +1,4 @@
+import { type } from 'jquery';
 import {
   getKeyByValue,
   getClosestNumber,
@@ -31,7 +32,7 @@ class Model extends Observable<IModelData> {
       range: {
         min: -100,
         max: 100,
-        step: 1,
+        step: 20,
       },
     };
 
@@ -53,6 +54,25 @@ class Model extends Observable<IModelData> {
   public getSelectedPoints(): TCurrentPoint[] {
     const entries = Object.entries(this.state.selectedPoints);
     return entries.sort((a, b) => a[1][0] - b[1][0]);
+  }
+
+  public selectPointByUnknownPosition(positionRatio: number): void | never {
+    const selectedPoints = this.getSelectedPoints();
+    const selectedPositions = selectedPoints.map(([, point]) => point[0]);
+    const selectedPointClosest = selectedPoints
+      .find(([, point]) => point[0] === getClosestNumber(positionRatio, selectedPositions));
+    if (selectedPointClosest) {
+      const idClosest = selectedPointClosest[0];
+      const positionClosest = getClosestNumber(positionRatio, this.getAvailablePositions() ?? []);
+      if (typeof positionClosest !== 'undefined') {
+        this.selectPointLimits(idClosest);
+        this.selectPointByPosition([idClosest, positionClosest]);
+      } else {
+        throw new Error('Could not find the closest position'); // improve
+      }
+    } else {
+      throw new Error('Could not find the closest selected point');
+    }
   }
 
   // pointsMap
@@ -121,11 +141,7 @@ class Model extends Observable<IModelData> {
   public selectPointLimits(selectedId: string): void {
     const selectedPoints = this.getSelectedPoints();
     const selectedIndex = selectedPoints.findIndex(([id]) => id === selectedId);
-    let positions: number[] | undefined;
-    if (this.props.pointsMap) {
-      positions = Object.keys(this.props.pointsMap).map((key) => Number(key))
-        .sort((a, b) => a - b);
-    }
+    const positions = this.getAvailablePositions();
 
     let min = 0;
     let newMin = min;
@@ -216,6 +232,14 @@ class Model extends Observable<IModelData> {
     } else {
       throw new Error('"pointsMap" is not defined');
     }
+  }
+
+  private getAvailablePositions(): number[] | undefined {
+    if (this.props.pointsMap) {
+      return Object.keys(this.props.pointsMap).map((key) => Number(key))
+        .sort((a, b) => a - b);
+    }
+    return undefined; // improve?
   }
 
   private checkPointLimits([id, positionRatio]: [string, number]): boolean {

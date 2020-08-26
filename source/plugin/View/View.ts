@@ -1,6 +1,8 @@
+import bind from 'bind-decorator';
+
 import Observable from '../Observable/Observable';
 import WrapperView from './WrapperView/WrapperView';
-import TrackView from './TrackView/TrackView';
+import TrackView, { ITrackViewState } from './TrackView/TrackView';
 import RangeView from './RangeView/RangeView';
 import KnobView, { IKnobViewState } from './KnobView/KnobView';
 import InputView, { IInputViewState } from './InputView/InputView';
@@ -92,6 +94,8 @@ class View extends Observable<IViewState> {
       cssClass: `${this.props.cssClass}__track`,
     });
 
+    this.track.addObserver(this.handleTrackPositionChange);
+
     this.range = new RangeView({
       parent: this.track.element,
       cssClass: `${this.props.cssClass}__range`,
@@ -99,6 +103,13 @@ class View extends Observable<IViewState> {
 
     this.knobs = {};
     this.inputs = {};
+  }
+
+  @bind
+  private handleTrackPositionChange({ positionRatio }: ITrackViewState): void {
+    if (typeof positionRatio !== 'undefined') {
+      this.notifyObservers({ unknownPosition: positionRatio });
+    }
   }
 
   private addKnob(id: string): void {

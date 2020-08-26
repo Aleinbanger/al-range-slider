@@ -20,6 +20,7 @@ class Presenter {
     this.view.addObserver(this.handleCurrentActiveStatusChange);
     this.view.addObserver(this.handleCurrentPositionChange);
     this.view.addObserver(this.handleCurrentValueChange);
+    this.view.addObserver(this.handleUnknownPositionChange);
     this.model.addObserver(this.handleCurrentPointLimitsChange);
     this.model.addObserver(this.handleCurrentPointChange);
 
@@ -51,6 +52,13 @@ class Presenter {
   private handleCurrentValueChange({ currentValue }: IViewState): void {
     if (currentValue) {
       this.model.selectPointByValue(currentValue);
+    }
+  }
+
+  @bind
+  private handleUnknownPositionChange({ unknownPosition }: IViewState): void {
+    if (unknownPosition) {
+      this.model.selectPointByUnknownPosition(unknownPosition);
     }
   }
 

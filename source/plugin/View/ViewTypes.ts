@@ -18,6 +18,7 @@ interface IViewState {
   currentPositionLimits?: [id: string, limits: { min: number; max: number }];
   currentActiveStatus?: [id: string, active: boolean];
   currentValue?: [id: string, value: string];
+  unknownPosition?: number;
 }
 
 interface ISubViewProps extends IViewProps {
