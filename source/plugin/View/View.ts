@@ -63,19 +63,16 @@ class View extends Observable<IViewState> {
         this.range.setState({ [id]: positionRatio });
       }
     }
-
     if (currentPositionLimits) {
       this.state.currentPositionLimits = currentPositionLimits;
       const [id, positionRatioLimits] = currentPositionLimits;
       this.knobs[id].setState({ positionRatioLimits });
     }
-
     if (currentActiveStatus) {
       this.state.currentActiveStatus = currentActiveStatus;
       const [id, active] = currentActiveStatus;
       this.knobs[id].setState({ active });
     }
-
     if (currentValue) {
       this.state.currentValue = currentValue;
       const [id, value] = currentValue;
@@ -93,7 +90,6 @@ class View extends Observable<IViewState> {
       parent: this.wrapper.element,
       cssClass: `${this.props.cssClass}__track`,
     });
-
     this.track.addObserver(this.handleTrackPositionChange);
 
     this.range = new RangeView({

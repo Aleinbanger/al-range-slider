@@ -24,9 +24,14 @@ class Presenter {
     this.model.addObserver(this.handleCurrentPointLimitsChange);
     this.model.addObserver(this.handleCurrentPointChange);
 
-    const selectedPoints = this.model.getSelectedPoints();
+    let selectedPoints = this.model.getSelectedPoints();
     selectedPoints.forEach(([id, point]) => {
       this.view.initializePoint(id);
+      this.model.selectPointByValue([id, point[1]]);
+    });
+    selectedPoints = this.model.getSelectedPoints();
+    selectedPoints.forEach(([id, point]) => {
+      this.model.selectPointLimits(id);
       this.model.selectPointByValue([id, point[1]]);
     });
   }

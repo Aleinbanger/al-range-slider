@@ -19,16 +19,21 @@ class TrackView extends SubView<ITrackViewState> {
   protected renderState(): void {}
 
   protected bindEventListeners(): void {
-    this.element.addEventListener('click', this.handleTrackClick);
+    this.element.addEventListener('mousedown', this.handleTrackMouseDown);
   }
 
   @bind
-  private handleTrackClick(event: MouseEvent): void {
-    event.preventDefault();
+  private handleTrackMouseDown(): void {
+    this.element.addEventListener('mouseup', this.handleTrackMouseUp);
+  }
+
+  @bind
+  private handleTrackMouseUp(event: MouseEvent): void {
     this.setReferenceFrame(this.element);
     const positionRatio = this.getRelativeMousePositionRatio(event);
-
     this.notifyObservers({ positionRatio });
+
+    this.element.removeEventListener('mouseup', this.handleTrackMouseUp);
   }
 }
 
