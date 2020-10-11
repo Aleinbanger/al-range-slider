@@ -12,15 +12,18 @@ interface IModelProps {
   showInputs: boolean;
   showGrid: boolean;
   showTooltips: boolean;
+  valuesPrecision: number;
   range?: {
     min: number;
     max: number;
     step: number;
     callback?: (point: number) => number;
+    positionStep?: number;
   };
   valuesArray?: number[] | string[]; // also can be defined from config
   pointsMap?: Record<number, TPointValue>; // also can be defined from config
   pointsMapPrecision?: number;
+  positionsArray?: number[];
 }
 
 interface IModelState {
