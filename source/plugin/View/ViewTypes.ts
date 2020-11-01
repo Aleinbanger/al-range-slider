@@ -9,6 +9,8 @@ type TReferenceFrame = {
   height: number;
 };
 
+type TPointsMap = [position: string, value: number | string][];
+
 interface IViewProps {
   readonly cssClass: string;
 }
@@ -29,6 +31,7 @@ interface ISubViewProps extends IViewProps {
 
 export type {
   TOrientation,
+  TPointsMap,
   IViewProps,
   IViewState,
   ISubViewProps,

@@ -1,10 +1,11 @@
 @import '~shared/styles/variables';
 
 .al-range-slider {
+  position: relative;
   height: 5rem; // temp
 
   &__input {
-    margin-top: 1rem; // temp
+    margin-top: 2rem; // temp
     margin-right: 1rem;
   }
 
@@ -18,12 +19,50 @@
     cursor: pointer;
   }
 
+  &__grid {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    user-select: none;
+  }
+
+  &__grid-tick {
+    position: absolute;
+    transform: translateX(-50%);
+    display: inline-block;
+    width: 0.05rem;
+    height: 100%;
+    background-color: #808080;
+
+    &:first-child {
+      background-color: initial;
+    }
+
+    &:last-child {
+      background-color: initial;
+    }
+  }
+
+  &__grid-mark {
+    position: absolute;
+    top: 150%;
+    transform: translateX(-50%);
+
+    &:hover {
+      opacity: 0.75;
+    }
+
+    &_hidden {
+      display: none;
+    }
+  }
+
   &__knob {
     position: absolute;
     left: 0%;
     top: 50%;
     transform: translate(-50%, -50%);
-    z-index: 1;
+    z-index: 2;
     width: 2rem;
     height: 2rem;
     background: #F00;
@@ -45,6 +84,7 @@
     position: absolute;
     left: 0%;
     width: 0%;
+    z-index: 1;
     height: 100%;
     background: #F00;
     border-radius: 1rem;

@@ -41,11 +41,15 @@ abstract class SubView<
     this.props.orientation = orientation;
   }
 
-  protected abstract renderMarkup(): HTMLElement;
-
   protected abstract renderState(state?: TState): void;
 
   protected abstract bindEventListeners(): void;
+
+  protected renderMarkup(): HTMLElement {
+    const element = document.createElement('div');
+    element.setAttribute('class', `${this.props.cssClass} js-${this.props.cssClass}`);
+    return element;
+  }
 
   protected setReferenceFrame(reference: HTMLElement): void | never {
     const rect = reference.getBoundingClientRect();

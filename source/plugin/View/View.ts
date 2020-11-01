@@ -3,11 +3,13 @@ import bind from 'bind-decorator';
 import Observable from '../Observable/Observable';
 import WrapperView from './WrapperView/WrapperView';
 import TrackView, { ITrackViewState } from './TrackView/TrackView';
+import GridView, { IGridViewState } from './GridView/GridView';
 import RangeView from './RangeView/RangeView';
 import KnobView, { IKnobViewState } from './KnobView/KnobView';
 import InputView, { IInputViewState } from './InputView/InputView';
 import {
   TOrientation,
+  TPointsMap,
   IViewProps,
   IViewState,
 } from './ViewTypes';
@@ -21,6 +23,8 @@ class View extends Observable<IViewState> {
   private wrapper: WrapperView;
 
   private track!: TrackView;
+
+  private grid!: GridView;
 
   private range!: RangeView;
 
@@ -80,6 +84,21 @@ class View extends Observable<IViewState> {
     }
   }
 
+  public initializeGrid(
+    { pointsMap, minTicksGap, marksStep }: {
+      pointsMap: TPointsMap; minTicksGap: number; marksStep: number;
+    },
+  ): void {
+    this.grid = new GridView({
+      parent: this.track.element,
+      cssClass: `${this.props.cssClass}__grid`,
+      pointsMap,
+      minTicksGap,
+      marksStep,
+    });
+    this.grid.addObserver(this.handleGridPositionChange);
+  }
+
   public initializePoint(id: string): void {
     this.addKnob(id);
     this.addInput(id);
@@ -99,6 +118,13 @@ class View extends Observable<IViewState> {
 
     this.knobs = {};
     this.inputs = {};
+  }
+
+  @bind
+  private handleGridPositionChange({ positionRatio }: IGridViewState): void {
+    if (typeof positionRatio !== 'undefined') {
+      this.notifyObservers({ unknownPosition: positionRatio });
+    }
   }
 
   @bind

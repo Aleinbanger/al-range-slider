@@ -29,11 +29,11 @@ class Model extends Observable<IModelData> {
       showTooltips: false,
       valuesPrecision: 6,
       range: {
-        min: -105.5,
-        max: 200.75,
-        step: 1.16,
+        min: -100,
+        max: 101,
+        step: 1.17,
       },
-      // valuesArray: [0, 1, 5, 10, 13, 34, 55, 13, 53, 66, 87, 200, 100],
+      // valuesArray: [0, 1, 13, 34, 55, 13, 53, 66, 87, 200, 100],
       // valuesArray: ['qwe', 'asd', 'zxc', 'qaz', 'wsx', 'edc'],
     };
 
@@ -56,6 +56,14 @@ class Model extends Observable<IModelData> {
   public getSelectedPoints(): TCurrentPoint[] {
     const entries = Object.entries(this.state.selectedPoints);
     return entries.sort((a, b) => a[1][0] - b[1][0]);
+  }
+
+  public getPointsMap(): [position: string, value: TPointValue][] | never {
+    if (this.props.pointsMap) {
+      const entries = Object.entries(this.props.pointsMap);
+      return entries.sort((a, b) => Number(a[0]) - Number(b[0]));
+    }
+    throw new Error('"pointsMap" is not defined');
   }
 
   public selectPointByUnknownPosition(positionRatio: number): void | never {
@@ -207,18 +215,19 @@ class Model extends Observable<IModelData> {
       this.props.range.positionStep = 1 / pointsNumber;
       this.props.valuesArray = [] as number[];
 
-      let actualNumber = pointsNumber;
-      let actualStep = step;
-      if (pointsNumber > 100) {
-        actualNumber = 100;
-        actualStep = step * Math.round(pointsNumber / actualNumber);
+      const maxPointsNumber = 100;
+      let visiblePointsNumber = pointsNumber;
+      let visibleStep = step;
+      if (pointsNumber > maxPointsNumber) {
+        visiblePointsNumber = Math.round(pointsNumber / Math.round(pointsNumber / maxPointsNumber));
+        visibleStep = step * Math.round(pointsNumber / visiblePointsNumber);
       }
-      for (let index = 0; index < actualNumber; index += 1) {
-        const point = index * actualStep + min;
+      for (let index = 0; index < visiblePointsNumber; index += 1) {
+        const point = index * visibleStep + min;
         this.props.valuesArray.push(Number(point.toFixed(this.props.valuesPrecision)));
       }
       this.props.valuesArray.push(Number(max.toFixed(this.props.valuesPrecision)));
-      console.log({ pointsNumber, actualNumber, actualStep });
+      console.log({ pointsNumber, visiblePointsNumber, visibleStep });
     }
   }
 
@@ -234,7 +243,11 @@ class Model extends Observable<IModelData> {
       max = valuesArray[pointsNumber - 1];
     }
     this.props.pointsMap = {};
-    this.props.pointsMapPrecision = pointsNumber <= 10 ? 2 : Math.ceil(Math.log10(pointsNumber));
+    if (this.props.range) {
+      this.props.pointsMapPrecision = 6;
+    } else {
+      this.props.pointsMapPrecision = pointsNumber <= 10 ? 2 : Math.ceil(Math.log10(pointsNumber));
+    }
 
     valuesArray.forEach((value: number | string, index: number) => {
       if (this.props.pointsMap) {

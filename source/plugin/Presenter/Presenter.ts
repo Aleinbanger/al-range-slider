@@ -24,6 +24,9 @@ class Presenter {
     this.model.addObserver(this.handleCurrentPointLimitsChange);
     this.model.addObserver(this.handleCurrentPointChange);
 
+    const pointsMap = this.model.getPointsMap();
+    this.view.initializeGrid({ pointsMap, minTicksGap: 10, marksStep: 5 });
+
     let selectedPoints = this.model.getSelectedPoints();
     selectedPoints.forEach(([id, point]) => {
       this.view.initializePoint(id);
@@ -62,7 +65,7 @@ class Presenter {
 
   @bind
   private handleUnknownPositionChange({ unknownPosition }: IViewState): void {
-    if (unknownPosition) {
+    if (typeof unknownPosition !== 'undefined') {
       this.model.selectPointByUnknownPosition(unknownPosition);
     }
   }
