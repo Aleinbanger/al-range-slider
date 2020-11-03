@@ -8,7 +8,6 @@ import RangeView from './RangeView/RangeView';
 import KnobView, { IKnobViewState } from './KnobView/KnobView';
 import InputView, { IInputViewState } from './InputView/InputView';
 import {
-  TOrientation,
   TPointsMap,
   IViewProps,
   IViewState,
@@ -20,7 +19,7 @@ class View extends Observable<IViewState> {
 
   private state: IViewState;
 
-  private wrapper: WrapperView;
+  private wrapper!: WrapperView;
 
   private track!: TrackView;
 
@@ -32,17 +31,10 @@ class View extends Observable<IViewState> {
 
   private inputs!: Record<string, InputView>;
 
-  constructor(parent: HTMLElement) {
+  constructor(props: IViewProps) {
     super();
-    this.props = {
-      cssClass: 'al-range-slider',
-    };
+    this.props = props;
     this.state = {};
-
-    this.wrapper = new WrapperView({
-      parent,
-      cssClass: this.props.cssClass,
-    });
 
     this.initialize();
   }
@@ -92,6 +84,7 @@ class View extends Observable<IViewState> {
     this.grid = new GridView({
       parent: this.track.element,
       cssClass: `${this.props.cssClass}__grid`,
+      orientation: this.props.orientation,
       pointsMap,
       minTicksGap,
       marksStep,
@@ -105,15 +98,23 @@ class View extends Observable<IViewState> {
   }
 
   private initialize(): void {
+    this.wrapper = new WrapperView({
+      parent: this.props.parent,
+      cssClass: this.props.cssClass,
+      orientation: this.props.orientation,
+    });
+
     this.track = new TrackView({
       parent: this.wrapper.element,
       cssClass: `${this.props.cssClass}__track`,
+      orientation: this.props.orientation,
     });
     this.track.addObserver(this.handleTrackPositionChange);
 
     this.range = new RangeView({
       parent: this.track.element,
       cssClass: `${this.props.cssClass}__range`,
+      orientation: this.props.orientation,
     });
 
     this.knobs = {};
@@ -138,6 +139,7 @@ class View extends Observable<IViewState> {
     this.knobs[id] = new KnobView({
       parent: this.track.element,
       cssClass: `${this.props.cssClass}__knob`,
+      orientation: this.props.orientation,
     });
 
     const handleKnobActiveStatusChange = (state: IKnobViewState) => {
@@ -172,6 +174,7 @@ class View extends Observable<IViewState> {
       name: id,
       parent: this.wrapper.element,
       cssClass: `${this.props.cssClass}__input`,
+      orientation: this.props.orientation,
     });
 
     const handleInputActiveStatusChange = (state: IInputViewState) => {

@@ -6,7 +6,11 @@ function renderSliders() {
   const blocks = document.querySelectorAll('.js-example-slider');
   blocks.forEach((block) => {
     const model = new Model();
-    const view = new View(block as HTMLElement);
+    const view = new View({
+      parent: block as HTMLElement,
+      cssClass: 'al-range-slider',
+      orientation: 'vertical',
+    });
     const presenter = new Presenter(model, view);
   });
 }

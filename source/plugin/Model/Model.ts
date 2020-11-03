@@ -23,7 +23,6 @@ class Model extends Observable<IModelData> {
     super();
     this.props = {
       type: 'single',
-      orientation: 'horizontal',
       showInputs: true,
       showGrid: false,
       showTooltips: false,

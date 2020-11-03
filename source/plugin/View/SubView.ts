@@ -18,7 +18,6 @@ abstract class SubView<
     this.props.parent.appendChild(this.element);
 
     this.bindEventListeners();
-    this.setOrientation('horizontal');
   }
 
   public getState(): TState {
@@ -37,10 +36,6 @@ abstract class SubView<
     this.renderState(state);
   }
 
-  public setOrientation(orientation: TOrientation): void {
-    this.props.orientation = orientation;
-  }
-
   protected abstract renderState(state?: TState): void;
 
   protected abstract bindEventListeners(): void;
@@ -48,6 +43,11 @@ abstract class SubView<
   protected renderMarkup(): HTMLElement {
     const element = document.createElement('div');
     element.setAttribute('class', `${this.props.cssClass} js-${this.props.cssClass}`);
+    if (this.props.orientation === 'vertical') {
+      element.classList.add(`${this.props.cssClass}_vertical`);
+    } else {
+      element.classList.remove(`${this.props.cssClass}_vertical`);
+    }
     return element;
   }
 
@@ -74,16 +74,11 @@ abstract class SubView<
         height,
       } = this.props.referenceFrame;
 
-      let ratio;
-      switch (this.props.orientation) {
-        case 'horizontal':
-          ratio = (event.clientX - offsetX) / width;
-          break;
-        case 'vertical':
-          ratio = (event.clientY - offsetY) / height;
-          break;
-        default:
-          throw new Error('Invalid "orientation" value');
+      let ratio: number;
+      if (this.props.orientation === 'vertical') {
+        ratio = (event.clientY - offsetY) / height;
+      } else {
+        ratio = (event.clientX - offsetX) / width;
       }
 
       if (ratio < 0) {

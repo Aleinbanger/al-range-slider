@@ -14,6 +14,11 @@ class RangeView extends SubView<IRangeViewState> {
   protected renderMarkup(): HTMLElement {
     const element = document.createElement('span');
     element.setAttribute('class', `${this.props.cssClass} js-${this.props.cssClass}`);
+    if (this.props.orientation === 'vertical') {
+      element.classList.add(`${this.props.cssClass}_vertical`);
+    } else {
+      element.classList.remove(`${this.props.cssClass}_vertical`);
+    }
     return element;
   }
 
@@ -26,8 +31,13 @@ class RangeView extends SubView<IRangeViewState> {
       }
       percentFrom = from * 100;
       percentTo = this.state.to * 100;
-      this.element.style.left = `${percentFrom}%`;
-      this.element.style.width = `${percentTo - percentFrom}%`;
+      if (this.props.orientation === 'vertical') {
+        this.element.style.top = `${percentFrom}%`;
+        this.element.style.height = `${percentTo - percentFrom}%`;
+      } else {
+        this.element.style.left = `${percentFrom}%`;
+        this.element.style.width = `${percentTo - percentFrom}%`;
+      }
     }
     if (typeof to !== 'undefined' && typeof this.state.from !== 'undefined') {
       if (to < 0 || to > 1) {
@@ -35,7 +45,11 @@ class RangeView extends SubView<IRangeViewState> {
       }
       percentFrom = this.state.from * 100;
       percentTo = to * 100;
-      this.element.style.width = `${percentTo - percentFrom}%`;
+      if (this.props.orientation === 'vertical') {
+        this.element.style.height = `${percentTo - percentFrom}%`;
+      } else {
+        this.element.style.width = `${percentTo - percentFrom}%`;
+      }
     }
   }
 

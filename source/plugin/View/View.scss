@@ -2,7 +2,13 @@
 
 .al-range-slider {
   position: relative;
+  width: 100%;
   height: 5rem; // temp
+
+  &_vertical {
+    width: 5rem; // temp
+    height: 100%;
+  }
 
   &__input {
     margin-top: 2rem; // temp
@@ -17,6 +23,11 @@
     border-radius: 1rem;
     user-select: none;
     cursor: pointer;
+
+    &_vertical {
+      width: 1rem;
+      height: 100%;
+    }
   }
 
   &__grid {
@@ -28,7 +39,6 @@
 
   &__grid-tick {
     position: absolute;
-    transform: translateX(-50%);
     display: inline-block;
     width: 0.05rem;
     height: 100%;
@@ -40,6 +50,11 @@
 
     &:last-child {
       background-color: initial;
+    }
+
+    &_vertical {
+      width: 100%;
+      height: 0.05rem;
     }
   }
 
@@ -55,14 +70,20 @@
     &_hidden {
       display: none;
     }
+
+    &_vertical {
+      left: 200%;
+      top: 0%;
+      transform: translateY(-50%);
+    }
   }
 
   &__knob {
     position: absolute;
+    z-index: 2;
     left: 0%;
     top: 50%;
     transform: translate(-50%, -50%);
-    z-index: 2;
     width: 2rem;
     height: 2rem;
     background: #F00;
@@ -78,15 +99,25 @@
     &_active {
       background: rgb(156, 2, 2);
     }
+
+    &_vertical {
+      left: 50%;
+      top: 0%;
+    }
   }
 
   &__range {
     position: absolute;
+    z-index: 1;
     left: 0%;
     width: 0%;
-    z-index: 1;
     height: 100%;
     background: #F00;
     border-radius: 1rem;
+
+    &_vertical {
+      width: 100%;
+      height: 0%;
+    }
   }
 }

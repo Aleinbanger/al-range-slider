@@ -12,7 +12,9 @@ type TReferenceFrame = {
 type TPointsMap = [position: string, value: number | string][];
 
 interface IViewProps {
+  readonly parent: HTMLElement;
   readonly cssClass: string;
+  readonly orientation: TOrientation;
 }
 
 interface IViewState {
@@ -24,8 +26,6 @@ interface IViewState {
 }
 
 interface ISubViewProps extends IViewProps {
-  readonly parent: HTMLElement;
-  orientation?: TOrientation;
   referenceFrame?: TReferenceFrame;
 }
 

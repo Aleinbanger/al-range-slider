@@ -8,7 +8,6 @@ type TCurrentPoint = [id: string, point: TPoint];
 
 interface IModelProps {
   type: 'single' | 'double';
-  orientation: 'horizontal' | 'vertical';
   showInputs: boolean;
   showGrid: boolean;
   showTooltips: boolean;

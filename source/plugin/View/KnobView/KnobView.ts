@@ -24,6 +24,11 @@ class KnobView extends SubView<IKnobViewState> {
   protected renderMarkup(): HTMLElement {
     const element = document.createElement('span');
     element.setAttribute('class', `${this.props.cssClass} js-${this.props.cssClass}`);
+    if (this.props.orientation === 'vertical') {
+      element.classList.add(`${this.props.cssClass}_vertical`);
+    } else {
+      element.classList.remove(`${this.props.cssClass}_vertical`);
+    }
     return element;
   }
 
@@ -33,7 +38,11 @@ class KnobView extends SubView<IKnobViewState> {
         throw new Error('Invalid "positionRatio" value, must be in between 0 and 1');
       }
       const percent = positionRatio * 100;
-      this.element.style.left = `${percent}%`;
+      if (this.props.orientation === 'vertical') {
+        this.element.style.top = `${percent}%`;
+      } else {
+        this.element.style.left = `${percent}%`;
+      }
     }
 
     if (typeof active !== 'undefined') {
