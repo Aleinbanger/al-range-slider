@@ -1,5 +1,5 @@
 import Observable from '../Observable/Observable';
-import { TOrientation, ISubViewProps } from './ViewTypes';
+import { ISubViewProps } from './ViewTypes';
 
 abstract class SubView<
   TState = undefined,

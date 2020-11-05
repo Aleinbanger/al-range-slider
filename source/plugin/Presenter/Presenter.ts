@@ -25,7 +25,7 @@ class Presenter {
     this.model.addObserver(this.handleCurrentPointChange);
 
     const pointsMap = this.model.getPointsMap();
-    this.view.initializeGrid({ pointsMap, minTicksGap: 10, marksStep: 5 });
+    this.view.initializeGrid({ pointsMap, minTicksGap: 20, marksStep: 5 });
 
     let selectedPoints = this.model.getSelectedPoints();
     selectedPoints.forEach(([id, point]) => {
@@ -42,6 +42,7 @@ class Presenter {
   @bind
   private handleCurrentActiveStatusChange({ currentActiveStatus }: IViewState): void {
     if (currentActiveStatus) {
+      this.view.setState({ currentActiveStatus });
       const [id, active] = currentActiveStatus;
       if (active) {
         this.model.selectPointLimits(id);

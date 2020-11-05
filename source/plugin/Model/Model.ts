@@ -40,7 +40,7 @@ class Model extends Observable<IModelData> {
       selectedPoints: {
         from: [0, 0],
         to: [0, 20],
-        asdo: [0, 10],
+        asdo: [0, 30],
       },
       selectedPointsLimits: {},
     };

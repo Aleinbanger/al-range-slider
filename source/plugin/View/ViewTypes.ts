@@ -30,7 +30,6 @@ interface ISubViewProps extends IViewProps {
 }
 
 export type {
-  TOrientation,
   TPointsMap,
   IViewProps,
   IViewState,

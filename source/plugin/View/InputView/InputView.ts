@@ -15,7 +15,6 @@ interface IInputViewState {
 class InputView extends SubView<IInputViewState, IInputViewProps> {
   protected state: IInputViewState = {
     value: '',
-    active: false,
   };
 
   protected renderMarkup(): HTMLInputElement {
@@ -40,13 +39,11 @@ class InputView extends SubView<IInputViewState, IInputViewProps> {
 
   @bind
   private handleInputFocus(): void {
-    this.setState({ active: true });
     this.notifyObservers({ active: true });
   }
 
   @bind
   private handleInputBlur(): void {
-    this.setState({ active: false });
     this.notifyObservers({ active: false });
   }
 

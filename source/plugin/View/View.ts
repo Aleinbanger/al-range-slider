@@ -7,6 +7,7 @@ import GridView, { IGridViewState } from './GridView/GridView';
 import RangeView from './RangeView/RangeView';
 import KnobView, { IKnobViewState } from './KnobView/KnobView';
 import InputView, { IInputViewState } from './InputView/InputView';
+import TooltipView from './TooltipView/TooltipView';
 import {
   TPointsMap,
   IViewProps,
@@ -31,11 +32,12 @@ class View extends Observable<IViewState> {
 
   private inputs!: Record<string, InputView>;
 
+  private tooltips!: Record<string, TooltipView>;
+
   constructor(props: IViewProps) {
     super();
     this.props = props;
     this.state = {};
-
     this.initialize();
   }
 
@@ -68,11 +70,13 @@ class View extends Observable<IViewState> {
       this.state.currentActiveStatus = currentActiveStatus;
       const [id, active] = currentActiveStatus;
       this.knobs[id].setState({ active });
+      this.tooltips[id].setState({ active });
     }
     if (currentValue) {
       this.state.currentValue = currentValue;
       const [id, value] = currentValue;
       this.inputs[id].setState({ value });
+      this.tooltips[id].setState({ value });
     }
   }
 
@@ -94,7 +98,10 @@ class View extends Observable<IViewState> {
 
   public initializePoint(id: string): void {
     this.addKnob(id);
+    // if (showInputs)
     this.addInput(id);
+    // if (showTooltips)
+    this.addTooltip(id);
   }
 
   private initialize(): void {
@@ -119,6 +126,7 @@ class View extends Observable<IViewState> {
 
     this.knobs = {};
     this.inputs = {};
+    this.tooltips = {};
   }
 
   @bind
@@ -153,7 +161,7 @@ class View extends Observable<IViewState> {
   }
 
   private handleKnobActiveStatusChange(id: string, { active }: IKnobViewState): void {
-    if (active) {
+    if (typeof active !== 'undefined') {
       this.notifyObservers({ currentActiveStatus: [id, active] });
     }
   }
@@ -188,11 +196,8 @@ class View extends Observable<IViewState> {
   }
 
   private handleInputActiveStatusChange(id: string, { active }: IInputViewState): void {
-    if (active) {
+    if (typeof active !== 'undefined') {
       this.notifyObservers({ currentActiveStatus: [id, active] });
-      this.setState({ currentActiveStatus: [id, active] });
-    } else {
-      this.setState({ currentActiveStatus: [id, false] });
     }
   }
 
@@ -200,6 +205,14 @@ class View extends Observable<IViewState> {
     if (typeof value !== 'undefined') {
       this.notifyObservers({ currentValue: [id, value] });
     }
+  }
+
+  private addTooltip(id: string): void {
+    this.tooltips[id] = new TooltipView({
+      parent: this.knobs[id].element,
+      cssClass: `${this.props.cssClass}__tooltip`,
+      orientation: this.props.orientation,
+    });
   }
 }
 
