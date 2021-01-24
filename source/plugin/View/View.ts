@@ -1,5 +1,7 @@
 import bind from 'bind-decorator';
 
+import { getClosestNumber } from 'shared/scripts/utils';
+
 import Observable from '../Observable/Observable';
 import WrapperView from './WrapperView/WrapperView';
 import TrackView, { ITrackViewState } from './TrackView/TrackView';
@@ -77,6 +79,8 @@ class View extends Observable<IViewState> {
       const [id, value] = currentValue;
       this.inputs[id].setState({ value });
       this.tooltips[id].setState({ value });
+      // if (collideTooltips)
+      this.collideTooltips(id);
     }
   }
 
@@ -212,6 +216,91 @@ class View extends Observable<IViewState> {
       parent: this.knobs[id].element,
       cssClass: `${this.props.cssClass}__tooltip`,
       orientation: this.props.orientation,
+    });
+  }
+
+  private collideTooltips(currentId: string): void {
+    const tooltips = Object.entries(this.tooltips);
+    const collidedIdsSets: Set<string>[] = [];
+    tooltips.forEach(([tooltipId, tooltip]) => {
+      const rectCurrent = tooltip.element.getBoundingClientRect();
+      const collidedIdsSet = new Set([tooltipId]);
+      tooltips.forEach(([tooltipIdNext, tooltipNext]) => {
+        if (tooltipIdNext !== tooltipId) {
+          const rectNext = tooltipNext.element.getBoundingClientRect();
+          const isCollidingOnRight = rectCurrent.right > rectNext.left
+            && rectCurrent.right < rectNext.right;
+          const isCollidingOnLeft = rectCurrent.left < rectNext.right
+            && rectCurrent.left > rectNext.left;
+          if (isCollidingOnLeft || isCollidingOnRight) {
+            collidedIdsSet.add(tooltipIdNext);
+          }
+        }
+      });
+      collidedIdsSets.push(collidedIdsSet);
+    });
+
+    const mergedCollidedIdsSets: Set<string>[] = [];
+    const usedCollidedIdsSets: Set<string>[] = [];
+    collidedIdsSets.forEach((idsSet) => {
+      if (!usedCollidedIdsSets.some((tmpSet) => tmpSet === idsSet)) {
+        let mergedCollidedIdsSet = new Set([...idsSet]);
+        collidedIdsSets.forEach((idsSetNext) => {
+          if (idsSet !== idsSetNext) {
+            const isIdDuplicated = [...idsSet].some((tmpSet) => idsSetNext.has(tmpSet));
+            if (isIdDuplicated) {
+              mergedCollidedIdsSet = new Set([...mergedCollidedIdsSet, ...idsSetNext]);
+              usedCollidedIdsSets.push(idsSetNext);
+            }
+          }
+        });
+        mergedCollidedIdsSets.push(mergedCollidedIdsSet);
+      }
+    });
+
+    mergedCollidedIdsSets.forEach((idsSet) => {
+      const idsArray = [...idsSet];
+      if (idsArray.length > 1) {
+        let mainId = '';
+        let lastUsedId = idsArray.find((tmpId) => this.tooltips[tmpId].getState().lastUsed) ?? '';
+        if (idsSet.has(currentId)) {
+          mainId = currentId;
+          tooltips.forEach(([, tooltip]) => {
+            if (tooltip.getState().lastUsed) {
+              tooltip.setState({ lastUsed: false });
+            }
+          });
+          this.tooltips[currentId].setState({ lastUsed: true });
+        } else if (idsSet.has(lastUsedId)) {
+          mainId = lastUsedId;
+        } else {
+          const closestPosition = getClosestNumber(
+            this.knobs[currentId].getState().positionRatio ?? 0,
+            idsArray.map((tmpId) => this.knobs[tmpId].getState().positionRatio ?? 0),
+          );
+          lastUsedId = idsArray.find((tmpId) => (
+            this.knobs[tmpId].getState().positionRatio === closestPosition)) ?? '';
+          if (lastUsedId !== '') {
+            mainId = lastUsedId;
+          }
+        }
+        const sortedIdsArray = idsArray.sort((id1, id2) => (
+          (this.knobs[id1].getState().positionRatio ?? 0)
+            - (this.knobs[id2].getState().positionRatio ?? 0)));
+        const value = sortedIdsArray.map((tmpId) => this.inputs[tmpId].getState().value).join('; ');
+        this.tooltips[mainId].setState({ value, hidden: false });
+        idsArray.forEach((tmpId) => {
+          if (tmpId !== mainId) {
+            this.tooltips[tmpId].setState({ hidden: true });
+          }
+        });
+      } else {
+        const tmpId = idsArray[0];
+        this.tooltips[tmpId].setState({
+          value: this.inputs[tmpId].getState().value,
+          hidden: false,
+        });
+      }
     });
   }
 }

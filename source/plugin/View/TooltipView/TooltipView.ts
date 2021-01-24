@@ -1,16 +1,18 @@
-import bind from 'bind-decorator';
-
 import SubView from '../SubView';
 
 interface ITooltipViewState {
   value?: string;
   active?: boolean;
+  hidden?: boolean;
+  lastUsed?: boolean;
 }
 
 class TooltipView extends SubView<ITooltipViewState> {
   protected state: ITooltipViewState = {
     value: '',
     active: false,
+    hidden: false,
+    lastUsed: false,
   };
 
   protected renderMarkup(): HTMLElement {
@@ -24,7 +26,7 @@ class TooltipView extends SubView<ITooltipViewState> {
     return element;
   }
 
-  protected renderState({ value, active }: ITooltipViewState): void {
+  protected renderState({ value, active, hidden }: ITooltipViewState): void {
     if (typeof value !== 'undefined') {
       this.element.textContent = value;
     }
@@ -36,21 +38,18 @@ class TooltipView extends SubView<ITooltipViewState> {
         this.element.classList.remove(`${this.props.cssClass}_active`);
       }
     }
+
+    if (typeof hidden !== 'undefined') {
+      if (hidden) {
+        this.element.classList.add(`${this.props.cssClass}_hidden`);
+      } else {
+        this.element.classList.remove(`${this.props.cssClass}_hidden`);
+      }
+    }
   }
 
-  protected bindEventListeners(): void {
-    // this.element.addEventListener('mousedown', this.handleTooltipMouseDown);
-  }
-
-  // @bind
-  // private handleTooltipMouseDown(): void {
-  //   document.addEventListener('mouseup', this.handleDocumentMouseUp);
-  // }
-
-  // @bind
-  // private handleDocumentMouseUp(): void {
-  //   document.removeEventListener('mouseup', this.handleDocumentMouseUp);
-  // }
+  // eslint-disable-next-line class-methods-use-this
+  protected bindEventListeners(): void {}
 }
 
 export type { ITooltipViewState };

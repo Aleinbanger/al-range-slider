@@ -124,6 +124,7 @@
     top: -100%;
     transform: translate(-50%, -50%);
     display: inline-block;
+    width: max-content;
     padding: 0.5rem;
     background: #F00;
     border: 0.1rem solid #000;
@@ -141,6 +142,10 @@
       left: 150%;
       top: 50%;
       transform: translateY(-50%);
+    }
+
+    &_hidden {
+      visibility: hidden;
     }
   }
 

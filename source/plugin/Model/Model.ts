@@ -38,9 +38,11 @@ class Model extends Observable<IModelData> {
 
     this.state = {
       selectedPoints: {
-        from: [0, 0],
-        to: [0, 20],
-        asdo: [0, 30],
+        from: [0, -50],
+        to: [0, -20],
+        asdo: [0, 10],
+        ass: [0, 30],
+        assd: [0, 31],
       },
       selectedPointsLimits: {},
     };
