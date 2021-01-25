@@ -228,11 +228,21 @@ class View extends Observable<IViewState> {
       tooltips.forEach(([tooltipIdNext, tooltipNext]) => {
         if (tooltipIdNext !== tooltipId) {
           const rectNext = tooltipNext.element.getBoundingClientRect();
-          const isCollidingOnRight = rectCurrent.right > rectNext.left
-            && rectCurrent.right < rectNext.right;
-          const isCollidingOnLeft = rectCurrent.left < rectNext.right
-            && rectCurrent.left > rectNext.left;
-          if (isCollidingOnLeft || isCollidingOnRight) {
+          let isColliding = false;
+          if (this.props.orientation === 'vertical') {
+            const isCollidingOnTop = rectCurrent.top < rectNext.bottom
+              && rectCurrent.top > rectNext.top;
+            const isCollidingOnBottom = rectCurrent.bottom > rectNext.top
+              && rectCurrent.bottom < rectNext.bottom;
+            isColliding = isCollidingOnTop || isCollidingOnBottom;
+          } else {
+            const isCollidingOnLeft = rectCurrent.left < rectNext.right
+              && rectCurrent.left > rectNext.left;
+            const isCollidingOnRight = rectCurrent.right > rectNext.left
+              && rectCurrent.right < rectNext.right;
+            isColliding = isCollidingOnLeft || isCollidingOnRight;
+          }
+          if (isColliding) {
             collidedIdsSet.add(tooltipIdNext);
           }
         }

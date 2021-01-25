@@ -9,7 +9,7 @@ function renderSliders() {
     const view = new View({
       parent: block as HTMLElement,
       cssClass: 'al-range-slider',
-      orientation: 'horizontal',
+      orientation: 'vertical',
     });
     const presenter = new Presenter(model, view);
   });
