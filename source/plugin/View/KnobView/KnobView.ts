@@ -34,10 +34,14 @@ class KnobView extends SubView<IKnobViewState> {
 
   protected renderState({ positionRatio, active }: IKnobViewState): void {
     if (typeof positionRatio !== 'undefined') {
-      if (positionRatio < 0 || positionRatio > 1) {
-        throw new Error('Invalid "positionRatio" value, must be in between 0 and 1');
+      let percent: number;
+      if (positionRatio < 0) {
+        percent = 0;
+      } else if (positionRatio > 1) {
+        percent = 100;
+      } else {
+        percent = positionRatio * 100;
       }
-      const percent = positionRatio * 100;
       if (this.props.orientation === 'vertical') {
         this.element.style.top = `${percent}%`;
       } else {
