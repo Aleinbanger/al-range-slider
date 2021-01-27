@@ -73,14 +73,40 @@ abstract class SubView<
         width,
         height,
       } = this.props.referenceFrame;
-
       let ratio: number;
+
       if (this.props.orientation === 'vertical') {
         ratio = (event.clientY - offsetY) / height;
       } else {
         ratio = (event.clientX - offsetX) / width;
       }
+      if (ratio < 0) {
+        return 0;
+      }
+      if (ratio > 1) {
+        return 1;
+      }
+      return ratio;
+    }
+    throw new Error('Reference frame is not initialized');
+  }
 
+  protected getRelativeTouchPositionRatio(event: TouchEvent): number | never {
+    if (this.props.referenceFrame) {
+      const {
+        offsetX,
+        offsetY,
+        width,
+        height,
+      } = this.props.referenceFrame;
+      const touch = event.touches[0];
+      let ratio: number;
+
+      if (this.props.orientation === 'vertical') {
+        ratio = (touch.clientY - offsetY) / height;
+      } else {
+        ratio = (touch.clientX - offsetX) / width;
+      }
       if (ratio < 0) {
         return 0;
       }

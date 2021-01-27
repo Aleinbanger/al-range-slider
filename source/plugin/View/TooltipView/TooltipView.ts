@@ -30,7 +30,6 @@ class TooltipView extends SubView<ITooltipViewState> {
     if (typeof value !== 'undefined') {
       this.element.textContent = value;
     }
-
     if (typeof active !== 'undefined') {
       if (active) {
         this.element.classList.add(`${this.props.cssClass}_active`);
@@ -38,7 +37,6 @@ class TooltipView extends SubView<ITooltipViewState> {
         this.element.classList.remove(`${this.props.cssClass}_active`);
       }
     }
-
     if (typeof hidden !== 'undefined') {
       if (hidden) {
         this.element.classList.add(`${this.props.cssClass}_hidden`);
