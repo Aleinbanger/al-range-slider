@@ -24,9 +24,24 @@ class Presenter {
     this.model.addObserver(this.handleCurrentPointLimitsChange);
     this.model.addObserver(this.handleCurrentPointChange);
 
+    this.initializeGrid();
+    this.initializeBars();
+    this.initializePoints();
+  }
+
+  private initializeGrid(): void {
     const pointsMap = this.model.getPointsMap();
     this.view.initializeGrid({ pointsMap, minTicksGap: 20, marksStep: 5 });
+  }
 
+  private initializeBars(): void {
+    const selectedPoints = this.model.getSelectedPoints();
+    const selectedIds: string[] = [];
+    selectedPoints.forEach(([id]) => selectedIds.push(id));
+    this.view.initializeBars(selectedIds);
+  }
+
+  private initializePoints(): void {
     let selectedPoints = this.model.getSelectedPoints();
     selectedPoints.forEach(([id, point]) => {
       this.view.initializePoint(id);

@@ -6,8 +6,8 @@ import Observable from '../Observable/Observable';
 import WrapperView from './WrapperView/WrapperView';
 import TrackView, { ITrackViewState } from './TrackView/TrackView';
 import GridView, { IGridViewState } from './GridView/GridView';
-import RangeView from './RangeView/RangeView';
 import KnobView, { IKnobViewState } from './KnobView/KnobView';
+import BarView from './BarView/BarView';
 import InputView, { IInputViewState } from './InputView/InputView';
 import TooltipView from './TooltipView/TooltipView';
 import {
@@ -28,9 +28,9 @@ class View extends Observable<IViewState> {
 
   private grid!: GridView;
 
-  private range!: RangeView;
-
   private knobs!: Record<string, KnobView>;
+
+  private bars!: Record<string, BarView>;
 
   private inputs!: Record<string, InputView>;
 
@@ -59,9 +59,7 @@ class View extends Observable<IViewState> {
       this.state.currentPosition = currentPosition;
       const [id, positionRatio] = currentPosition;
       this.knobs[id].setState({ positionRatio });
-      if (id === 'from' || id === 'to') {
-        this.range.setState({ [id]: positionRatio });
-      }
+      this.updateBar(currentPosition);
     }
     if (currentPositionLimits) {
       this.state.currentPositionLimits = currentPositionLimits;
@@ -100,6 +98,35 @@ class View extends Observable<IViewState> {
     this.grid.addObserver(this.handleGridPositionChange);
   }
 
+  public initializeBars(ids: string[]): void {
+    const usedIds: string[] = [];
+    ids.forEach((id) => {
+      if (!usedIds.some((tmpId) => tmpId === id)) {
+        const fromMatch = id.match(/^(from)(.*)$/i);
+        const toMatch = id.match(/^(to)(.*)$/i);
+        let pairedId = '';
+        let combinedId = '';
+        if (fromMatch) {
+          pairedId = `to${fromMatch[2]}`;
+          combinedId = `${id}${pairedId}`;
+        } else if (toMatch) {
+          pairedId = `from${toMatch[2]}`;
+          combinedId = `${pairedId}${id}`;
+        }
+        if (ids.includes(pairedId)) {
+          usedIds.push(pairedId);
+        }
+        if (combinedId) {
+          this.bars[combinedId] = new BarView({
+            parent: this.track.element,
+            cssClass: `${this.props.cssClass}__bar`,
+            orientation: this.props.orientation,
+          });
+        }
+      }
+    });
+  }
+
   public initializePoint(id: string): void {
     this.addKnob(id);
     // if (showInputs)
@@ -122,13 +149,8 @@ class View extends Observable<IViewState> {
     });
     this.track.addObserver(this.handleTrackPositionChange);
 
-    this.range = new RangeView({
-      parent: this.track.element,
-      cssClass: `${this.props.cssClass}__range`,
-      orientation: this.props.orientation,
-    });
-
     this.knobs = {};
+    this.bars = {};
     this.inputs = {};
     this.tooltips = {};
   }
@@ -175,9 +197,21 @@ class View extends Observable<IViewState> {
       this.notifyObservers({ currentPosition: [id, positionRatio] });
 
       // if (smooth)
-      if (id === 'from' || id === 'to') {
-        this.range.setState({ [id]: positionRatio });
-      }
+      this.updateBar([id, positionRatio]);
+    }
+  }
+
+  private updateBar([id, positionRatio]: [string, number]): void {
+    const fromMatch = id.match(/^(from)(.*)$/i);
+    const toMatch = id.match(/^(to)(.*)$/i);
+    if (fromMatch) {
+      const pairedId = `to${fromMatch[2]}`;
+      const combinedId = `${id}${pairedId}`;
+      this.bars[combinedId].setState({ from: positionRatio });
+    } else if (toMatch) {
+      const pairedId = `from${toMatch[2]}`;
+      const combinedId = `${pairedId}${id}`;
+      this.bars[combinedId].setState({ to: positionRatio });
     }
   }
 
@@ -223,27 +257,27 @@ class View extends Observable<IViewState> {
     const tooltips = Object.entries(this.tooltips);
     const collidedIdsSets: Set<string>[] = [];
     tooltips.forEach(([tooltipId, tooltip]) => {
-      const rectCurrent = tooltip.element.getBoundingClientRect();
+      const currentRect = tooltip.element.getBoundingClientRect();
       const collidedIdsSet = new Set([tooltipId]);
-      tooltips.forEach(([tooltipIdNext, tooltipNext]) => {
-        if (tooltipIdNext !== tooltipId) {
-          const rectNext = tooltipNext.element.getBoundingClientRect();
+      tooltips.forEach(([nextTooltipId, nextTooltip]) => {
+        if (nextTooltipId !== tooltipId) {
+          const nextRect = nextTooltip.element.getBoundingClientRect();
           let isColliding = false;
           if (this.props.orientation === 'vertical') {
-            const isCollidingOnTop = rectCurrent.top < rectNext.bottom
-              && rectCurrent.top > rectNext.top;
-            const isCollidingOnBottom = rectCurrent.bottom > rectNext.top
-              && rectCurrent.bottom < rectNext.bottom;
+            const isCollidingOnTop = currentRect.top < nextRect.bottom
+              && currentRect.top > nextRect.top;
+            const isCollidingOnBottom = currentRect.bottom > nextRect.top
+              && currentRect.bottom < nextRect.bottom;
             isColliding = isCollidingOnTop || isCollidingOnBottom;
           } else {
-            const isCollidingOnLeft = rectCurrent.left < rectNext.right
-              && rectCurrent.left > rectNext.left;
-            const isCollidingOnRight = rectCurrent.right > rectNext.left
-              && rectCurrent.right < rectNext.right;
+            const isCollidingOnLeft = currentRect.left < nextRect.right
+              && currentRect.left > nextRect.left;
+            const isCollidingOnRight = currentRect.right > nextRect.left
+              && currentRect.right < nextRect.right;
             isColliding = isCollidingOnLeft || isCollidingOnRight;
           }
           if (isColliding) {
-            collidedIdsSet.add(tooltipIdNext);
+            collidedIdsSet.add(nextTooltipId);
           }
         }
       });
@@ -255,12 +289,12 @@ class View extends Observable<IViewState> {
     collidedIdsSets.forEach((idsSet) => {
       if (!usedCollidedIdsSets.some((tmpSet) => tmpSet === idsSet)) {
         let mergedCollidedIdsSet = new Set([...idsSet]);
-        collidedIdsSets.forEach((idsSetNext) => {
-          if (idsSet !== idsSetNext) {
-            const isIdDuplicated = [...idsSet].some((tmpSet) => idsSetNext.has(tmpSet));
+        collidedIdsSets.forEach((nextIdsSet) => {
+          if (idsSet !== nextIdsSet) {
+            const isIdDuplicated = [...idsSet].some((tmpSet) => nextIdsSet.has(tmpSet));
             if (isIdDuplicated) {
-              mergedCollidedIdsSet = new Set([...mergedCollidedIdsSet, ...idsSetNext]);
-              usedCollidedIdsSets.push(idsSetNext);
+              mergedCollidedIdsSet = new Set([...mergedCollidedIdsSet, ...nextIdsSet]);
+              usedCollidedIdsSets.push(nextIdsSet);
             }
           }
         });
