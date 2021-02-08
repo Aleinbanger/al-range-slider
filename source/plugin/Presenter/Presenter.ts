@@ -1,18 +1,53 @@
 import bind from 'bind-decorator';
 
-import Model from '../Model/Model';
-import { IModelData } from '../Model/ModelTypes';
 import View from '../View/View';
-import { IViewState } from '../View/ViewTypes';
+import { IViewProps, IViewState } from '../View/ViewTypes';
+import Model from '../Model/Model';
+import { IModelProps, IModelData } from '../Model/ModelTypes';
+
+type TConfig = Omit<IViewProps, 'cssClass'>
+& Omit<IModelProps, 'pointsMapPrecision' | 'positionsArray'>;
 
 class Presenter {
-  private readonly model: Model;
-
   private readonly view: View;
 
-  constructor(model: Model, view: View) {
-    this.model = model;
-    this.view = view;
+  private readonly model: Model;
+
+  constructor(config: TConfig) {
+    const {
+      parent,
+      orientation,
+      grid,
+      showInputs,
+      showTooltips,
+      collideTooltips,
+      collideKnobs,
+      allowSmoothTransition,
+      initialSelectedValues,
+      valuesPrecision,
+      range,
+      valuesArray,
+      pointsMap,
+    } = config;
+
+    this.view = new View({
+      cssClass: 'al-range-slider',
+      parent,
+      orientation,
+      grid,
+      showInputs,
+      showTooltips,
+      collideTooltips,
+      allowSmoothTransition,
+    });
+    this.model = new Model({
+      initialSelectedValues,
+      valuesPrecision,
+      collideKnobs,
+      range,
+      valuesArray,
+      pointsMap,
+    });
     this.initialize();
   }
 
@@ -31,13 +66,12 @@ class Presenter {
 
   private initializeGrid(): void {
     const pointsMap = this.model.getPointsMap();
-    this.view.initializeGrid({ pointsMap, minTicksGap: 20, marksStep: 5 });
+    this.view.initializeGrid(pointsMap);
   }
 
   private initializeBars(): void {
     const selectedPoints = this.model.getSelectedPoints();
-    const selectedIds: string[] = [];
-    selectedPoints.forEach(([id]) => selectedIds.push(id));
+    const selectedIds = selectedPoints.map(([id]) => id);
     this.view.initializeBars(selectedIds);
   }
 
@@ -105,4 +139,5 @@ class Presenter {
   }
 }
 
+export type { TConfig };
 export default Presenter;

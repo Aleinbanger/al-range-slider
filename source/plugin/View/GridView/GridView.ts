@@ -34,10 +34,8 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
           const tick = document.createElement('span');
           tick.setAttribute('class', `${this.props.cssClass}-tick js-${this.props.cssClass}-tick`);
           if (this.props.orientation === 'vertical') {
-            tick.classList.add(`${this.props.cssClass}-tick_vertical`);
             tick.style.top = `${Number(positionRatio) * 100}%`;
           } else {
-            tick.classList.remove(`${this.props.cssClass}-tick_vertical`);
             tick.style.left = `${Number(positionRatio) * 100}%`;
           }
           tick.dataset.position = positionRatio;
@@ -56,11 +54,6 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
         if (typeof newIndex !== 'undefined' && newIndex < this.props.pointsMap.length) {
           const mark = document.createElement('span');
           mark.setAttribute('class', `${this.props.cssClass}-mark js-${this.props.cssClass}-mark`);
-          if (this.props.orientation === 'vertical') {
-            mark.classList.add(`${this.props.cssClass}-mark_vertical`);
-          } else {
-            mark.classList.remove(`${this.props.cssClass}-mark_vertical`);
-          }
           mark.textContent = String(this.props.pointsMap[newIndex][1]);
           marks.push(mark);
           tick.appendChild(mark);

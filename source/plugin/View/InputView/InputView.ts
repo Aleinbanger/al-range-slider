@@ -5,6 +5,7 @@ import { ISubViewProps } from '../ViewTypes';
 
 interface IInputViewProps extends ISubViewProps {
   readonly name: string;
+  readonly hidden: boolean;
 }
 
 interface IInputViewState {
@@ -15,6 +16,7 @@ interface IInputViewState {
 class InputView extends SubView<IInputViewState, IInputViewProps> {
   protected state: IInputViewState = {
     value: '',
+    active: false,
   };
 
   protected renderMarkup(): HTMLInputElement {
@@ -22,6 +24,11 @@ class InputView extends SubView<IInputViewState, IInputViewProps> {
     element.setAttribute('class', `${this.props.cssClass} js-${this.props.cssClass}`);
     element.name = this.props.name;
     element.type = 'text';
+    if (this.props.hidden) {
+      element.classList.add(`${this.props.cssClass}_hidden`);
+    } else {
+      element.classList.remove(`${this.props.cssClass}_hidden`);
+    }
     return element;
   }
 

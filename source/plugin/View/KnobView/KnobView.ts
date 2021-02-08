@@ -1,6 +1,11 @@
 import bind from 'bind-decorator';
 
 import SubView from '../SubView';
+import { ISubViewProps } from '../ViewTypes';
+
+interface IKnobViewProps extends ISubViewProps {
+  readonly allowSmoothTransition: boolean;
+}
 
 interface IKnobViewState {
   positionRatio?: number;
@@ -11,7 +16,7 @@ interface IKnobViewState {
   active?: boolean;
 }
 
-class KnobView extends SubView<IKnobViewState> {
+class KnobView extends SubView<IKnobViewState, IKnobViewProps> {
   protected state: IKnobViewState = {
     positionRatio: 0,
     positionRatioLimits: {
@@ -24,11 +29,6 @@ class KnobView extends SubView<IKnobViewState> {
   protected renderMarkup(): HTMLElement {
     const element = document.createElement('span');
     element.setAttribute('class', `${this.props.cssClass} js-${this.props.cssClass}`);
-    if (this.props.orientation === 'vertical') {
-      element.classList.add(`${this.props.cssClass}_vertical`);
-    } else {
-      element.classList.remove(`${this.props.cssClass}_vertical`);
-    }
     return element;
   }
 
@@ -119,8 +119,9 @@ class KnobView extends SubView<IKnobViewState> {
   private moveKnob(positionRatio: number): void {
     if (this.checkLimits(positionRatio)) {
       this.notifyObservers({ positionRatio });
-      // if (smooth)
-      this.renderState({ positionRatio });
+      if (this.props.allowSmoothTransition) {
+        this.renderState({ positionRatio });
+      }
     }
   }
 

@@ -11,10 +11,22 @@ type TReferenceFrame = {
 
 type TPointsMap = [position: string, value: number | string][];
 
-interface IViewProps {
+interface ICommonViewProps {
   readonly parent: HTMLElement;
   readonly cssClass: string;
   readonly orientation: TOrientation;
+  // readonly theme: '';
+}
+
+interface IViewProps extends ICommonViewProps {
+  readonly grid: {
+    readonly minTicksGap: number;
+    readonly marksStep: number;
+  } | undefined;
+  readonly showInputs: boolean | 'hidden';
+  readonly showTooltips: boolean;
+  readonly collideTooltips: boolean;
+  readonly allowSmoothTransition: boolean;
 }
 
 interface IViewState {
@@ -25,7 +37,7 @@ interface IViewState {
   unknownPosition?: number;
 }
 
-interface ISubViewProps extends IViewProps {
+interface ISubViewProps extends ICommonViewProps {
   referenceFrame?: TReferenceFrame;
 }
 

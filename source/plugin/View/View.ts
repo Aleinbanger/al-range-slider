@@ -32,9 +32,9 @@ class View extends Observable<IViewState> {
 
   private bars!: Record<string, BarView>;
 
-  private inputs!: Record<string, InputView>;
+  private inputs: Record<string, InputView> | undefined;
 
-  private tooltips!: Record<string, TooltipView>;
+  private tooltips: Record<string, TooltipView> | undefined;
 
   constructor(props: IViewProps) {
     super();
@@ -56,49 +56,61 @@ class View extends Observable<IViewState> {
     } = state;
 
     if (currentPosition) {
-      this.state.currentPosition = currentPosition;
       const [id, positionRatio] = currentPosition;
+      this.state.currentPosition = currentPosition;
       this.knobs[id].setState({ positionRatio });
       this.updateBar(currentPosition);
     }
     if (currentPositionLimits) {
-      this.state.currentPositionLimits = currentPositionLimits;
       const [id, positionRatioLimits] = currentPositionLimits;
+      this.state.currentPositionLimits = currentPositionLimits;
       this.knobs[id].setState({ positionRatioLimits });
     }
     if (currentActiveStatus) {
-      this.state.currentActiveStatus = currentActiveStatus;
       const [id, active] = currentActiveStatus;
+      this.state.currentActiveStatus = currentActiveStatus;
       this.knobs[id].setState({ active });
-      this.tooltips[id].setState({ active });
+      if (this.inputs) {
+        this.inputs[id].setState({ active });
+      }
+      if (this.tooltips) {
+        this.tooltips[id].setState({ active });
+      }
     }
     if (currentValue) {
-      this.state.currentValue = currentValue;
       const [id, value] = currentValue;
-      this.inputs[id].setState({ value });
-      this.tooltips[id].setState({ value });
-      // if (collideTooltips)
-      this.collideTooltips(id);
+      this.state.currentValue = currentValue;
+      if (this.inputs) {
+        this.inputs[id].setState({ value });
+      }
+      if (this.tooltips) {
+        this.tooltips[id].setState({ value });
+        this.tooltips[id].setState({ lastValue: value });
+        if (this.props.collideTooltips) {
+          this.collideTooltips(id);
+        }
+      }
     }
   }
 
-  public initializeGrid(
-    { pointsMap, minTicksGap, marksStep }: {
-      pointsMap: TPointsMap; minTicksGap: number; marksStep: number;
-    },
-  ): void {
-    this.grid = new GridView({
-      parent: this.track.element,
-      cssClass: `${this.props.cssClass}__grid`,
-      orientation: this.props.orientation,
-      pointsMap,
-      minTicksGap,
-      marksStep,
-    });
-    this.grid.addObserver(this.handleGridPositionChange);
+  public initializeGrid(pointsMap: TPointsMap): void {
+    const { cssClass, orientation, grid } = this.props;
+    if (grid) {
+      const { minTicksGap, marksStep } = grid;
+      this.grid = new GridView({
+        parent: this.track.element,
+        cssClass: `${cssClass}__grid`,
+        orientation,
+        pointsMap,
+        minTicksGap,
+        marksStep,
+      });
+      this.grid.addObserver(this.handleGridPositionChange);
+    }
   }
 
   public initializeBars(ids: string[]): void {
+    const { cssClass, orientation } = this.props;
     const usedIds: string[] = [];
     ids.forEach((id) => {
       if (!usedIds.some((tmpId) => tmpId === id)) {
@@ -119,8 +131,8 @@ class View extends Observable<IViewState> {
         if (combinedId) {
           this.bars[combinedId] = new BarView({
             parent: this.track.element,
-            cssClass: `${this.props.cssClass}__bar`,
-            orientation: this.props.orientation,
+            cssClass: `${cssClass}__bar`,
+            orientation,
           });
         }
       }
@@ -129,30 +141,30 @@ class View extends Observable<IViewState> {
 
   public initializePoint(id: string): void {
     this.addKnob(id);
-    // if (showInputs)
     this.addInput(id);
-    // if (showTooltips)
     this.addTooltip(id);
   }
 
   private initialize(): void {
-    this.wrapper = new WrapperView({
-      parent: this.props.parent,
-      cssClass: this.props.cssClass,
-      orientation: this.props.orientation,
-    });
-
+    const {
+      parent, cssClass, orientation, showInputs, showTooltips,
+    } = this.props;
+    this.wrapper = new WrapperView({ parent, cssClass, orientation });
     this.track = new TrackView({
       parent: this.wrapper.element,
-      cssClass: `${this.props.cssClass}__track`,
-      orientation: this.props.orientation,
+      cssClass: `${cssClass}__track`,
+      orientation,
     });
     this.track.addObserver(this.handleTrackPositionChange);
 
     this.knobs = {};
     this.bars = {};
-    this.inputs = {};
-    this.tooltips = {};
+    if (showInputs) {
+      this.inputs = {};
+    }
+    if (showTooltips) {
+      this.tooltips = {};
+    }
   }
 
   @bind
@@ -170,10 +182,12 @@ class View extends Observable<IViewState> {
   }
 
   private addKnob(id: string): void {
+    const { cssClass, orientation, allowSmoothTransition } = this.props;
     this.knobs[id] = new KnobView({
       parent: this.track.element,
-      cssClass: `${this.props.cssClass}__knob`,
-      orientation: this.props.orientation,
+      cssClass: `${cssClass}__knob`,
+      orientation,
+      allowSmoothTransition,
     });
 
     const handleKnobActiveStatusChange = (state: IKnobViewState) => {
@@ -195,9 +209,9 @@ class View extends Observable<IViewState> {
   private handleKnobPositionChange(id: string, { positionRatio }: IKnobViewState): void {
     if (typeof positionRatio !== 'undefined') {
       this.notifyObservers({ currentPosition: [id, positionRatio] });
-
-      // if (smooth)
-      this.updateBar([id, positionRatio]);
+      if (this.props.allowSmoothTransition) {
+        this.updateBar([id, positionRatio]);
+      }
     }
   }
 
@@ -216,21 +230,26 @@ class View extends Observable<IViewState> {
   }
 
   private addInput(id: string): void {
-    this.inputs[id] = new InputView({
-      name: id,
-      parent: this.wrapper.element,
-      cssClass: `${this.props.cssClass}__input`,
-      orientation: this.props.orientation,
-    });
+    if (this.inputs) {
+      const { cssClass, orientation, showInputs } = this.props;
+      const hidden = showInputs === 'hidden';
+      this.inputs[id] = new InputView({
+        name: id,
+        parent: this.wrapper.element,
+        cssClass: `${cssClass}__input`,
+        orientation,
+        hidden,
+      });
 
-    const handleInputActiveStatusChange = (state: IInputViewState) => {
-      this.handleInputActiveStatusChange(id, state);
-    };
-    const handleInputValueChange = (state: IInputViewState) => {
-      this.handleInputValueChange(id, state);
-    };
-    this.inputs[id].addObserver(handleInputActiveStatusChange);
-    this.inputs[id].addObserver(handleInputValueChange);
+      const handleInputActiveStatusChange = (state: IInputViewState) => {
+        this.handleInputActiveStatusChange(id, state);
+      };
+      const handleInputValueChange = (state: IInputViewState) => {
+        this.handleInputValueChange(id, state);
+      };
+      this.inputs[id].addObserver(handleInputActiveStatusChange);
+      this.inputs[id].addObserver(handleInputValueChange);
+    }
   }
 
   private handleInputActiveStatusChange(id: string, { active }: IInputViewState): void {
@@ -246,106 +265,111 @@ class View extends Observable<IViewState> {
   }
 
   private addTooltip(id: string): void {
-    this.tooltips[id] = new TooltipView({
-      parent: this.knobs[id].element,
-      cssClass: `${this.props.cssClass}__tooltip`,
-      orientation: this.props.orientation,
-    });
+    if (this.tooltips) {
+      const { cssClass, orientation } = this.props;
+      this.tooltips[id] = new TooltipView({
+        parent: this.knobs[id].element,
+        cssClass: `${cssClass}__tooltip`,
+        orientation,
+      });
+    }
   }
 
   private collideTooltips(currentId: string): void {
-    const tooltips = Object.entries(this.tooltips);
-    const collidedIdsSets: Set<string>[] = [];
-    tooltips.forEach(([tooltipId, tooltip]) => {
-      const currentRect = tooltip.element.getBoundingClientRect();
-      const collidedIdsSet = new Set([tooltipId]);
-      tooltips.forEach(([nextTooltipId, nextTooltip]) => {
-        if (nextTooltipId !== tooltipId) {
-          const nextRect = nextTooltip.element.getBoundingClientRect();
-          let isColliding = false;
-          if (this.props.orientation === 'vertical') {
-            const isCollidingOnTop = currentRect.top < nextRect.bottom
-              && currentRect.top > nextRect.top;
-            const isCollidingOnBottom = currentRect.bottom > nextRect.top
-              && currentRect.bottom < nextRect.bottom;
-            isColliding = isCollidingOnTop || isCollidingOnBottom;
-          } else {
-            const isCollidingOnLeft = currentRect.left < nextRect.right
-              && currentRect.left > nextRect.left;
-            const isCollidingOnRight = currentRect.right > nextRect.left
-              && currentRect.right < nextRect.right;
-            isColliding = isCollidingOnLeft || isCollidingOnRight;
-          }
-          if (isColliding) {
-            collidedIdsSet.add(nextTooltipId);
-          }
-        }
-      });
-      collidedIdsSets.push(collidedIdsSet);
-    });
-
-    const mergedCollidedIdsSets: Set<string>[] = [];
-    const usedCollidedIdsSets: Set<string>[] = [];
-    collidedIdsSets.forEach((idsSet) => {
-      if (!usedCollidedIdsSets.some((tmpSet) => tmpSet === idsSet)) {
-        let mergedCollidedIdsSet = new Set([...idsSet]);
-        collidedIdsSets.forEach((nextIdsSet) => {
-          if (idsSet !== nextIdsSet) {
-            const isIdDuplicated = [...idsSet].some((tmpSet) => nextIdsSet.has(tmpSet));
-            if (isIdDuplicated) {
-              mergedCollidedIdsSet = new Set([...mergedCollidedIdsSet, ...nextIdsSet]);
-              usedCollidedIdsSets.push(nextIdsSet);
+    if (this.tooltips) {
+      const tooltips = Object.entries(this.tooltips);
+      const collidedIdsSets: Set<string>[] = [];
+      tooltips.forEach(([tooltipId, tooltip]) => {
+        const currentRect = tooltip.element.getBoundingClientRect();
+        const collidedIdsSet = new Set([tooltipId]);
+        tooltips.forEach(([nextTooltipId, nextTooltip]) => {
+          if (nextTooltipId !== tooltipId) {
+            const nextRect = nextTooltip.element.getBoundingClientRect();
+            let isColliding = false;
+            if (this.props.orientation === 'vertical') {
+              const isCollidingOnTop = currentRect.top < nextRect.bottom
+                && currentRect.top > nextRect.top;
+              const isCollidingOnBottom = currentRect.bottom > nextRect.top
+                && currentRect.bottom < nextRect.bottom;
+              isColliding = isCollidingOnTop || isCollidingOnBottom;
+            } else {
+              const isCollidingOnLeft = currentRect.left < nextRect.right
+                && currentRect.left > nextRect.left;
+              const isCollidingOnRight = currentRect.right > nextRect.left
+                && currentRect.right < nextRect.right;
+              isColliding = isCollidingOnLeft || isCollidingOnRight;
+            }
+            if (isColliding) {
+              collidedIdsSet.add(nextTooltipId);
             }
           }
         });
-        mergedCollidedIdsSets.push(mergedCollidedIdsSet);
-      }
-    });
+        collidedIdsSets.push(collidedIdsSet);
+      });
 
-    mergedCollidedIdsSets.forEach((idsSet) => {
-      const idsArray = [...idsSet];
-      if (idsArray.length > 1) {
-        let mainId = '';
-        let lastUsedId = idsArray.find((tmpId) => this.tooltips[tmpId].getState().lastUsed) ?? '';
-        if (idsSet.has(currentId)) {
-          mainId = currentId;
-          tooltips.forEach(([, tooltip]) => {
-            if (tooltip.getState().lastUsed) {
-              tooltip.setState({ lastUsed: false });
+      const mergedCollidedIdsSets: Set<string>[] = [];
+      const usedCollidedIdsSets: Set<string>[] = [];
+      collidedIdsSets.forEach((idsSet) => {
+        if (!usedCollidedIdsSets.some((tmpSet) => tmpSet === idsSet)) {
+          let mergedCollidedIdsSet = new Set([...idsSet]);
+          collidedIdsSets.forEach((nextIdsSet) => {
+            if (idsSet !== nextIdsSet) {
+              const isIdDuplicated = [...idsSet].some((tmpSet) => nextIdsSet.has(tmpSet));
+              if (isIdDuplicated) {
+                mergedCollidedIdsSet = new Set([...mergedCollidedIdsSet, ...nextIdsSet]);
+                usedCollidedIdsSets.push(nextIdsSet);
+              }
             }
           });
-          this.tooltips[currentId].setState({ lastUsed: true });
-        } else if (idsSet.has(lastUsedId)) {
-          mainId = lastUsedId;
-        } else {
-          const closestPosition = getClosestNumber(
-            this.knobs[currentId].getState().positionRatio ?? 0,
-            idsArray.map((tmpId) => this.knobs[tmpId].getState().positionRatio ?? 0),
-          );
-          lastUsedId = idsArray.find((tmpId) => (
-            this.knobs[tmpId].getState().positionRatio === closestPosition)) ?? '';
-          if (lastUsedId !== '') {
-            mainId = lastUsedId;
-          }
+          mergedCollidedIdsSets.push(mergedCollidedIdsSet);
         }
-        const sortedIdsArray = idsArray.sort((id1, id2) => (
-          (this.knobs[id1].getState().positionRatio ?? 0)
-            - (this.knobs[id2].getState().positionRatio ?? 0)));
-        const value = sortedIdsArray.map((tmpId) => this.inputs[tmpId].getState().value).join('; ');
-        this.tooltips[mainId].setState({ value, hidden: false });
-        idsArray.forEach((tmpId) => {
-          if (tmpId !== mainId) {
-            this.tooltips[tmpId].setState({ hidden: true });
+      });
+
+      mergedCollidedIdsSets.forEach((idsSet) => {
+        const idsArray = [...idsSet];
+        if (idsArray.length > 1) {
+          let mainId = '';
+          let lastUsedId = idsArray.find((tmpId) => this.tooltips?.[tmpId].getState().lastUsed) ?? '';
+          if (idsSet.has(currentId)) {
+            mainId = currentId;
+            tooltips.forEach(([, tooltip]) => {
+              if (tooltip.getState().lastUsed) {
+                tooltip.setState({ lastUsed: false });
+              }
+            });
+            this.tooltips?.[currentId].setState({ lastUsed: true });
+          } else if (idsSet.has(lastUsedId)) {
+            mainId = lastUsedId;
+          } else {
+            const closestPosition = getClosestNumber(
+              this.knobs[currentId].getState().positionRatio ?? 0,
+              idsArray.map((tmpId) => this.knobs[tmpId].getState().positionRatio ?? 0),
+            );
+            lastUsedId = idsArray.find((tmpId) => (
+              this.knobs[tmpId].getState().positionRatio === closestPosition)) ?? '';
+            if (lastUsedId !== '') {
+              mainId = lastUsedId;
+            }
           }
-        });
-      } else {
-        const tmpId = idsArray[0];
-        this.tooltips[tmpId].setState({
-          value: this.inputs[tmpId].getState().value,
-          hidden: false,
-        });
-      }
-    });
+          const sortedIdsArray = idsArray.sort((id1, id2) => (
+            (this.knobs[id1].getState().positionRatio ?? 0)
+              - (this.knobs[id2].getState().positionRatio ?? 0)));
+          const value = sortedIdsArray.map((tmpId) => this.tooltips?.[tmpId].getState().lastValue).join('; ');
+          this.tooltips?.[mainId].setState({ value, hidden: false });
+          idsArray.forEach((tmpId) => {
+            if (tmpId !== mainId) {
+              this.tooltips?.[tmpId].setState({ hidden: true });
+            }
+          });
+        } else {
+          const tmpId = idsArray[0];
+          this.tooltips?.[tmpId].setState({
+            value: this.tooltips[tmpId].getState().lastValue,
+            hidden: false,
+          });
+        }
+      });
+    }
   }
 }
 

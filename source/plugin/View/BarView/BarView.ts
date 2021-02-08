@@ -14,17 +14,13 @@ class BarView extends SubView<IBarViewState> {
   protected renderMarkup(): HTMLElement {
     const element = document.createElement('span');
     element.setAttribute('class', `${this.props.cssClass} js-${this.props.cssClass}`);
-    if (this.props.orientation === 'vertical') {
-      element.classList.add(`${this.props.cssClass}_vertical`);
-    } else {
-      element.classList.remove(`${this.props.cssClass}_vertical`);
-    }
     return element;
   }
 
   protected renderState({ from, to }: IBarViewState): void {
     let percentFrom: number;
     let percentTo: number;
+    let difference: number;
     if (typeof from !== 'undefined' && typeof this.state.to !== 'undefined') {
       if (from < 0) {
         percentFrom = 0;
@@ -34,12 +30,16 @@ class BarView extends SubView<IBarViewState> {
         percentFrom = from * 100;
       }
       percentTo = this.state.to * 100;
+      difference = percentTo - percentFrom;
+      if (difference < 0) {
+        difference = 0;
+      }
       if (this.props.orientation === 'vertical') {
         this.element.style.top = `${percentFrom}%`;
-        this.element.style.height = `${percentTo - percentFrom}%`;
+        this.element.style.height = `${difference}%`;
       } else {
         this.element.style.left = `${percentFrom}%`;
-        this.element.style.width = `${percentTo - percentFrom}%`;
+        this.element.style.width = `${difference}%`;
       }
     }
     if (typeof to !== 'undefined' && typeof this.state.from !== 'undefined') {
@@ -51,10 +51,14 @@ class BarView extends SubView<IBarViewState> {
         percentTo = to * 100;
       }
       percentFrom = this.state.from * 100;
+      difference = percentTo - percentFrom;
+      if (difference < 0) {
+        difference = 0;
+      }
       if (this.props.orientation === 'vertical') {
-        this.element.style.height = `${percentTo - percentFrom}%`;
+        this.element.style.height = `${difference}%`;
       } else {
-        this.element.style.width = `${percentTo - percentFrom}%`;
+        this.element.style.width = `${difference}%`;
       }
     }
   }

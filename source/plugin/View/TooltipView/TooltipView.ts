@@ -2,6 +2,7 @@ import SubView from '../SubView';
 
 interface ITooltipViewState {
   value?: string;
+  lastValue?: string;
   active?: boolean;
   hidden?: boolean;
   lastUsed?: boolean;
@@ -10,6 +11,7 @@ interface ITooltipViewState {
 class TooltipView extends SubView<ITooltipViewState> {
   protected state: ITooltipViewState = {
     value: '',
+    lastValue: '',
     active: false,
     hidden: false,
     lastUsed: false,
@@ -18,11 +20,6 @@ class TooltipView extends SubView<ITooltipViewState> {
   protected renderMarkup(): HTMLElement {
     const element = document.createElement('span');
     element.setAttribute('class', `${this.props.cssClass} js-${this.props.cssClass}`);
-    if (this.props.orientation === 'vertical') {
-      element.classList.add(`${this.props.cssClass}_vertical`);
-    } else {
-      element.classList.remove(`${this.props.cssClass}_vertical`);
-    }
     return element;
   }
 

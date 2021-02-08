@@ -18,12 +18,12 @@
     border-radius: 1rem;
     user-select: none;
     cursor: pointer;
+  }
 
-    &_vertical {
-      width: 1rem;
-      height: 100%;
-      margin-left: 5rem;
-    }
+  &_vertical &__track {
+    width: 1rem;
+    height: 100%;
+    margin-left: 5rem;
   }
 
   &__grid {
@@ -47,11 +47,11 @@
     &:last-child {
       background-color: initial;
     }
+  }
 
-    &_vertical {
-      width: 100%;
-      height: 0.05rem;
-    }
+  &_vertical &__grid-tick {
+    width: 100%;
+    height: 0.05rem;
   }
 
   &__grid-mark {
@@ -66,12 +66,12 @@
     &_hidden {
       display: none;
     }
+  }
 
-    &_vertical {
-      left: -100%;
-      top: 0%;
-      transform: translate(-100%, -50%);
-    }
+  &_vertical &__grid-mark {
+    left: -100%;
+    top: 0%;
+    transform: translate(-100%, -50%);
   }
 
   &__bar {
@@ -83,11 +83,11 @@
     height: 100%;
     background: #F00;
     border-radius: 1rem;
+  }
 
-    &_vertical {
-      width: 100%;
-      height: 0%;
-    }
+  &_vertical &__bar {
+    width: 100%;
+    height: 0%;
   }
 
   &__knob {
@@ -111,11 +111,11 @@
     &_active {
       background: rgb(156, 2, 2);
     }
+  }
 
-    &_vertical {
-      left: 50%;
-      top: 0%;
-    }
+  &_vertical &__knob {
+    left: 50%;
+    top: 0%;
   }
 
   &__tooltip {
@@ -139,15 +139,15 @@
       background: rgb(156, 2, 2);
     }
 
-    &_vertical {
-      left: 150%;
-      top: 50%;
-      transform: translateY(-50%);
-    }
-
     &_hidden {
       visibility: hidden;
     }
+  }
+
+  &_vertical &__tooltip {
+    left: 150%;
+    top: 50%;
+    transform: translateY(-50%);
   }
 
   &__knob:hover &__tooltip {
@@ -157,5 +157,9 @@
   &__input {
     margin-top: 3rem; // temp
     margin-right: 1rem;
+
+    &_hidden {
+      display: none;
+    }
   }
 }

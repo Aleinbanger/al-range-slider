@@ -16,7 +16,6 @@ abstract class SubView<
     this.props = props;
     this.element = this.renderMarkup();
     this.props.parent.appendChild(this.element);
-
     this.bindEventListeners();
   }
 
@@ -43,11 +42,6 @@ abstract class SubView<
   protected renderMarkup(): HTMLElement {
     const element = document.createElement('div');
     element.setAttribute('class', `${this.props.cssClass} js-${this.props.cssClass}`);
-    if (this.props.orientation === 'vertical') {
-      element.classList.add(`${this.props.cssClass}_vertical`);
-    } else {
-      element.classList.remove(`${this.props.cssClass}_vertical`);
-    }
     return element;
   }
 
