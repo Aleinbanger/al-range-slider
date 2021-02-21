@@ -1,45 +1,69 @@
-import Presenter, { TConfig } from './Presenter/Presenter';
+import Presenter, { IProps } from './Presenter/Presenter';
 
-function renderSliders() {
-  const blocks = document.querySelectorAll('.js-example-slider');
-  blocks.forEach((block) => {
-    const config: TConfig = {
-      parent: block as HTMLElement,
-      orientation: 'vertical',
-      grid: {
-        minTicksGap: 50,
-        marksStep: 1,
-      },
-      showInputs: true,
-      showTooltips: true,
-      collideTooltips: true,
-      collideKnobs: true,
-      allowSmoothTransition: true,
-      initialSelectedValues: {
-        from: -50,
-        to: -20,
-        from1: 0,
-        to2: -70,
-      },
-      valuesPrecision: 6,
-      range: {
-        min: -100,
-        max: 101,
-        step: 2.17,
-      },
-      // valuesArray: [0, 1, 13, 34, 55, 13, 53, 66, 87, 200, 100, 101],
-      // valuesArray: ['qwe', 'asd', 'zxc', 'qaz', 'wsx', 'edc'],
-      // pointsMap: {
-      //   0: 0,
-      //   0.1: 1,
-      //   0.3: 'asd',
-      //   0.5: 50,
-      //   1: 'aasdasd',
-      // },
-    };
-
-    const presenter = new Presenter(config);
-  });
+declare global {
+  interface JQuery {
+    alRangeSlider: {
+      <T extends TMethod>(optionsOrMethod?: TOptions | T, methodArg?: TMethodArg<T>): JQuery;
+      defaults: IProps;
+      methods: typeof methods;
+    }
+  }
 }
 
-export default renderSliders();
+const pluginName = 'alRangeSlider';
+const defaults: IProps = {
+  orientation: 'horizontal',
+  grid: {
+    minTicksGap: 50,
+    marksStep: 1,
+  },
+  showInputs: true,
+  showTooltips: true,
+  collideTooltips: true,
+  collideKnobs: true,
+  allowSmoothTransition: true,
+  initialSelectedValues: {
+    to: 0,
+  },
+  valuesPrecision: 4,
+  range: {
+    min: -100,
+    max: 100,
+    step: 1,
+  },
+};
+const methods = ['update', 'restart', 'destroy'] as const;
+type TOptions = Partial<IProps>;
+type TMethod = typeof methods[number];
+type TMethodArg<T extends TMethod> = Parameters<InstanceType<typeof Presenter>[T]>[number];
+type TMethodFunc<T extends TMethod> = (arg: TMethodArg<T>) => void;
+
+function plugin<T extends TMethod>(
+  this: JQuery, optionsOrMethod?: TOptions | T, methodArg?: TMethodArg<T>,
+): JQuery {
+  if (typeof optionsOrMethod === 'undefined' || typeof optionsOrMethod === 'object') {
+    const config = $.extend({}, $.fn[pluginName].defaults, optionsOrMethod);
+    return this.each((_, element) => {
+      if (!$.data(element, pluginName)) {
+        $.data(element, pluginName, new Presenter(element, config));
+      }
+    });
+  }
+  if (methods.includes(optionsOrMethod)) {
+    return this.each((_, element) => {
+      const instance = $.data(element, pluginName);
+      if (instance instanceof Presenter && typeof instance[optionsOrMethod] === 'function') {
+        (instance[optionsOrMethod] as TMethodFunc<T>).call(instance, methodArg);
+      }
+    });
+  }
+  return this;
+}
+
+$.fn[pluginName] = Object.assign(
+  plugin,
+  {
+    defaults,
+    methods,
+  },
+);

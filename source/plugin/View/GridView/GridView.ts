@@ -19,6 +19,12 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
     ticksStep: 1,
   };
 
+  public destroy(): void {
+    super.destroy();
+    window.removeEventListener('load', this.handleWindowLoadAndResize);
+    window.removeEventListener('resize', this.handleWindowLoadAndResize);
+  }
+
   protected renderState({ ticksStep }: IGridViewState): void {
     if (ticksStep) {
       const ceiledGridStep = Math.ceil(Math.abs(ticksStep));
@@ -95,6 +101,7 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
       } else {
         ticksStep = Math.ceil(Math.abs((
           this.props.minTicksGap * this.props.pointsMap.length) / width));
+        // ticksStep = this.props.minTicksGap;
       }
       this.setState({ ticksStep });
       console.log({ ticksStep });

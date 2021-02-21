@@ -15,7 +15,7 @@ interface ICommonViewProps {
   readonly parent: HTMLElement;
   readonly cssClass: string;
   readonly orientation: TOrientation;
-  // readonly theme: '';
+  // readonly theme: string;
 }
 
 interface IViewProps extends ICommonViewProps {

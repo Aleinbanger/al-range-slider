@@ -172,11 +172,14 @@ class Model extends Observable<IModelData> {
   }
 
   private initialize(): void {
-    const initialSelectedValues = Object.entries(this.props.initialSelectedValues);
-    initialSelectedValues.forEach(([id, value]) => {
+    const selectedValues = Object.entries(this.props.initialSelectedValues);
+    selectedValues.forEach(([id, value]) => {
       this.state.selectedPoints[id] = [0, value];
     });
 
+    if (this.props.valuesArray || this.props.pointsMap) {
+      delete this.props.range;
+    }
     if (this.props.range) {
       this.generateValuesArrayFromRange(this.props.range);
     }

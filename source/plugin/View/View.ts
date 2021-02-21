@@ -26,21 +26,39 @@ class View extends Observable<IViewState> {
 
   private track!: TrackView;
 
-  private grid!: GridView;
+  private grid?: GridView;
 
-  private knobs!: Record<string, KnobView>;
+  private knobs?: Record<string, KnobView>;
 
-  private bars!: Record<string, BarView>;
+  private bars?: Record<string, BarView>;
 
-  private inputs: Record<string, InputView> | undefined;
+  private inputs?: Record<string, InputView>;
 
-  private tooltips: Record<string, TooltipView> | undefined;
+  private tooltips?: Record<string, TooltipView>;
 
   constructor(props: IViewProps) {
     super();
     this.props = props;
     this.state = {};
     this.initialize();
+  }
+
+  public destroy(): void {
+    this.wrapper.destroy();
+    this.track.destroy();
+    this.grid?.destroy();
+    if (this.knobs) {
+      Object.values(this.knobs).forEach((knob) => knob.destroy());
+    }
+    if (this.bars) {
+      Object.values(this.bars).forEach((bar) => bar.destroy());
+    }
+    if (this.inputs) {
+      Object.values(this.inputs).forEach((input) => input.destroy());
+    }
+    if (this.tooltips) {
+      Object.values(this.tooltips).forEach((tooltip) => tooltip.destroy());
+    }
   }
 
   public getState(): IViewState {
@@ -58,37 +76,29 @@ class View extends Observable<IViewState> {
     if (currentPosition) {
       const [id, positionRatio] = currentPosition;
       this.state.currentPosition = currentPosition;
-      this.knobs[id].setState({ positionRatio });
+      this.knobs?.[id].setState({ positionRatio });
       this.updateBar(currentPosition);
     }
     if (currentPositionLimits) {
       const [id, positionRatioLimits] = currentPositionLimits;
       this.state.currentPositionLimits = currentPositionLimits;
-      this.knobs[id].setState({ positionRatioLimits });
+      this.knobs?.[id].setState({ positionRatioLimits });
     }
     if (currentActiveStatus) {
       const [id, active] = currentActiveStatus;
       this.state.currentActiveStatus = currentActiveStatus;
-      this.knobs[id].setState({ active });
-      if (this.inputs) {
-        this.inputs[id].setState({ active });
-      }
-      if (this.tooltips) {
-        this.tooltips[id].setState({ active });
-      }
+      this.knobs?.[id].setState({ active });
+      this.inputs?.[id].setState({ active });
+      this.tooltips?.[id].setState({ active });
     }
     if (currentValue) {
       const [id, value] = currentValue;
       this.state.currentValue = currentValue;
-      if (this.inputs) {
-        this.inputs[id].setState({ value });
-      }
-      if (this.tooltips) {
-        this.tooltips[id].setState({ value });
-        this.tooltips[id].setState({ lastValue: value });
-        if (this.props.collideTooltips) {
-          this.collideTooltips(id);
-        }
+      this.inputs?.[id].setState({ value });
+      this.tooltips?.[id].setState({ value });
+      this.tooltips?.[id].setState({ lastValue: value });
+      if (this.props.collideTooltips) {
+        this.collideTooltips(id);
       }
     }
   }
@@ -110,33 +120,35 @@ class View extends Observable<IViewState> {
   }
 
   public initializeBars(ids: string[]): void {
-    const { cssClass, orientation } = this.props;
-    const usedIds: string[] = [];
-    ids.forEach((id) => {
-      if (!usedIds.some((tmpId) => tmpId === id)) {
-        const fromMatch = id.match(/^(from)(.*)$/i);
-        const toMatch = id.match(/^(to)(.*)$/i);
-        let pairedId = '';
-        let combinedId = '';
-        if (fromMatch) {
-          pairedId = `to${fromMatch[2]}`;
-          combinedId = `${id}${pairedId}`;
-        } else if (toMatch) {
-          pairedId = `from${toMatch[2]}`;
-          combinedId = `${pairedId}${id}`;
+    if (this.bars) {
+      const { cssClass, orientation } = this.props;
+      const usedIds: string[] = [];
+      ids.forEach((id) => {
+        if (!usedIds.some((tmpId) => tmpId === id)) {
+          const fromMatch = id.match(/^(from)(.*)$/i);
+          const toMatch = id.match(/^(to)(.*)$/i);
+          let pairedId = '';
+          let combinedId = '';
+          if (fromMatch) {
+            pairedId = `to${fromMatch[2]}`;
+            combinedId = `${id}${pairedId}`;
+          } else if (toMatch) {
+            pairedId = `from${toMatch[2]}`;
+            combinedId = `${pairedId}${id}`;
+          }
+          if (ids.includes(pairedId)) {
+            usedIds.push(pairedId);
+          }
+          if (this.bars && combinedId) {
+            this.bars[combinedId] = new BarView({
+              parent: this.track.element,
+              cssClass: `${cssClass}__bar`,
+              orientation,
+            });
+          }
         }
-        if (ids.includes(pairedId)) {
-          usedIds.push(pairedId);
-        }
-        if (combinedId) {
-          this.bars[combinedId] = new BarView({
-            parent: this.track.element,
-            cssClass: `${cssClass}__bar`,
-            orientation,
-          });
-        }
-      }
-    });
+      });
+    }
   }
 
   public initializePoint(id: string): void {
@@ -182,22 +194,24 @@ class View extends Observable<IViewState> {
   }
 
   private addKnob(id: string): void {
-    const { cssClass, orientation, allowSmoothTransition } = this.props;
-    this.knobs[id] = new KnobView({
-      parent: this.track.element,
-      cssClass: `${cssClass}__knob`,
-      orientation,
-      allowSmoothTransition,
-    });
+    if (this.knobs) {
+      const { cssClass, orientation, allowSmoothTransition } = this.props;
+      this.knobs[id] = new KnobView({
+        parent: this.track.element,
+        cssClass: `${cssClass}__knob`,
+        orientation,
+        allowSmoothTransition,
+      });
 
-    const handleKnobActiveStatusChange = (state: IKnobViewState) => {
-      this.handleKnobActiveStatusChange(id, state);
-    };
-    const handleKnobPositionChange = (state: IKnobViewState) => {
-      this.handleKnobPositionChange(id, state);
-    };
-    this.knobs[id].addObserver(handleKnobActiveStatusChange);
-    this.knobs[id].addObserver(handleKnobPositionChange);
+      const handleKnobActiveStatusChange = (state: IKnobViewState) => {
+        this.handleKnobActiveStatusChange(id, state);
+      };
+      const handleKnobPositionChange = (state: IKnobViewState) => {
+        this.handleKnobPositionChange(id, state);
+      };
+      this.knobs[id].addObserver(handleKnobActiveStatusChange);
+      this.knobs[id].addObserver(handleKnobPositionChange);
+    }
   }
 
   private handleKnobActiveStatusChange(id: string, { active }: IKnobViewState): void {
@@ -216,16 +230,18 @@ class View extends Observable<IViewState> {
   }
 
   private updateBar([id, positionRatio]: [string, number]): void {
-    const fromMatch = id.match(/^(from)(.*)$/i);
-    const toMatch = id.match(/^(to)(.*)$/i);
-    if (fromMatch) {
-      const pairedId = `to${fromMatch[2]}`;
-      const combinedId = `${id}${pairedId}`;
-      this.bars[combinedId].setState({ from: positionRatio });
-    } else if (toMatch) {
-      const pairedId = `from${toMatch[2]}`;
-      const combinedId = `${pairedId}${id}`;
-      this.bars[combinedId].setState({ to: positionRatio });
+    if (this.bars) {
+      const fromMatch = id.match(/^(from)(.*)$/i);
+      const toMatch = id.match(/^(to)(.*)$/i);
+      if (fromMatch) {
+        const pairedId = `to${fromMatch[2]}`;
+        const combinedId = `${id}${pairedId}`;
+        this.bars[combinedId].setState({ from: positionRatio });
+      } else if (toMatch) {
+        const pairedId = `from${toMatch[2]}`;
+        const combinedId = `${pairedId}${id}`;
+        this.bars[combinedId].setState({ to: positionRatio });
+      }
     }
   }
 
@@ -265,7 +281,7 @@ class View extends Observable<IViewState> {
   }
 
   private addTooltip(id: string): void {
-    if (this.tooltips) {
+    if (this.tooltips && this.knobs) {
       const { cssClass, orientation } = this.props;
       this.tooltips[id] = new TooltipView({
         parent: this.knobs[id].element,
@@ -276,7 +292,7 @@ class View extends Observable<IViewState> {
   }
 
   private collideTooltips(currentId: string): void {
-    if (this.tooltips) {
+    if (this.tooltips && this.knobs) {
       const tooltips = Object.entries(this.tooltips);
       const collidedIdsSets: Set<string>[] = [];
       tooltips.forEach(([tooltipId, tooltip]) => {
@@ -342,18 +358,18 @@ class View extends Observable<IViewState> {
             mainId = lastUsedId;
           } else {
             const closestPosition = getClosestNumber(
-              this.knobs[currentId].getState().positionRatio ?? 0,
-              idsArray.map((tmpId) => this.knobs[tmpId].getState().positionRatio ?? 0),
+              this.knobs?.[currentId].getState().positionRatio ?? 0,
+              idsArray.map((tmpId) => this.knobs?.[tmpId].getState().positionRatio ?? 0),
             );
             lastUsedId = idsArray.find((tmpId) => (
-              this.knobs[tmpId].getState().positionRatio === closestPosition)) ?? '';
+              this.knobs?.[tmpId].getState().positionRatio === closestPosition)) ?? '';
             if (lastUsedId !== '') {
               mainId = lastUsedId;
             }
           }
           const sortedIdsArray = idsArray.sort((id1, id2) => (
-            (this.knobs[id1].getState().positionRatio ?? 0)
-              - (this.knobs[id2].getState().positionRatio ?? 0)));
+            (this.knobs?.[id1].getState().positionRatio ?? 0)
+              - (this.knobs?.[id2].getState().positionRatio ?? 0)));
           const value = sortedIdsArray.map((tmpId) => this.tooltips?.[tmpId].getState().lastValue).join('; ');
           this.tooltips?.[mainId].setState({ value, hidden: false });
           idsArray.forEach((tmpId) => {

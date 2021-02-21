@@ -10,10 +10,10 @@ interface IModelProps {
   readonly initialSelectedValues: Record<string, TPointValue>;
   readonly valuesPrecision: number;
   readonly collideKnobs: boolean;
-  readonly range?: {
-    readonly min: number;
-    readonly max: number;
-    readonly step: number;
+  range?: {
+    min: number;
+    max: number;
+    step: number;
     positionStep?: number;
   };
   valuesArray?: number[] | string[];

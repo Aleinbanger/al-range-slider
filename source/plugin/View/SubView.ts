@@ -19,6 +19,10 @@ abstract class SubView<
     this.bindEventListeners();
   }
 
+  public destroy(): void {
+    this.element.remove();
+  }
+
   public getState(): TState {
     return JSON.parse(JSON.stringify(this.state));
   }
