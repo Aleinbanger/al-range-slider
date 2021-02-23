@@ -106,13 +106,13 @@ class View extends Observable<IViewState> {
   public initializeGrid(pointsMap: TPointsMap): void {
     const { cssClass, orientation, grid } = this.props;
     if (grid) {
-      const { minTicksGap, marksStep } = grid;
+      const { minTicksStep, marksStep } = grid;
       this.grid = new GridView({
         parent: this.track.element,
         cssClass: `${cssClass}__grid`,
         orientation,
         pointsMap,
-        minTicksGap,
+        minTicksStep,
         marksStep,
       });
       this.grid.addObserver(this.handleGridPositionChange);

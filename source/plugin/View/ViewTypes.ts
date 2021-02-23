@@ -20,7 +20,7 @@ interface ICommonViewProps {
 
 interface IViewProps extends ICommonViewProps {
   readonly grid: {
-    readonly minTicksGap: number;
+    readonly minTicksStep: number;
     readonly marksStep: number;
   } | undefined;
   readonly showInputs: boolean | 'hidden';

@@ -5,8 +5,9 @@ import { TPointsMap, ISubViewProps } from '../ViewTypes';
 
 interface IGridViewProps extends ISubViewProps {
   readonly pointsMap: TPointsMap;
-  readonly minTicksGap: number;
-  readonly marksStep: number,
+  minTicksStep: number;
+  marksStep: number,
+  minTicksGap?: number;
 }
 
 interface IGridViewState {
@@ -19,24 +20,29 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
     ticksStep: 1,
   };
 
+  private ticks: HTMLElement[] = [];
+
+  private marks: HTMLElement[] = [];
+
+  constructor(props: IGridViewProps) {
+    super(props);
+    this.initialize();
+  }
+
   public destroy(): void {
     super.destroy();
-    window.removeEventListener('load', this.handleWindowLoadAndResize);
-    window.removeEventListener('resize', this.handleWindowLoadAndResize);
+    window.removeEventListener('resize', this.handleWindowResize);
   }
 
   protected renderState({ ticksStep }: IGridViewState): void {
     if (ticksStep) {
-      const ceiledGridStep = Math.ceil(Math.abs(ticksStep));
-      const ticks: HTMLElement[] = [];
-      const marks: HTMLElement[] = [];
-      while (this.element.firstChild) {
-        if (this.element.lastChild) {
-          this.element.removeChild(this.element.lastChild);
-        }
-      }
+      this.ticks.forEach((tick) => tick.remove());
+      this.marks.forEach((mark) => mark.remove());
+      this.ticks = [];
+      this.marks = [];
+      const ceiledTicksStep = Math.ceil(Math.abs(ticksStep));
       this.props.pointsMap.forEach(([positionRatio], index) => {
-        if (index % ceiledGridStep === 0 || index === this.props.pointsMap.length - 1) {
+        if (index % ceiledTicksStep === 0 || index === this.props.pointsMap.length - 1) {
           const tick = document.createElement('span');
           tick.setAttribute('class', `${this.props.cssClass}-tick js-${this.props.cssClass}-tick`);
           if (this.props.orientation === 'vertical') {
@@ -45,67 +51,82 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
             tick.style.left = `${Number(positionRatio) * 100}%`;
           }
           tick.dataset.position = positionRatio;
-          ticks.push(tick);
+          this.ticks.push(tick);
           this.element.appendChild(tick);
         }
       });
-      ticks.forEach((tick, index) => {
+      this.ticks.forEach((tick, index) => {
         let newIndex: number | undefined;
         if (index % this.props.marksStep === 0) {
-          newIndex = index * ticksStep;
+          newIndex = index * ceiledTicksStep;
         }
-        if (index === ticks.length - 1) {
+        if (index === this.ticks.length - 1) {
           newIndex = this.props.pointsMap.length - 1;
         }
         if (typeof newIndex !== 'undefined' && newIndex < this.props.pointsMap.length) {
           const mark = document.createElement('span');
           mark.setAttribute('class', `${this.props.cssClass}-mark js-${this.props.cssClass}-mark`);
           mark.textContent = String(this.props.pointsMap[newIndex][1]);
-          marks.push(mark);
+          this.marks.push(mark);
           tick.appendChild(mark);
         }
       });
-      marks.slice(1, marks.length - 1).forEach((mark, index) => {
-        const rect1 = mark.getBoundingClientRect();
-        const rect2 = marks[index + 2].getBoundingClientRect();
-        let isOverlapping: boolean;
+      for (let index = 0; index < this.marks.length - 2; index += 1) {
+        const rect1 = this.marks[index].getBoundingClientRect();
+        const rect2 = this.marks[index + 1].getBoundingClientRect();
+        const rect3 = this.marks[index + 2].getBoundingClientRect();
+        let isOverlapping = false;
         if (this.props.orientation === 'vertical') {
-          isOverlapping = rect1.bottom > rect2.top;
+          isOverlapping = rect1.bottom > rect2.top || rect2.bottom > rect3.top;
         } else {
-          isOverlapping = rect1.right > rect2.left;
+          isOverlapping = rect1.right > rect2.left || rect2.right > rect3.left;
         }
         if (isOverlapping) {
-          mark.classList.add(`${this.props.cssClass}-mark_hidden`);
+          this.marks[index + 1].classList.add(`${this.props.cssClass}-mark_hidden`);
+          index += 1;
         } else {
-          mark.classList.remove(`${this.props.cssClass}-mark_hidden`);
+          this.marks[index + 1].classList.remove(`${this.props.cssClass}-mark_hidden`);
         }
-      });
+      }
     }
   }
 
   protected bindEventListeners(): void {
-    window.addEventListener('load', this.handleWindowLoadAndResize);
-    window.addEventListener('resize', this.handleWindowLoadAndResize);
+    window.addEventListener('resize', this.handleWindowResize);
     this.element.addEventListener('mousedown', this.handleGridMouseDown);
   }
 
-  @bind
-  private handleWindowLoadAndResize(): void {
+  private initialize(): void {
+    this.props.minTicksStep = Math.ceil(Math.abs(this.props.minTicksStep));
+    this.props.marksStep = Math.ceil(Math.abs(this.props.marksStep));
+    this.setState({ ticksStep: this.props.minTicksStep });
+
+    const marksWidths = this.marks.map((mark) => mark.getBoundingClientRect().width);
+    this.props.minTicksGap = Math.max(...marksWidths) / this.props.marksStep;
+    this.updateState();
+  }
+
+  private updateState() {
+    const { minTicksStep, minTicksGap } = this.props;
+    let ticksStep = minTicksStep;
     this.setReferenceFrame(this.props.parent);
-    if (this.props.referenceFrame) {
+    if (this.props.referenceFrame && minTicksGap) {
       const { width, height } = this.props.referenceFrame;
-      let ticksStep: number;
       if (this.props.orientation === 'vertical') {
-        ticksStep = Math.ceil(Math.abs((
-          this.props.minTicksGap * this.props.pointsMap.length) / height));
+        ticksStep = Math.ceil((minTicksGap * this.props.pointsMap.length) / height);
       } else {
-        ticksStep = Math.ceil(Math.abs((
-          this.props.minTicksGap * this.props.pointsMap.length) / width));
-        // ticksStep = this.props.minTicksGap;
+        ticksStep = Math.ceil((minTicksGap * this.props.pointsMap.length) / width);
       }
-      this.setState({ ticksStep });
-      console.log({ ticksStep });
     }
+    if (ticksStep < minTicksStep) {
+      ticksStep = minTicksStep;
+    }
+    this.setState({ ticksStep });
+  }
+
+  @bind
+  private handleWindowResize(): void {
+    this.updateState();
   }
 
   @bind

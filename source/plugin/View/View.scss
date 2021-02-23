@@ -58,13 +58,14 @@
     position: absolute;
     top: 100%;
     transform: translate(-50%, 50%);
+    padding: 0 0.5rem;
 
     &:hover {
       opacity: 0.75;
     }
 
     &_hidden {
-      display: none;
+      visibility: hidden;
     }
   }
 

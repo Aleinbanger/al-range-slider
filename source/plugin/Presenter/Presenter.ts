@@ -74,7 +74,7 @@ class Presenter {
     const { parent } = this;
     const {
       orientation = 'horizontal',
-      grid = { minTicksGap: 50, marksStep: 1 },
+      grid = { minTicksStep: 1, marksStep: 1 },
       showInputs = true,
       showTooltips = true,
       collideTooltips = true,

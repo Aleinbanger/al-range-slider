@@ -14,7 +14,7 @@ const pluginName = 'alRangeSlider';
 const defaults: IProps = {
   orientation: 'horizontal',
   grid: {
-    minTicksGap: 50,
+    minTicksStep: 1,
     marksStep: 1,
   },
   showInputs: true,
