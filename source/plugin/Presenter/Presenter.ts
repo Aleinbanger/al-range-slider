@@ -36,6 +36,29 @@ class Presenter {
     this.initialize();
   }
 
+  public destroy(): void {
+    this.view?.destroy();
+    delete this.view;
+    delete this.model;
+  }
+
+  public disable(disabled = true): void {
+    this.view?.disable(disabled);
+    if (disabled) {
+      this.removeObservers();
+    } else {
+      this.addObservers();
+    }
+  }
+
+  public restart(props?: IProps): void {
+    if (typeof props === 'object') {
+      this.props = props;
+    }
+    this.destroy();
+    this.initialize();
+  }
+
   public update(data?: IData): void {
     if (data) {
       const { values, positions } = data;
@@ -56,20 +79,6 @@ class Presenter {
     }
   }
 
-  public restart(props?: IProps): void {
-    if (typeof props === 'object') {
-      this.props = props;
-    }
-    this.destroy();
-    this.initialize();
-  }
-
-  public destroy(): void {
-    this.view?.destroy();
-    delete this.view;
-    delete this.model;
-  }
-
   private initialize(): void {
     const { parent } = this;
     const {
@@ -86,7 +95,6 @@ class Presenter {
       valuesArray,
       pointsMap,
     } = this.props;
-
     this.view = new View({
       cssClass: 'al-range-slider',
       parent,
@@ -105,13 +113,7 @@ class Presenter {
       valuesArray,
       pointsMap,
     });
-
-    this.view.addObserver(this.handleCurrentActiveStatusChange);
-    this.view.addObserver(this.handleCurrentPositionChange);
-    this.view.addObserver(this.handleCurrentValueChange);
-    this.view.addObserver(this.handleUnknownPositionChange);
-    this.model.addObserver(this.handleCurrentPointLimitsChange);
-    this.model.addObserver(this.handleCurrentPointChange);
+    this.addObservers();
 
     const selectedValues = Object.entries(initialSelectedValues);
     this.view.initializeGrid(this.model.getPointsMap());
@@ -130,6 +132,24 @@ class Presenter {
       this.updateState();
       this.props.onInit.call(this, this.state);
     }
+  }
+
+  private addObservers(): void {
+    this.view?.addObserver(this.handleCurrentActiveStatusChange);
+    this.view?.addObserver(this.handleCurrentPositionChange);
+    this.view?.addObserver(this.handleCurrentValueChange);
+    this.view?.addObserver(this.handleUnknownPositionChange);
+    this.model?.addObserver(this.handleCurrentPointLimitsChange);
+    this.model?.addObserver(this.handleCurrentPointChange);
+  }
+
+  private removeObservers(): void {
+    this.view?.removeObserver(this.handleCurrentActiveStatusChange);
+    this.view?.removeObserver(this.handleCurrentPositionChange);
+    this.view?.removeObserver(this.handleCurrentValueChange);
+    this.view?.removeObserver(this.handleUnknownPositionChange);
+    this.model?.removeObserver(this.handleCurrentPointLimitsChange);
+    this.model?.removeObserver(this.handleCurrentPointChange);
   }
 
   private updateState(): void {

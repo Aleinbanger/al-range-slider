@@ -19,6 +19,11 @@ class InputView extends SubView<IInputViewState, IInputViewProps> {
     active: false,
   };
 
+  public disable(disabled = true): void {
+    super.disable(disabled);
+    (this.element as HTMLInputElement).disabled = disabled;
+  }
+
   protected renderMarkup(): HTMLInputElement {
     const element = document.createElement('input');
     element.setAttribute('class', `${this.props.cssClass} js-${this.props.cssClass}`);

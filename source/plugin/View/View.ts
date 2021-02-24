@@ -61,6 +61,24 @@ class View extends Observable<IViewState> {
     }
   }
 
+  public disable(disabled = true): void {
+    this.wrapper.disable(disabled);
+    this.track.disable(disabled);
+    this.grid?.disable(disabled);
+    if (this.knobs) {
+      Object.values(this.knobs).forEach((knob) => knob.disable(disabled));
+    }
+    if (this.bars) {
+      Object.values(this.bars).forEach((bar) => bar.disable(disabled));
+    }
+    if (this.inputs) {
+      Object.values(this.inputs).forEach((input) => input.disable(disabled));
+    }
+    if (this.tooltips) {
+      Object.values(this.tooltips).forEach((tooltip) => tooltip.disable(disabled));
+    }
+  }
+
   public getState(): IViewState {
     return JSON.parse(JSON.stringify(this.state));
   }

@@ -32,7 +32,7 @@ const defaults: IProps = {
     step: 1,
   },
 };
-const methods = ['update', 'restart', 'destroy'] as const;
+const methods = ['destroy', 'disable', 'restart', 'update'] as const;
 type TOptions = Partial<IProps>;
 type TMethod = typeof methods[number];
 type TMethodArg<T extends TMethod> = Parameters<InstanceType<typeof Presenter>[T]>[number];

@@ -31,9 +31,11 @@ function renderSliders() {
     onStart: (state) => console.log('start', state),
     onFinish: (state) => console.log('finish', state),
   });
-  // slider.alRangeSlider('update', { positions: { from: 0 } });
-  // slider.alRangeSlider('restart');
+  // slider.alRangeSlider('disable');
+  // slider.alRangeSlider('disable', false);
   // slider.alRangeSlider('destroy');
+  // slider.alRangeSlider('restart');
+  // slider.alRangeSlider('update', { positions: { from: 0 } });
 }
 
 export default renderSliders();

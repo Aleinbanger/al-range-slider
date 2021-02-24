@@ -23,6 +23,14 @@ abstract class SubView<
     this.element.remove();
   }
 
+  public disable(disabled = true): void {
+    if (disabled) {
+      this.element.classList.add(`${this.props.cssClass}_disabled`);
+    } else {
+      this.element.classList.remove(`${this.props.cssClass}_disabled`);
+    }
+  }
+
   public getState(): TState {
     return JSON.parse(JSON.stringify(this.state));
   }

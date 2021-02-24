@@ -10,6 +10,10 @@
     height: 100%;
   }
 
+  &_disabled {
+    pointer-events: none;
+  }
+
   &__track {
     position: relative;
     width: 100%;
@@ -84,6 +88,10 @@
     height: 100%;
     background: #F00;
     border-radius: 1rem;
+
+    &_disabled {
+      background: rgb(209, 198, 198); // temp
+    }
   }
 
   &_vertical &__bar {
@@ -112,6 +120,10 @@
     &_active {
       background: rgb(156, 2, 2);
     }
+
+    &_disabled {
+      background: rgb(209, 198, 198); // temp
+    }
   }
 
   &_vertical &__knob {
@@ -138,6 +150,10 @@
 
     &_active {
       background: rgb(156, 2, 2);
+    }
+
+    &_disabled {
+      background: rgb(209, 198, 198); // temp
     }
 
     &_hidden {

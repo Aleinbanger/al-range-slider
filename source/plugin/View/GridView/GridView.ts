@@ -106,7 +106,7 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
     this.updateState();
   }
 
-  private updateState() {
+  private updateState(): void {
     const { minTicksStep, minTicksGap } = this.props;
     let ticksStep = minTicksStep;
     this.setReferenceFrame(this.props.parent);
