@@ -2,6 +2,8 @@
 
 type TOrientation = 'horizontal' | 'vertical';
 
+type TTheme = 'light' | 'dark';
+
 type TReferenceFrame = {
   offsetX: number;
   offsetY: number;
@@ -15,10 +17,10 @@ interface ICommonViewProps {
   readonly parent: HTMLElement;
   readonly cssClass: string;
   readonly orientation: TOrientation;
-  // readonly theme: string;
 }
 
 interface IViewProps extends ICommonViewProps {
+  readonly theme: TTheme;
   readonly grid: {
     readonly minTicksStep: number;
     readonly marksStep: number;
@@ -42,6 +44,7 @@ interface ISubViewProps extends ICommonViewProps {
 }
 
 export type {
+  TTheme,
   TPointsMap,
   IViewProps,
   IViewState,

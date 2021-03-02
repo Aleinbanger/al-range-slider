@@ -13,6 +13,7 @@ declare global {
 const pluginName = 'alRangeSlider';
 const defaults: IProps = {
   orientation: 'horizontal',
+  theme: 'light',
   grid: {
     minTicksStep: 1,
     marksStep: 1,

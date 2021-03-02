@@ -177,9 +177,11 @@ class View extends Observable<IViewState> {
 
   private initialize(): void {
     const {
-      parent, cssClass, orientation, showInputs, showTooltips,
+      parent, cssClass, orientation, theme, showInputs, showTooltips,
     } = this.props;
-    this.wrapper = new WrapperView({ parent, cssClass, orientation });
+    this.wrapper = new WrapperView({
+      parent, cssClass, orientation, theme,
+    });
     this.track = new TrackView({
       parent: this.wrapper.element,
       cssClass: `${cssClass}__track`,

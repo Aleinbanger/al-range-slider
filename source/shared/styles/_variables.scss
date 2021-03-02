@@ -8,25 +8,42 @@ $font-size_h2: 1.9rem;
 $font-size_h3: 1.2rem;
 $font-size_body: 1.4rem;
 
-$width-container_main: 116rem;
-
 $breakpoint_laptop: 'screen and (max-width: 1024px)';
 $breakpoint_tablet: 'screen and (max-width: 768px)';
-$breakpoint_mobile-l: 'screen and (max-width: 425px)';
-$breakpoint_mobile-m: 'screen and (max-width: 375px)';
-$breakpoint_mobile-s: 'screen and (max-width: 320px)';
+$breakpoint_mobile_l: 'screen and (max-width: 425px)';
+$breakpoint_mobile_m: 'screen and (max-width: 375px)';
+$breakpoint_mobile_s: 'screen and (max-width: 320px)';
 
-$color_back: #FFF;
-$color_main: #1F2041;
-$color_prim: #BC9CFF;
-$color_sec: #6FCF97;
-$color-grad_prim: linear-gradient(180deg, #BC9CFF 0%, #8BA4F9 100%);
-$color-grad_prim-50: linear-gradient(180deg, rgba($color: #BC9CFF, $alpha: 0.5) 0%, rgba($color: #8BA4F9, $alpha: 0.5) 100%);
-$color-grad_prim-25: linear-gradient(180deg, rgba($color: #BC9CFF, $alpha: 0.25) 0%, rgba($color: #8BA4F9, $alpha: 0.25) 100%);
-$color-grad_sec: linear-gradient(180deg, #6FCF97 0%, #66D2EA 100%);
+$color_background: --color_background;
+$color_surface: --color_surface;
+$color_main: --color_main;
+$color_primary: --color_primary;
+$color_primary_light: --color_primary_light;
+$color_primary_dark: --color_primary_dark;
+$color_secondary: --color_secondary;
 
-$color_main-75: rgba($color: $color_main, $alpha: 0.75);
-$color_main-50: rgba($color: $color_main, $alpha: 0.5);
-$color_main-25: rgba($color: $color_main, $alpha: 0.25);
-$color_main-10: rgba($color: $color_main, $alpha: 0.1);
-$color_main-5: rgba($color: $color_main, $alpha: 0.05);
+$theme-map_light: (
+  $color_background: #FFFCF2,
+  $color_surface: #CCC4B8,
+  $color_main: #6C6760,
+  $color_primary: #FF3F00,
+  $color_primary_light: #FFBA08,
+  $color_primary_dark: #D00000,
+  $color_secondary: #252422,
+);
+
+$theme-map_dark: (
+  $color_background: #363030,
+  $color_surface: #0B0B0A,
+  $color_main: #CCC4B8,
+  $color_primary: #FF3F00,
+  $color_primary_light: #FFBA08,
+  $color_primary_dark: #D00000,
+  $color_secondary: #FFFCF2,
+);
+
+$theme-map_disabled: (
+  $color_primary: #CCC5B9,
+  $color_primary_light: #CCC5B9,
+  $color_primary_dark: #CCC5B9,
+);

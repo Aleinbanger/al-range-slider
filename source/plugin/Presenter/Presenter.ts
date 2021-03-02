@@ -83,6 +83,7 @@ class Presenter {
     const { parent } = this;
     const {
       orientation = 'horizontal',
+      theme = 'light',
       grid = { minTicksStep: 1, marksStep: 1 },
       showInputs = true,
       showTooltips = true,
@@ -99,6 +100,7 @@ class Presenter {
       cssClass: 'al-range-slider',
       parent,
       orientation,
+      theme,
       grid,
       showInputs,
       showTooltips,

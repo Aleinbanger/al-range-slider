@@ -69,6 +69,7 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
           mark.textContent = String(this.props.pointsMap[newIndex][1]);
           this.marks.push(mark);
           tick.appendChild(mark);
+          tick.classList.add(`${this.props.cssClass}-tick_long`);
         }
       });
       for (let index = 0; index < this.marks.length - 2; index += 1) {
@@ -101,7 +102,12 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
     this.props.marksStep = Math.ceil(Math.abs(this.props.marksStep));
     this.setState({ ticksStep: this.props.minTicksStep });
 
-    const marksWidths = this.marks.map((mark) => mark.getBoundingClientRect().width);
+    let marksWidths: number[];
+    if (this.props.orientation === 'vertical') {
+      marksWidths = this.marks.map((mark) => mark.getBoundingClientRect().height);
+    } else {
+      marksWidths = this.marks.map((mark) => mark.getBoundingClientRect().width);
+    }
     this.props.minTicksGap = Math.max(...marksWidths) / this.props.marksStep;
     this.updateState();
   }

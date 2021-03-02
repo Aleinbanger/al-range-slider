@@ -1,14 +1,27 @@
 import SubView from '../SubView';
+import { TTheme, ISubViewProps } from '../ViewTypes';
 
-class WrapperView extends SubView {
+interface IWrapperViewProps extends ISubViewProps {
+  readonly theme: TTheme;
+}
+
+class WrapperView extends SubView<undefined, IWrapperViewProps> {
   protected renderMarkup(): HTMLElement {
+    const { cssClass, orientation, theme } = this.props;
     const element = document.createElement('div');
-    element.setAttribute('class', `${this.props.cssClass} js-${this.props.cssClass}`);
-    if (this.props.orientation === 'vertical') {
-      element.classList.add(`${this.props.cssClass}_vertical`);
+    element.setAttribute('class', `${cssClass} js-${cssClass}`);
+
+    if (orientation === 'vertical') {
+      element.classList.add(`${cssClass}_vertical`);
     } else {
-      element.classList.remove(`${this.props.cssClass}_vertical`);
+      element.classList.remove(`${cssClass}_vertical`);
     }
+    if (theme === 'dark') {
+      element.classList.add(`${cssClass}_dark`);
+    } else {
+      element.classList.remove(`${cssClass}_dark`);
+    }
+
     return element;
   }
 

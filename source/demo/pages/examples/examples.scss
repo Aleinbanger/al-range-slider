@@ -1,3 +1,4 @@
+@import '~shared/styles/mixins';
 @import '~shared/styles/variables';
 
 .examples {
@@ -9,7 +10,9 @@
   height: 100%;
   max-width: 1440px;
   margin: auto;
-  padding: 14rem;
+  padding: 5rem 10rem;
+  background: theme-var($color_background);
+  color: theme-var($color_main);
 
   &__item {
     width: 100%;
@@ -19,7 +22,6 @@
 
   &__title {
     margin-bottom: 1.5rem;
-    color: $color_main;
     font-family: $font-family_h3;
     font-size: $font-size_h3;
     line-height: 1.5rem;

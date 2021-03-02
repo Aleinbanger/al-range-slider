@@ -1,182 +1,232 @@
+@import '~shared/styles/mixins';
 @import '~shared/styles/variables';
 
 .al-range-slider {
+  $block: &;
+  $block_vertical: #{&}_vertical;
+  $block_dark: #{&}_dark;
+  $thickness_track: 1.2em;
+  $thickness_tick: 0.05em;
+  $diameter_knob: 2.5em;
+  @include spread-map($theme-map_light);
+
+  box-sizing: border-box;
   position: relative;
+  display: flex;
+  flex-wrap: wrap;
   width: 100%;
-  height: 5rem; // temp
+  margin: 0;
+  padding: 2em;
+  // background: theme-var($color_background); //temp
+  color: theme-var($color_main);
+  font-size: 10px;
 
   &_vertical {
-    width: 5rem; // temp
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-content: flex-start;
     height: 100%;
   }
 
+  &_dark {
+    @include spread-map($theme-map_dark);
+  }
+
   &_disabled {
+    @include spread-map($theme-map_disabled);
+    filter: opacity(0.5);
     pointer-events: none;
   }
 
   &__track {
     position: relative;
+    height: $thickness_track;
     width: 100%;
-    height: 1rem;
-    border: 0.1rem solid #000;
-    border-radius: 1rem;
+    margin: 5em 0;
+    // background: theme-var($color_background); // temp
+    border-radius: 1em;
+    box-shadow: inset 0 0 0.2em 0.1em theme-var($color_surface);
     user-select: none;
     cursor: pointer;
-  }
 
-  &_vertical &__track {
-    width: 1rem;
-    height: 100%;
-    margin-left: 5rem;
+    #{$block_vertical} & {
+      height: 100%;
+      width: $thickness_track;
+      margin: 0 7em 2em;
+    }
   }
 
   &__grid {
     position: relative;
-    width: 100%;
     height: 100%;
+    width: 100%;
+    font-size: 1.2em;
     user-select: none;
   }
 
   &__grid-tick {
     position: absolute;
     display: inline-block;
-    width: 0.05rem;
     height: 100%;
-    background-color: #808080;
+    width: $thickness_tick;
+    background: theme-var($color_surface);
 
-    &:first-child {
-      background-color: initial;
-    }
-
+    &:first-child,
     &:last-child {
-      background-color: initial;
+      background: none;
     }
-  }
 
-  &_vertical &__grid-tick {
-    width: 100%;
-    height: 0.05rem;
+    &_long {
+      height: 200%;
+    }
+
+    #{$block_vertical} & {
+      height: $thickness_tick;
+      width: 100%;
+
+      &_long {
+        width: 200%;
+        transform: translateX(-50%);
+      }
+    }
   }
 
   &__grid-mark {
     position: absolute;
     top: 100%;
     transform: translate(-50%, 50%);
-    padding: 0 0.5rem;
+    display: inline-block;
+    padding: 0 0.5em;
 
     &:hover {
-      opacity: 0.75;
+      color: theme-var($color_secondary);
     }
 
     &_hidden {
       visibility: hidden;
     }
-  }
 
-  &_vertical &__grid-mark {
-    left: -100%;
-    top: 0%;
-    transform: translate(-100%, -50%);
+    #{$block_vertical} & {
+      top: 0%;
+      left: -250%;
+      transform: translateY(-50%);
+      width: 250%;
+      padding: 0.3em 0.5em;
+      text-align: right;
+    }
   }
 
   &__bar {
     position: absolute;
     z-index: 1;
-    left: 0%;
     top: 0%;
-    width: 0%;
+    left: 0%;
     height: 100%;
-    background: #F00;
-    border-radius: 1rem;
+    width: 0%;
+    background: linear-gradient(90deg, theme-var($color_primary_dark), theme-var($color_primary_light));
+    border-radius: 1em;
+    box-shadow: inset 0 0 0.2em theme-var($color_secondary),
+      0 0 0.5em theme-var($color_primary);
 
-    &_disabled {
-      background: rgb(209, 198, 198); // temp
+    #{$block_vertical} & {
+      height: 0%;
+      width: 100%;
+      background: linear-gradient(180deg, theme-var($color_primary_dark), theme-var($color_primary_light));
     }
-  }
 
-  &_vertical &__bar {
-    width: 100%;
-    height: 0%;
+    #{$block_dark} & {
+      box-shadow: inset 0 0 0.2em theme-var($color_surface),
+        0 0 0.5em theme-var($color_primary);
+    }
   }
 
   &__knob {
     position: absolute;
     z-index: 2;
-    left: 0%;
     top: 50%;
+    left: 0%;
     transform: translate(-50%, -50%);
-    width: 2rem;
-    height: 2rem;
-    background: #F00;
-    border: 0.1rem solid #000;
+    height: $diameter_knob;
+    width: $diameter_knob;
+    background: theme-var($color_background);
+    border: 0.5em solid theme-var($color_primary);
     border-radius: 50%;
+    box-shadow: inset 0 0 0.2em 0.1em theme-var($color_surface),
+      0 0 1em theme-var($color_primary);
     user-select: none;
     cursor: pointer;
 
-    &:hover {
-      background: rgb(156, 2, 2);
-    }
-
+    &:hover,
     &_active {
-      background: rgb(156, 2, 2);
+      background: theme-var($color_secondary);
     }
 
-    &_disabled {
-      background: rgb(209, 198, 198); // temp
+    #{$block_vertical} & {
+      top: 0%;
+      left: 50%;
     }
-  }
-
-  &_vertical &__knob {
-    left: 50%;
-    top: 0%;
   }
 
   &__tooltip {
     position: absolute;
     z-index: 3;
+    top: -150%;
     left: 50%;
-    top: -100%;
     transform: translate(-50%, -50%);
     display: inline-block;
     width: max-content;
-    padding: 0.5rem;
-    background: #F00;
-    border: 0.1rem solid #000;
-    border-radius: 0.5rem;
+    padding: 0.5em;
+    background: theme-var($color_background);
+    border-radius: 0.5em;
+    box-shadow: inset 0 0 0.2em 0.1em theme-var($color_surface);
+    font-size: 1.2em;
 
-    &:hover {
-      background: rgb(156, 2, 2);
-    }
-
-    &_active {
-      background: rgb(156, 2, 2);
-    }
-
-    &_disabled {
-      background: rgb(209, 198, 198); // temp
+    &:hover,
+    &_active,
+    #{$block}__knob:hover & {
+      background: theme-var($color_secondary);
+      color: theme-var($color_background);
     }
 
     &_hidden {
       visibility: hidden;
     }
-  }
 
-  &_vertical &__tooltip {
-    left: 150%;
-    top: 50%;
-    transform: translateY(-50%);
-  }
-
-  &__knob:hover &__tooltip {
-    background: rgb(156, 2, 2);
+    #{$block_vertical} & {
+      top: 50%;
+      left: 200%;
+      transform: translateY(-50%);
+    }
   }
 
   &__input {
-    margin-top: 3rem; // temp
-    margin-right: 1rem;
+    flex: 1;
+    height: min-content;
+    width: 100%;
+    min-width: 4em;
+    max-width: 10em;
+    margin: 0.5em;
+    padding: 0.5em 1em;
+    background: inherit;
+    border: 0;
+    border-radius: 1em;
+    box-shadow: inset 0 0 0.2em 0.1em theme-var($color_surface);
+    color: theme-var($color_main);
+    outline: none;
+
+    &:focus,
+    &:hover {
+      box-shadow: inset 0 0 0.2em 0.1em theme-var($color_surface),
+        0 0 0 0.1em theme-var($color_secondary);
+      color: theme-var($color_secondary);
+    }
 
     &_hidden {
       display: none;
+    }
+
+    #{$block_vertical} & {
+      flex: initial;
     }
   }
 }

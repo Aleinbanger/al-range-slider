@@ -1,5 +1,14 @@
+@import './mixins';
 @import './fonts';
 @import './variables';
+
+:root {
+  @include spread-map($theme-map_light);
+}
+
+:root.dark {
+  @include spread-map($theme-map_dark);
+}
 
 * {
   box-sizing: border-box;
@@ -11,20 +20,20 @@ html,
 body {
   width: 100%;
   height: 100%;
-  background: $color_back;
-  color: $color_main;
   font-size: 62.5%; // 1rem = 10px
 
-  @media #{$breakpoint_mobile-l} {
+  @media #{$breakpoint_mobile_l} {
     font-size: 56.25%; // 1rem = 9px
   }
 
-  @media #{$breakpoint_mobile-m} {
+  @media #{$breakpoint_mobile_m} {
     font-size: 50%; // 1rem = 8px
   }
 }
 
 body {
+  background: theme-var($color_background);
+  color: theme-var($color_main);
   font-family: $font-family_body;
   font-size: $font-size_body;
   line-height: 1;
