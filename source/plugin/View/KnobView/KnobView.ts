@@ -14,6 +14,7 @@ interface IKnobViewState {
     max: number;
   };
   active?: boolean;
+  zIndex?: number;
 }
 
 class KnobView extends SubView<IKnobViewState, IKnobViewProps> {
@@ -24,6 +25,7 @@ class KnobView extends SubView<IKnobViewState, IKnobViewProps> {
       max: 1,
     },
     active: false,
+    zIndex: 2,
   };
 
   protected renderMarkup(): HTMLElement {
@@ -32,7 +34,7 @@ class KnobView extends SubView<IKnobViewState, IKnobViewProps> {
     return element;
   }
 
-  protected renderState({ positionRatio, active }: IKnobViewState): void {
+  protected renderState({ positionRatio, active, zIndex }: IKnobViewState): void {
     if (typeof positionRatio !== 'undefined') {
       let percent: number;
       if (positionRatio < 0) {
@@ -54,6 +56,13 @@ class KnobView extends SubView<IKnobViewState, IKnobViewProps> {
       } else {
         this.element.classList.remove(`${this.props.cssClass}_active`);
       }
+    }
+    if (typeof zIndex !== 'undefined') {
+      let newZIndex = Math.ceil(zIndex);
+      if (newZIndex < 2) {
+        newZIndex = 2;
+      }
+      this.element.style.zIndex = String(newZIndex);
     }
   }
 

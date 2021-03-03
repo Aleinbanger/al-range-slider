@@ -108,6 +108,9 @@ class View extends Observable<IViewState> {
       this.knobs?.[id].setState({ active });
       this.inputs?.[id].setState({ active });
       this.tooltips?.[id].setState({ active });
+      if (active) {
+        this.stackKnobs(id);
+      }
     }
     if (currentValue) {
       const [id, value] = currentValue;
@@ -262,6 +265,22 @@ class View extends Observable<IViewState> {
         const combinedId = `${pairedId}${id}`;
         this.bars[combinedId].setState({ to: positionRatio });
       }
+    }
+  }
+
+  private stackKnobs(currentId: string): void {
+    if (this.knobs) {
+      const minZIndex = 2;
+      const newZIndexes: number[] = [];
+      const sortedKnobs = Object.values(this.knobs).sort((knob1, knob2) => (
+        (knob1.getState().zIndex ?? minZIndex) - (knob2.getState().zIndex ?? minZIndex)
+      ));
+      sortedKnobs.forEach((knob, index) => {
+        const zIndex = index + minZIndex;
+        newZIndexes.push(zIndex);
+        knob.setState({ zIndex });
+      });
+      this.knobs[currentId].setState({ zIndex: Math.max(...newZIndexes) + 1 });
     }
   }
 
