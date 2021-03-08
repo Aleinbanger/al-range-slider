@@ -6,11 +6,11 @@
         "useBuiltIns": "usage",
         "corejs": { "version": 3.6 }
         // "targets": {
-        //   "node": "current" // for jest
+        //   "node": "current" // for jest?
         // }
       }
     ],
-    "@babel/typescript"
+    "@babel/preset-typescript"
   ],
   "plugins": [
     ["@babel/plugin-proposal-decorators", { "legacy": true }],

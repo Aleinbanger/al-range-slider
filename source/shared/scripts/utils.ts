@@ -9,8 +9,7 @@ function requireAll(context: __WebpackModuleApi.RequireContext): Record<string, 
   return srcMap;
 }
 
-function getKeyByValue(object: Record<number | string, number | string>, value: number | string):
-string | undefined {
+function getKeyByValue<T>(object: Record<number | string, T>, value: T): string | undefined {
   const keyByValue = Object.keys(object).find((key) => object[key] === value);
   if (typeof keyByValue !== 'undefined') {
     return keyByValue;
@@ -18,7 +17,7 @@ string | undefined {
   return undefined;
 }
 
-function getClosestNumber(number: number, array: (number | string)[]): number | undefined {
+function getClosestNumber(array: (number | string)[], number: number): number | undefined {
   const numbers = array.filter((el) => typeof el === 'number') as number[];
   if (numbers.length > 0) {
     const closestNumber = numbers.reduce((prev, curr) => (

@@ -19,7 +19,12 @@
     "@typescript-eslint",
     "fsd"
   ],
-  "ignorePatterns": ["build/", "node_modules/", "webpack.*.js"],
+  "ignorePatterns": [
+    "build/",
+    "node_modules/",
+    "webpack.*.js",
+    "jest.config.js"
+  ],
   "settings": {
     "import/resolver": {
       "node": {

@@ -50,7 +50,7 @@ class Model extends Observable<IModelData> {
     const selectedPoints = this.getSelectedPoints();
     const selectedPositions = selectedPoints.map(([, point]) => point[0]);
     const closestSelectedPoint = selectedPoints
-      .find(([, point]) => point[0] === getClosestNumber(positionRatio, selectedPositions));
+      .find(([, point]) => point[0] === getClosestNumber(selectedPositions, positionRatio));
 
     if (closestSelectedPoint) {
       const closestId = closestSelectedPoint[0];
@@ -58,7 +58,7 @@ class Model extends Observable<IModelData> {
       if (this.props.range) {
         this.selectPointByPosition([closestId, positionRatio]);
       } else if (this.props.positionsArray) {
-        const closestPosition = getClosestNumber(positionRatio, this.props.positionsArray)
+        const closestPosition = getClosestNumber(this.props.positionsArray, positionRatio)
           ?? positionRatio;
         this.selectPointByPosition([closestId, closestPosition]);
       } else {
@@ -73,7 +73,7 @@ class Model extends Observable<IModelData> {
     if (this.checkPointLimits([id, positionRatio])) {
       if (this.props.range) {
         const tmpValue = this.getValueByPositionRatio(positionRatio, this.props.range);
-        const roundedValue = this.getRoundedValueByStep(tmpValue, this.props.range);
+        const roundedValue = this.getRoundedByStepValue(tmpValue, this.props.range);
         this.state.selectedPoints[id][1] = roundedValue;
         this.state.selectedPoints[id][0] = this.getPositionRatioByValue(
           roundedValue,
@@ -98,13 +98,13 @@ class Model extends Observable<IModelData> {
 
     if (this.props.range) {
       if (isNumeric(value)) {
-        closestValue = this.getRoundedValueByStep(Number(value), this.props.range);
+        closestValue = this.getRoundedByStepValue(Number(value), this.props.range);
         positionRatio = this.getPositionRatioByValue(closestValue, this.props.range);
       }
     } else if (this.props.pointsMap) {
       if (isNumberArray(this.props.valuesArray)) {
         if (isNumeric(value)) {
-          closestValue = getClosestNumber(Number(value), this.props.valuesArray);
+          closestValue = getClosestNumber(this.props.valuesArray, Number(value));
         }
       } else {
         closestValue = value;
@@ -124,13 +124,13 @@ class Model extends Observable<IModelData> {
         this.state.selectedPoints[id][1] = closestValue;
       } else if (this.state.selectedPointsLimits[id]) {
         const { min, max } = this.state.selectedPointsLimits[id];
-        this.state.selectedPoints[id][0] = getClosestNumber(positionRatio, [min, max]) ?? min;
+        this.state.selectedPoints[id][0] = getClosestNumber([min, max], positionRatio) ?? min;
         if (this.props.range) {
           const tmpValue = this.getValueByPositionRatio(
             this.state.selectedPoints[id][0],
             this.props.range,
           );
-          this.state.selectedPoints[id][1] = this.getRoundedValueByStep(tmpValue, this.props.range);
+          this.state.selectedPoints[id][1] = this.getRoundedByStepValue(tmpValue, this.props.range);
         } else if (this.props.pointsMap) {
           this.state.selectedPoints[id][1] = this.props.pointsMap[this.state.selectedPoints[id][0]];
         } else {
@@ -297,7 +297,7 @@ class Model extends Observable<IModelData> {
     return value;
   }
 
-  private getRoundedValueByStep(
+  private getRoundedByStepValue(
     value: number,
     { min, max, step }: { min: number; max: number; step: number },
   ): number {

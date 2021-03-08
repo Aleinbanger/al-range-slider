@@ -397,8 +397,8 @@ class View extends Observable<IViewState> {
             mainId = lastUsedId;
           } else {
             const closestPosition = getClosestNumber(
-              this.knobs?.[currentId].getState().positionRatio ?? 0,
               idsArray.map((tmpId) => this.knobs?.[tmpId].getState().positionRatio ?? 0),
+              this.knobs?.[currentId].getState().positionRatio ?? 0,
             );
             lastUsedId = idsArray.find((tmpId) => (
               this.knobs?.[tmpId].getState().positionRatio === closestPosition)) ?? '';

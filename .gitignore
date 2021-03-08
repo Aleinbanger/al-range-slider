@@ -1,5 +1,6 @@
 .vscode/
 build/
+coverage/
 node_modules/
 source/temp/
 Thumbs.db
