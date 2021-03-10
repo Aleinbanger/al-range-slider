@@ -14,7 +14,6 @@ type TReferenceFrame = {
 type TPointsMap = [position: string, value: number | string][];
 
 interface ICommonViewProps {
-  readonly parent: HTMLElement;
   readonly cssClass: string;
   readonly orientation: TOrientation;
 }

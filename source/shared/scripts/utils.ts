@@ -9,6 +9,27 @@ function requireAll(context: __WebpackModuleApi.RequireContext): Record<string, 
   return srcMap;
 }
 
+function cloneDeep<T>(target: T): T {
+  if (target === null) {
+    return target;
+  }
+  if (target instanceof Date) {
+    return new Date(target.getTime()) as unknown as T;
+  }
+  if (target instanceof Array) {
+    const clone = [...target];
+    return clone.map((value) => cloneDeep(value)) as unknown as T;
+  }
+  if (typeof target === 'object' && target !== {}) {
+    const clone = { ...target } as Record<string | number | symbol, unknown>;
+    Object.keys(clone).forEach((key) => {
+      clone[key] = cloneDeep(clone[key]);
+    });
+    return clone as T;
+  }
+  return target;
+}
+
 function getKeyByValue<T>(object: Record<number | string, T>, value: T): string | undefined {
   const keyByValue = Object.keys(object).find((key) => object[key] === value);
   if (typeof keyByValue !== 'undefined') {
@@ -54,6 +75,7 @@ function isStringArray(value: unknown): value is string[] {
 
 export {
   requireAll,
+  cloneDeep,
   getKeyByValue,
   getClosestNumber,
   isNumeric,

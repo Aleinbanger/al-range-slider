@@ -42,9 +42,6 @@ class TooltipView extends SubView<ITooltipViewState> {
       }
     }
   }
-
-  // eslint-disable-next-line class-methods-use-this
-  protected bindEventListeners(): void {}
 }
 
 export type { ITooltipViewState };

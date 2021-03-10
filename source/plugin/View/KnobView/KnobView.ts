@@ -34,6 +34,11 @@ class KnobView extends SubView<IKnobViewState, IKnobViewProps> {
     return element;
   }
 
+  protected bindEventListeners(): void {
+    this.element.addEventListener('touchstart', this.handleKnobTouchStart);
+    this.element.addEventListener('mousedown', this.handleKnobMouseDown);
+  }
+
   protected renderState({ positionRatio, active, zIndex }: IKnobViewState): void {
     if (typeof positionRatio !== 'undefined') {
       let percent: number;
@@ -64,11 +69,6 @@ class KnobView extends SubView<IKnobViewState, IKnobViewProps> {
       }
       this.element.style.zIndex = String(newZIndex);
     }
-  }
-
-  protected bindEventListeners(): void {
-    this.element.addEventListener('touchstart', this.handleKnobTouchStart);
-    this.element.addEventListener('mousedown', this.handleKnobMouseDown);
   }
 
   @bind
@@ -121,7 +121,7 @@ class KnobView extends SubView<IKnobViewState, IKnobViewProps> {
   }
 
   private activateKnob(): void {
-    this.setReferenceFrame(this.props.parent);
+    this.setReferenceFrame(this.parent);
     this.notifyObservers({ active: true });
   }
 

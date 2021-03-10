@@ -62,9 +62,6 @@ class BarView extends SubView<IBarViewState> {
       }
     }
   }
-
-  // eslint-disable-next-line class-methods-use-this
-  protected bindEventListeners(): void {}
 }
 
 export default BarView;

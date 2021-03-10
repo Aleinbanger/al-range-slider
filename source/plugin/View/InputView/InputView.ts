@@ -37,16 +37,16 @@ class InputView extends SubView<IInputViewState, IInputViewProps> {
     return element;
   }
 
-  protected renderState({ value }: IInputViewState): void {
-    if (typeof value !== 'undefined') {
-      (this.element as HTMLInputElement).value = value;
-    }
-  }
-
   protected bindEventListeners(): void {
     this.element.addEventListener('focus', this.handleInputFocus);
     this.element.addEventListener('blur', this.handleInputBlur);
     this.element.addEventListener('change', this.handleInputChange);
+  }
+
+  protected renderState({ value }: IInputViewState): void {
+    if (typeof value !== 'undefined') {
+      (this.element as HTMLInputElement).value = value;
+    }
   }
 
   @bind

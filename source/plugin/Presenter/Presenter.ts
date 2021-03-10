@@ -1,11 +1,13 @@
 import bind from 'bind-decorator';
 
+import { cloneDeep } from 'shared/scripts/utils';
+
 import View from '../View/View';
 import { IViewProps, IViewState } from '../View/ViewTypes';
 import Model from '../Model/Model';
 import { IModelProps, IModelState, IModelData } from '../Model/ModelTypes';
 
-interface IProps extends Omit<IViewProps, 'parent' | 'cssClass'>,
+interface IProps extends Omit<IViewProps, 'cssClass'>,
   Omit<IModelProps, 'pointsMapPrecision' | 'positionsArray'> {
   onInit?: (state?: IState) => void;
   onStart?: (state?: IState) => void;
@@ -32,7 +34,7 @@ class Presenter {
 
   constructor(parent: HTMLElement, props: IProps) {
     this.parent = parent;
-    this.props = props;
+    this.props = cloneDeep(props);
     this.initialize();
   }
 
@@ -53,7 +55,7 @@ class Presenter {
 
   public restart(props?: IProps): void {
     if (typeof props === 'object') {
-      this.props = props;
+      this.props = cloneDeep(props);
     }
     this.destroy();
     this.initialize();
@@ -96,17 +98,19 @@ class Presenter {
       valuesArray,
       pointsMap,
     } = this.props;
-    this.view = new View({
-      cssClass: 'al-range-slider',
+    this.view = new View(
       parent,
-      orientation,
-      theme,
-      grid,
-      showInputs,
-      showTooltips,
-      collideTooltips,
-      allowSmoothTransition,
-    });
+      {
+        cssClass: 'al-range-slider',
+        orientation,
+        theme,
+        grid,
+        showInputs,
+        showTooltips,
+        collideTooltips,
+        allowSmoothTransition,
+      },
+    );
     this.model = new Model({
       initialSelectedValues,
       valuesPrecision,

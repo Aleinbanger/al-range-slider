@@ -1,6 +1,6 @@
 import bind from 'bind-decorator';
 
-import { getClosestNumber } from 'shared/scripts/utils';
+import { cloneDeep, getClosestNumber } from 'shared/scripts/utils';
 
 import Observable from '../Observable/Observable';
 import WrapperView from './WrapperView/WrapperView';
@@ -18,6 +18,8 @@ import {
 import './View.scss';
 
 class View extends Observable<IViewState> {
+  private readonly parent: HTMLElement;
+
   private readonly props: IViewProps;
 
   private state: IViewState;
@@ -36,9 +38,10 @@ class View extends Observable<IViewState> {
 
   private tooltips?: Record<string, TooltipView>;
 
-  constructor(props: IViewProps) {
+  constructor(parent: HTMLElement, props: IViewProps) {
     super();
-    this.props = props;
+    this.parent = parent;
+    this.props = cloneDeep(props);
     this.state = {};
     this.initialize();
   }
@@ -80,7 +83,7 @@ class View extends Observable<IViewState> {
   }
 
   public getState(): IViewState {
-    return JSON.parse(JSON.stringify(this.state));
+    return cloneDeep(this.state);
   }
 
   public setState(state: IViewState): void {
@@ -128,14 +131,16 @@ class View extends Observable<IViewState> {
     const { cssClass, orientation, grid } = this.props;
     if (grid) {
       const { minTicksStep, marksStep } = grid;
-      this.grid = new GridView({
-        parent: this.track.element,
-        cssClass: `${cssClass}__grid`,
-        orientation,
-        pointsMap,
-        minTicksStep,
-        marksStep,
-      });
+      this.grid = new GridView(
+        this.track.element,
+        {
+          cssClass: `${cssClass}__grid`,
+          orientation,
+          pointsMap,
+          minTicksStep,
+          marksStep,
+        },
+      );
       this.grid.addObserver(this.handleGridPositionChange);
     }
   }
@@ -161,11 +166,13 @@ class View extends Observable<IViewState> {
             usedIds.push(pairedId);
           }
           if (this.bars && combinedId) {
-            this.bars[combinedId] = new BarView({
-              parent: this.track.element,
-              cssClass: `${cssClass}__bar`,
-              orientation,
-            });
+            this.bars[combinedId] = new BarView(
+              this.track.element,
+              {
+                cssClass: `${cssClass}__bar`,
+                orientation,
+              },
+            );
           }
         }
       });
@@ -179,17 +186,18 @@ class View extends Observable<IViewState> {
   }
 
   private initialize(): void {
+    const { parent } = this;
     const {
-      parent, cssClass, orientation, theme, showInputs, showTooltips,
+      cssClass, orientation, theme, showInputs, showTooltips,
     } = this.props;
-    this.wrapper = new WrapperView({
-      parent, cssClass, orientation, theme,
-    });
-    this.track = new TrackView({
-      parent: this.wrapper.element,
-      cssClass: `${cssClass}__track`,
-      orientation,
-    });
+    this.wrapper = new WrapperView(parent, { cssClass, orientation, theme });
+    this.track = new TrackView(
+      this.wrapper.element,
+      {
+        cssClass: `${cssClass}__track`,
+        orientation,
+      },
+    );
     this.track.addObserver(this.handleTrackPositionChange);
 
     this.knobs = {};
@@ -219,12 +227,14 @@ class View extends Observable<IViewState> {
   private addKnob(id: string): void {
     if (this.knobs) {
       const { cssClass, orientation, allowSmoothTransition } = this.props;
-      this.knobs[id] = new KnobView({
-        parent: this.track.element,
-        cssClass: `${cssClass}__knob`,
-        orientation,
-        allowSmoothTransition,
-      });
+      this.knobs[id] = new KnobView(
+        this.track.element,
+        {
+          cssClass: `${cssClass}__knob`,
+          orientation,
+          allowSmoothTransition,
+        },
+      );
 
       const handleKnobActiveStatusChange = (state: IKnobViewState) => {
         this.handleKnobActiveStatusChange(id, state);
@@ -273,7 +283,7 @@ class View extends Observable<IViewState> {
       const minZIndex = 2;
       const newZIndexes: number[] = [];
       const sortedKnobs = Object.values(this.knobs).sort((knob1, knob2) => (
-        (knob1.getState().zIndex ?? minZIndex) - (knob2.getState().zIndex ?? minZIndex)
+        (knob1.getState()?.zIndex ?? minZIndex) - (knob2.getState()?.zIndex ?? minZIndex)
       ));
       sortedKnobs.forEach((knob, index) => {
         const zIndex = index + minZIndex;
@@ -288,13 +298,15 @@ class View extends Observable<IViewState> {
     if (this.inputs) {
       const { cssClass, orientation, showInputs } = this.props;
       const hidden = showInputs === 'hidden';
-      this.inputs[id] = new InputView({
-        name: id,
-        parent: this.wrapper.element,
-        cssClass: `${cssClass}__input`,
-        orientation,
-        hidden,
-      });
+      this.inputs[id] = new InputView(
+        this.wrapper.element,
+        {
+          cssClass: `${cssClass}__input`,
+          orientation,
+          name: id,
+          hidden,
+        },
+      );
 
       const handleInputActiveStatusChange = (state: IInputViewState) => {
         this.handleInputActiveStatusChange(id, state);
@@ -322,11 +334,13 @@ class View extends Observable<IViewState> {
   private addTooltip(id: string): void {
     if (this.tooltips && this.knobs) {
       const { cssClass, orientation } = this.props;
-      this.tooltips[id] = new TooltipView({
-        parent: this.knobs[id].element,
-        cssClass: `${cssClass}__tooltip`,
-        orientation,
-      });
+      this.tooltips[id] = new TooltipView(
+        this.knobs[id].element,
+        {
+          cssClass: `${cssClass}__tooltip`,
+          orientation,
+        },
+      );
     }
   }
 
@@ -384,11 +398,11 @@ class View extends Observable<IViewState> {
         const idsArray = [...idsSet];
         if (idsArray.length > 1) {
           let mainId = '';
-          let lastUsedId = idsArray.find((tmpId) => this.tooltips?.[tmpId].getState().lastUsed) ?? '';
+          let lastUsedId = idsArray.find((tmpId) => this.tooltips?.[tmpId].getState()?.lastUsed) ?? '';
           if (idsSet.has(currentId)) {
             mainId = currentId;
             tooltips.forEach(([, tooltip]) => {
-              if (tooltip.getState().lastUsed) {
+              if (tooltip.getState()?.lastUsed) {
                 tooltip.setState({ lastUsed: false });
               }
             });
@@ -397,19 +411,19 @@ class View extends Observable<IViewState> {
             mainId = lastUsedId;
           } else {
             const closestPosition = getClosestNumber(
-              idsArray.map((tmpId) => this.knobs?.[tmpId].getState().positionRatio ?? 0),
-              this.knobs?.[currentId].getState().positionRatio ?? 0,
+              idsArray.map((tmpId) => this.knobs?.[tmpId].getState()?.positionRatio ?? 0),
+              this.knobs?.[currentId].getState()?.positionRatio ?? 0,
             );
             lastUsedId = idsArray.find((tmpId) => (
-              this.knobs?.[tmpId].getState().positionRatio === closestPosition)) ?? '';
+              this.knobs?.[tmpId].getState()?.positionRatio === closestPosition)) ?? '';
             if (lastUsedId !== '') {
               mainId = lastUsedId;
             }
           }
           const sortedIdsArray = idsArray.sort((id1, id2) => (
-            (this.knobs?.[id1].getState().positionRatio ?? 0)
-              - (this.knobs?.[id2].getState().positionRatio ?? 0)));
-          const value = sortedIdsArray.map((tmpId) => this.tooltips?.[tmpId].getState().lastValue).join('; ');
+            (this.knobs?.[id1].getState()?.positionRatio ?? 0)
+              - (this.knobs?.[id2].getState()?.positionRatio ?? 0)));
+          const value = sortedIdsArray.map((tmpId) => this.tooltips?.[tmpId].getState()?.lastValue).join('; ');
           this.tooltips?.[mainId].setState({ value, hidden: false });
           idsArray.forEach((tmpId) => {
             if (tmpId !== mainId) {
@@ -419,7 +433,7 @@ class View extends Observable<IViewState> {
         } else {
           const tmpId = idsArray[0];
           this.tooltips?.[tmpId].setState({
-            value: this.tooltips[tmpId].getState().lastValue,
+            value: this.tooltips[tmpId].getState()?.lastValue,
             hidden: false,
           });
         }

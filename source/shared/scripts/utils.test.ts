@@ -1,10 +1,33 @@
 import {
+  cloneDeep,
   getKeyByValue,
   getClosestNumber,
   isNumeric,
   isNumberArray,
   isStringArray,
 } from './utils';
+
+test('should return a deep clone', () => {
+  const obj = {
+    arr: [{ qwe: 'asd', subArr: [1, 2, '3'] }],
+    subObj: {
+      subArr: [1, 2, ['3']],
+      date: new Date(),
+      null: null,
+    },
+  };
+  const objClone = cloneDeep(obj);
+  expect(objClone.arr).toBeInstanceOf(Array);
+  expect(objClone.arr).not.toBe(obj.arr);
+  expect(objClone.arr[0]).not.toBe(obj.arr[0]);
+  expect(objClone.arr[0].subArr).toBeInstanceOf(Array);
+  expect(objClone.arr[0].subArr).not.toBe(obj.arr[0].subArr);
+  expect(objClone.subObj.subArr).toBeInstanceOf(Array);
+  expect(objClone.subObj.subArr).not.toBe(obj.subObj.subArr);
+  expect(objClone.subObj.subArr[2]).not.toBe(obj.subObj.subArr[2]);
+  expect(objClone.subObj.date).toBeInstanceOf(Date);
+  expect(objClone.subObj.date).not.toBe(obj.subObj.date);
+});
 
 test('should get the key by value from object', () => {
   const obj = { foo: 'bar' };

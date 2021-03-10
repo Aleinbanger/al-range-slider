@@ -24,14 +24,31 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
 
   private marks: HTMLElement[] = [];
 
-  constructor(props: IGridViewProps) {
-    super(props);
-    this.initialize();
-  }
-
   public destroy(): void {
     super.destroy();
     window.removeEventListener('resize', this.handleWindowResize);
+  }
+
+  protected initialize(): void {
+    this.ticks = [];
+    this.marks = [];
+    this.props.minTicksStep = Math.ceil(Math.abs(this.props.minTicksStep));
+    this.props.marksStep = Math.ceil(Math.abs(this.props.marksStep));
+    this.setState({ ticksStep: this.props.minTicksStep });
+
+    let marksWidths: number[];
+    if (this.props.orientation === 'vertical') {
+      marksWidths = this.marks.map((mark) => mark.getBoundingClientRect().height);
+    } else {
+      marksWidths = this.marks.map((mark) => mark.getBoundingClientRect().width);
+    }
+    this.props.minTicksGap = Math.max(...marksWidths) / this.props.marksStep;
+    this.updateState();
+  }
+
+  protected bindEventListeners(): void {
+    window.addEventListener('resize', this.handleWindowResize);
+    this.element.addEventListener('mousedown', this.handleGridMouseDown);
   }
 
   protected renderState({ ticksStep }: IGridViewState): void {
@@ -92,30 +109,10 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
     }
   }
 
-  protected bindEventListeners(): void {
-    window.addEventListener('resize', this.handleWindowResize);
-    this.element.addEventListener('mousedown', this.handleGridMouseDown);
-  }
-
-  private initialize(): void {
-    this.props.minTicksStep = Math.ceil(Math.abs(this.props.minTicksStep));
-    this.props.marksStep = Math.ceil(Math.abs(this.props.marksStep));
-    this.setState({ ticksStep: this.props.minTicksStep });
-
-    let marksWidths: number[];
-    if (this.props.orientation === 'vertical') {
-      marksWidths = this.marks.map((mark) => mark.getBoundingClientRect().height);
-    } else {
-      marksWidths = this.marks.map((mark) => mark.getBoundingClientRect().width);
-    }
-    this.props.minTicksGap = Math.max(...marksWidths) / this.props.marksStep;
-    this.updateState();
-  }
-
   private updateState(): void {
     const { minTicksStep, minTicksGap } = this.props;
     let ticksStep = minTicksStep;
-    this.setReferenceFrame(this.props.parent);
+    this.setReferenceFrame(this.parent);
     if (this.props.referenceFrame && minTicksGap) {
       const { width, height } = this.props.referenceFrame;
       if (this.props.orientation === 'vertical') {

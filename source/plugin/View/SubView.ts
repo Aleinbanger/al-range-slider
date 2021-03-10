@@ -1,3 +1,5 @@
+import { cloneDeep } from 'shared/scripts/utils';
+
 import Observable from '../Observable/Observable';
 import { ISubViewProps } from './ViewTypes';
 
@@ -7,15 +9,19 @@ abstract class SubView<
 > extends Observable<TState> {
   public readonly element: HTMLElement;
 
+  protected readonly parent: HTMLElement;
+
   protected readonly props: TProps;
 
   protected state?: TState;
 
-  constructor(props: TProps) {
+  constructor(parent: HTMLElement, props: TProps) {
     super();
-    this.props = props;
+    this.parent = parent;
+    this.props = cloneDeep(props);
     this.element = this.renderMarkup();
-    this.props.parent.appendChild(this.element);
+    this.parent.appendChild(this.element);
+    this.initialize();
     this.bindEventListeners();
   }
 
@@ -31,8 +37,11 @@ abstract class SubView<
     }
   }
 
-  public getState(): TState {
-    return JSON.parse(JSON.stringify(this.state));
+  public getState(): TState | undefined {
+    if (this.state) {
+      return cloneDeep(this.state);
+    }
+    return undefined;
   }
 
   public setState(state: TState): void {
@@ -47,15 +56,20 @@ abstract class SubView<
     this.renderState(state);
   }
 
-  protected abstract renderState(state?: TState): void;
-
-  protected abstract bindEventListeners(): void;
-
   protected renderMarkup(): HTMLElement {
     const element = document.createElement('div');
     element.setAttribute('class', `${this.props.cssClass} js-${this.props.cssClass}`);
     return element;
   }
+
+  // eslint-disable-next-line class-methods-use-this
+  protected initialize(): void {}
+
+  // eslint-disable-next-line class-methods-use-this
+  protected bindEventListeners(): void {}
+
+  // eslint-disable-next-line class-methods-use-this
+  protected renderState(_state?: TState): void {}
 
   protected setReferenceFrame(reference: HTMLElement): void | never {
     const rect = reference.getBoundingClientRect();

@@ -9,9 +9,6 @@ interface ITrackViewState {
 class TrackView extends SubView<ITrackViewState> {
   protected state: ITrackViewState = {};
 
-  // eslint-disable-next-line class-methods-use-this
-  protected renderState(): void {}
-
   protected bindEventListeners(): void {
     this.element.addEventListener('mousedown', this.handleTrackMouseDown);
   }

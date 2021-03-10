@@ -1,4 +1,5 @@
 import {
+  cloneDeep,
   getKeyByValue,
   getClosestNumber,
   isNumeric,
@@ -21,7 +22,7 @@ class Model extends Observable<IModelData> {
 
   constructor(props: IModelProps) {
     super();
-    this.props = props;
+    this.props = cloneDeep(props);
     this.state = {
       selectedPoints: {},
       selectedPointsLimits: {},
@@ -30,7 +31,7 @@ class Model extends Observable<IModelData> {
   }
 
   public getState(): IModelState {
-    return JSON.parse(JSON.stringify(this.state));
+    return cloneDeep(this.state);
   }
 
   public getSelectedPoints(): TCurrentPoint[] {
@@ -213,7 +214,7 @@ class Model extends Observable<IModelData> {
       }
       this.props.valuesArray.push(Number(max.toFixed(this.props.valuesPrecision)));
 
-      console.log({ pointsNumber, visiblePointsNumber, visibleStep });
+      // console.log({ pointsNumber, visiblePointsNumber, visibleStep });
     }
   }
 
@@ -251,8 +252,8 @@ class Model extends Observable<IModelData> {
     });
     this.generatePositionsArray();
 
-    console.log(this.props.pointsMap);
-    console.log('pointsMapPrecision', this.props.pointsMapPrecision);
+    // console.log(this.props.pointsMap);
+    // console.log('pointsMapPrecision', this.props.pointsMapPrecision);
   }
 
   private activatePointsMap(): void {

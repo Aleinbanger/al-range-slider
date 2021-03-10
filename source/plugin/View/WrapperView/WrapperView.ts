@@ -24,12 +24,6 @@ class WrapperView extends SubView<undefined, IWrapperViewProps> {
 
     return element;
   }
-
-  // eslint-disable-next-line class-methods-use-this
-  protected renderState(): void {}
-
-  // eslint-disable-next-line class-methods-use-this
-  protected bindEventListeners(): void {}
 }
 
 export default WrapperView;
