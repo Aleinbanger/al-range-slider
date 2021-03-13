@@ -104,11 +104,10 @@ class Model extends Observable<IModelData> {
       }
     } else if (this.props.pointsMap) {
       if (isNumberArray(this.props.valuesArray)) {
-        if (isNumeric(value)) {
-          closestValue = getClosestNumber(this.props.valuesArray, Number(value));
-        }
+        closestValue = isNumeric(value) ? getClosestNumber(this.props.valuesArray, Number(value))
+          : undefined;
       } else {
-        closestValue = value;
+        closestValue = isNumeric(value) ? Number(value) : value;
       }
       if (typeof closestValue !== 'undefined') {
         positionRatio = Number(getKeyByValue(this.props.pointsMap, closestValue));
@@ -116,7 +115,6 @@ class Model extends Observable<IModelData> {
     } else {
       throw new Error('Neither "range" nor "pointsMap" is defined');
     }
-
     // eslint-disable-next-line fsd/split-conditionals
     if (typeof closestValue !== 'undefined' && typeof positionRatio !== 'undefined'
     && !Number.isNaN(positionRatio)) {
@@ -167,17 +165,10 @@ class Model extends Observable<IModelData> {
       }
       this.state.selectedPointsLimits[id] = { min: newMin, max: newMax };
       this.notifyObservers({ currentPointLimits: [id, { min, max }] });
-
-      console.log({ id, newMin, newMax });
     }
   }
 
-  private initialize(): void {
-    const selectedValues = Object.entries(this.props.initialSelectedValues);
-    selectedValues.forEach(([id, value]) => {
-      this.state.selectedPoints[id] = [0, value];
-    });
-
+  private initialize(): void | never {
     if (this.props.valuesArray || this.props.pointsMap) {
       delete this.props.range;
     }
@@ -191,6 +182,17 @@ class Model extends Observable<IModelData> {
     } else {
       throw new Error('Neither "range" nor "valuesArray" nor "pointsMap" is defined');
     }
+
+    const selectedValues = Object.entries(this.props.initialSelectedValues);
+    selectedValues.forEach(([id, value]) => {
+      this.state.selectedPoints[id] = [0, value];
+      this.selectPointByValue([id, value]);
+    });
+    const selectedPoints = this.getSelectedPoints();
+    selectedPoints.forEach(([id, point]) => {
+      this.selectPointLimits(id);
+      this.selectPointByValue([id, point[1]]);
+    });
   }
 
   private generateValuesArrayFromRange(
@@ -213,8 +215,6 @@ class Model extends Observable<IModelData> {
         this.props.valuesArray.push(Number(point.toFixed(this.props.valuesPrecision)));
       }
       this.props.valuesArray.push(Number(max.toFixed(this.props.valuesPrecision)));
-
-      // console.log({ pointsNumber, visiblePointsNumber, visibleStep });
     }
   }
 
@@ -251,9 +251,6 @@ class Model extends Observable<IModelData> {
       }
     });
     this.generatePositionsArray();
-
-    // console.log(this.props.pointsMap);
-    // console.log('pointsMapPrecision', this.props.pointsMapPrecision);
   }
 
   private activatePointsMap(): void {

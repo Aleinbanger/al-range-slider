@@ -40,7 +40,7 @@ function getKeyByValue<T>(object: Record<number | string, T>, value: T): string 
 
 function getClosestNumber(array: (number | string)[], number: number): number | undefined {
   const numbers = array.filter((el) => typeof el === 'number') as number[];
-  if (numbers.length > 0) {
+  if (numbers.length > 0 && !Number.isNaN(number)) {
     const closestNumber = numbers.reduce((prev, curr) => (
       Math.abs(curr - number) < Math.abs(prev - number) ? curr : prev
     ));
@@ -54,7 +54,7 @@ function isNumeric(value: unknown): boolean {
     return true;
   }
   if (typeof value === 'string') {
-    return !Number.isNaN(Number.parseFloat(value));
+    return !Number.isNaN(Number.parseFloat(value)) && !/\D+$/.test(value);
   }
   return false;
 }

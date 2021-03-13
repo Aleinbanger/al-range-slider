@@ -128,11 +128,6 @@ class Presenter {
       this.view?.initializePoint(id);
       this.model?.selectPointByValue([id, value]);
     });
-    const selectedPoints = this.model.getSelectedPoints();
-    selectedPoints.forEach(([id, point]) => {
-      this.model?.selectPointLimits(id);
-      this.model?.selectPointByValue([id, point[1]]);
-    });
 
     if (typeof this.props.onInit === 'function') {
       this.updateState();

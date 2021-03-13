@@ -1,4 +1,6 @@
 module.exports = {
-  collectCoverage: true,
   moduleDirectories: ['node_modules', 'source'],
+  clearMocks: true,
+  verbose: true,
+  collectCoverage: true,
 };

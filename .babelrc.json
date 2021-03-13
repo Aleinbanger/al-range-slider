@@ -4,10 +4,7 @@
       "@babel/preset-env",
       {
         "useBuiltIns": "usage",
-        "corejs": { "version": 3.6 }
-        // "targets": {
-        //   "node": "current" // for jest?
-        // }
+        "corejs": { "version": 3.9 }
       }
     ],
     "@babel/preset-typescript"

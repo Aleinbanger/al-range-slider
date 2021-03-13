@@ -42,6 +42,7 @@ test('should get the closest number from array', () => {
   expect(getClosestNumber(array, 2)).toBe(1);
   expect(getClosestNumber(array, 7)).toBe(6);
   expect(getClosestNumber(array, 12)).toBe(10);
+  expect(getClosestNumber(array, NaN)).toBe(undefined);
   expect(getClosestNumber(['0'], 0)).toBe(undefined);
   expect(getClosestNumber([], 0)).toBe(undefined);
 });
@@ -49,7 +50,8 @@ test('should get the closest number from array', () => {
 test('should determine if a value is numeric', () => {
   expect(isNumeric(1)).toBe(true);
   expect(isNumeric('1')).toBe(true);
-  expect(isNumeric('1a')).toBe(true);
+  expect(isNumeric('1.23')).toBe(true);
+  expect(isNumeric('1a')).toBe(false);
   expect(isNumeric('a1')).toBe(false);
   expect(isNumeric({ a: 1 })).toBe(false);
 });
