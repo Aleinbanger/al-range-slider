@@ -34,9 +34,8 @@ class KnobView extends SubView<IKnobViewState, IKnobViewProps> {
     return element;
   }
 
-  protected bindEventListeners(): void {
-    this.element.addEventListener('touchstart', this.handleKnobTouchStart);
-    this.element.addEventListener('mousedown', this.handleKnobMouseDown);
+  protected addEventListeners(): void {
+    this.element.addEventListener('pointerdown', this.handleKnobPointerDown);
   }
 
   protected renderState({ positionRatio, active, zIndex }: IKnobViewState): void {
@@ -72,60 +71,21 @@ class KnobView extends SubView<IKnobViewState, IKnobViewProps> {
   }
 
   @bind
-  private handleKnobTouchStart(event: TouchEvent): void {
-    event.preventDefault();
+  private handleKnobPointerDown(event: PointerEvent): void {
     event.stopPropagation();
-    this.activateKnob();
-
-    this.element.addEventListener('touchmove', this.handleKnobTouchMove);
-    this.element.addEventListener('touchend', this.handleKnobTouchEnd);
-  }
-
-  @bind
-  private handleKnobTouchMove(event: TouchEvent): void {
-    event.preventDefault();
-    const positionRatio = this.getRelativeTouchPositionRatio(event);
-    this.moveKnob(positionRatio);
-  }
-
-  @bind
-  private handleKnobTouchEnd(): void {
-    this.deactivateKnob();
-
-    this.element.removeEventListener('touchmove', this.handleKnobTouchMove);
-    this.element.removeEventListener('touchend', this.handleKnobTouchEnd);
-  }
-
-  @bind
-  private handleKnobMouseDown(event: MouseEvent): void {
-    event.stopPropagation();
-    this.activateKnob();
-
-    document.addEventListener('mousemove', this.handleDocumentMouseMove);
-    document.addEventListener('mouseup', this.handleDocumentMouseUp);
-  }
-
-  @bind
-  private handleDocumentMouseMove(event: MouseEvent): void {
-    event.preventDefault();
-    const positionRatio = this.getRelativeMousePositionRatio(event);
-    this.moveKnob(positionRatio);
-  }
-
-  @bind
-  private handleDocumentMouseUp(): void {
-    this.deactivateKnob();
-
-    document.removeEventListener('mousemove', this.handleDocumentMouseMove);
-    document.removeEventListener('mouseup', this.handleDocumentMouseUp);
-  }
-
-  private activateKnob(): void {
     this.setReferenceFrame(this.parent);
     this.notifyObservers({ active: true });
+
+    this.element.setPointerCapture(event.pointerId);
+    this.element.addEventListener('pointermove', this.handleKnobPointerMove);
+    this.element.addEventListener('pointerup', this.handleKnobPointerUp);
+    this.element.addEventListener('pointercancel', this.handleKnobPointerCancel);
   }
 
-  private moveKnob(positionRatio: number): void {
+  @bind
+  private handleKnobPointerMove(event: PointerEvent): void {
+    event.preventDefault();
+    const positionRatio = this.getRelativePointerPositionRatio(event);
     if (this.checkLimits(positionRatio)) {
       this.notifyObservers({ positionRatio });
       if (this.props.allowSmoothTransition) {
@@ -134,9 +94,20 @@ class KnobView extends SubView<IKnobViewState, IKnobViewProps> {
     }
   }
 
-  private deactivateKnob(): void {
+  @bind
+  private handleKnobPointerUp(event: PointerEvent): void {
     this.setState({ active: false });
     this.notifyObservers(this.state);
+
+    this.handleKnobPointerCancel(event);
+  }
+
+  @bind
+  private handleKnobPointerCancel(event: PointerEvent): void {
+    this.element.releasePointerCapture(event.pointerId);
+    this.element.removeEventListener('pointermove', this.handleKnobPointerMove);
+    this.element.removeEventListener('pointerup', this.handleKnobPointerUp);
+    this.element.removeEventListener('pointercancel', this.handleKnobPointerCancel);
   }
 
   private checkLimits(positionRatio: number): boolean {

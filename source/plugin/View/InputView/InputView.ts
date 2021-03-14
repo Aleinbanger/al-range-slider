@@ -37,7 +37,7 @@ class InputView extends SubView<IInputViewState, IInputViewProps> {
     return element;
   }
 
-  protected bindEventListeners(): void {
+  protected addEventListeners(): void {
     this.element.addEventListener('focus', this.handleInputFocus);
     this.element.addEventListener('blur', this.handleInputBlur);
     this.element.addEventListener('change', this.handleInputChange);

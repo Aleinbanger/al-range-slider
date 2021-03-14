@@ -154,6 +154,7 @@
     box-shadow: inset 0 0 0.2em 0.1em theme-var($color_surface),
       0 0 1em theme-var($color_primary);
     user-select: none;
+    touch-action: none;
     cursor: pointer;
 
     &:hover,

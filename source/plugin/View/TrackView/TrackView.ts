@@ -9,22 +9,22 @@ interface ITrackViewState {
 class TrackView extends SubView<ITrackViewState> {
   protected state: ITrackViewState = {};
 
-  protected bindEventListeners(): void {
-    this.element.addEventListener('mousedown', this.handleTrackMouseDown);
+  protected addEventListeners(): void {
+    this.element.addEventListener('pointerdown', this.handleTrackPointerDown);
   }
 
   @bind
-  private handleTrackMouseDown(): void {
-    this.element.addEventListener('mouseup', this.handleTrackMouseUp);
+  private handleTrackPointerDown(): void {
+    this.element.addEventListener('pointerup', this.handleTrackPointerUp);
   }
 
   @bind
-  private handleTrackMouseUp(event: MouseEvent): void {
+  private handleTrackPointerUp(event: PointerEvent): void {
     this.setReferenceFrame(this.element);
-    const positionRatio = this.getRelativeMousePositionRatio(event);
+    const positionRatio = this.getRelativePointerPositionRatio(event);
     this.notifyObservers({ positionRatio });
 
-    this.element.removeEventListener('mouseup', this.handleTrackMouseUp);
+    this.element.removeEventListener('pointerup', this.handleTrackPointerUp);
   }
 }
 

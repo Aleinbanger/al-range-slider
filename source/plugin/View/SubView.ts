@@ -22,7 +22,7 @@ abstract class SubView<
     this.element = this.renderMarkup();
     this.parent.appendChild(this.element);
     this.initialize();
-    this.bindEventListeners();
+    this.addEventListeners();
   }
 
   public destroy(): void {
@@ -66,7 +66,7 @@ abstract class SubView<
   protected initialize(): void {}
 
   // eslint-disable-next-line class-methods-use-this
-  protected bindEventListeners(): void {}
+  protected addEventListeners(): void {}
 
   // eslint-disable-next-line class-methods-use-this
   protected renderState(_state?: TState): void {}
@@ -85,7 +85,7 @@ abstract class SubView<
     };
   }
 
-  protected getRelativeMousePositionRatio(event: MouseEvent): number | never {
+  protected getRelativePointerPositionRatio(event: PointerEvent): number | never {
     if (this.props.referenceFrame) {
       const {
         offsetX,
@@ -108,34 +108,7 @@ abstract class SubView<
       }
       return ratio;
     }
-    throw new Error('Reference frame is not initialized');
-  }
-
-  protected getRelativeTouchPositionRatio(event: TouchEvent): number | never {
-    if (this.props.referenceFrame) {
-      const {
-        offsetX,
-        offsetY,
-        width,
-        height,
-      } = this.props.referenceFrame;
-      const touch = event.touches[0];
-      let ratio: number;
-
-      if (this.props.orientation === 'vertical') {
-        ratio = (touch.clientY - offsetY) / height;
-      } else {
-        ratio = (touch.clientX - offsetX) / width;
-      }
-      if (ratio < 0) {
-        return 0;
-      }
-      if (ratio > 1) {
-        return 1;
-      }
-      return ratio;
-    }
-    throw new Error('Reference frame is not initialized');
+    throw new Error('Reference frame has not been set');
   }
 }
 

@@ -46,9 +46,9 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
     this.updateState();
   }
 
-  protected bindEventListeners(): void {
+  protected addEventListeners(): void {
     window.addEventListener('resize', this.handleWindowResize);
-    this.element.addEventListener('mousedown', this.handleGridMouseDown);
+    this.element.addEventListener('pointerdown', this.handleGridPointerDown);
   }
 
   protected renderState({ ticksStep }: IGridViewState): void {
@@ -133,16 +133,16 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
   }
 
   @bind
-  private handleGridMouseDown(event: MouseEvent): void {
+  private handleGridPointerDown(event: PointerEvent): void {
     const target = event.target as HTMLElement;
     if (target.classList.contains(`js-${this.props.cssClass}-mark`)) {
       event.stopPropagation();
-      this.element.addEventListener('mouseup', this.handleGridMouseUp);
+      this.element.addEventListener('pointerup', this.handleGridPointerUp);
     }
   }
 
   @bind
-  private handleGridMouseUp(event: MouseEvent): void {
+  private handleGridPointerUp(event: PointerEvent): void {
     const target = event.target as HTMLElement;
     if (target.classList.contains(`js-${this.props.cssClass}-mark`)) {
       const positionRatio = Number(target.parentElement?.dataset.position);
@@ -150,7 +150,7 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
         this.notifyObservers({ positionRatio });
       }
     }
-    this.element.removeEventListener('mouseup', this.handleGridMouseUp);
+    this.element.removeEventListener('pointerup', this.handleGridPointerUp);
   }
 }
 
