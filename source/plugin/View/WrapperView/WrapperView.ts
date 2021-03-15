@@ -1,5 +1,5 @@
-import SubView from '../SubView';
-import { TTheme, ISubViewProps } from '../ViewTypes';
+import SubView, { ISubViewProps } from '../SubView';
+import { TTheme } from '../ViewTypes';
 
 interface IWrapperViewProps extends ISubViewProps {
   readonly theme: TTheme;

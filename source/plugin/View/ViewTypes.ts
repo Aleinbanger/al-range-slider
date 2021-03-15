@@ -38,14 +38,12 @@ interface IViewState {
   unknownPosition?: number;
 }
 
-interface ISubViewProps extends ICommonViewProps {
-  referenceFrame?: TReferenceFrame;
-}
-
 export type {
+  TOrientation,
   TTheme,
+  TReferenceFrame,
   TPointsMap,
+  ICommonViewProps,
   IViewProps,
   IViewState,
-  ISubViewProps,
 };

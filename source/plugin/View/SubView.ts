@@ -1,7 +1,11 @@
 import { cloneDeep } from 'shared/scripts/utils';
 
 import Observable from '../Observable/Observable';
-import { ISubViewProps } from './ViewTypes';
+import { ICommonViewProps, TReferenceFrame } from './ViewTypes';
+
+interface ISubViewProps extends ICommonViewProps {
+  referenceFrame?: TReferenceFrame;
+}
 
 abstract class SubView<
   TState = undefined,
@@ -112,4 +116,5 @@ abstract class SubView<
   }
 }
 
+export type { ISubViewProps };
 export default SubView;

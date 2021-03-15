@@ -1,7 +1,6 @@
 import bind from 'bind-decorator';
 
-import SubView from '../SubView';
-import { ISubViewProps } from '../ViewTypes';
+import SubView, { ISubViewProps } from '../SubView';
 
 interface IKnobViewProps extends ISubViewProps {
   readonly allowSmoothTransition: boolean;
