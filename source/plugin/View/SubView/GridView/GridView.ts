@@ -1,7 +1,7 @@
 import bind from 'bind-decorator';
 
 import SubView, { ISubViewProps } from '../SubView';
-import { TPointsMap } from '../ViewTypes';
+import { TPointsMap } from '../../ViewTypes';
 
 interface IGridViewProps extends ISubViewProps {
   readonly pointsMap: TPointsMap;

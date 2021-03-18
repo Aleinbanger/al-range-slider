@@ -3,18 +3,14 @@ import bind from 'bind-decorator';
 import { cloneDeep, getClosestNumber } from 'shared/scripts/utils';
 
 import Observable from '../Observable/Observable';
-import WrapperView from './WrapperView/WrapperView';
-import TrackView, { ITrackViewState } from './TrackView/TrackView';
-import GridView, { IGridViewState } from './GridView/GridView';
-import KnobView, { IKnobViewState } from './KnobView/KnobView';
-import BarView from './BarView/BarView';
-import InputView, { IInputViewState } from './InputView/InputView';
-import TooltipView from './TooltipView/TooltipView';
-import {
-  TPointsMap,
-  IViewProps,
-  IViewState,
-} from './ViewTypes';
+import WrapperView from './SubView/WrapperView/WrapperView';
+import TrackView, { ITrackViewState } from './SubView/TrackView/TrackView';
+import GridView, { IGridViewState } from './SubView/GridView/GridView';
+import KnobView, { IKnobViewState } from './SubView/KnobView/KnobView';
+import BarView from './SubView/BarView/BarView';
+import InputView, { IInputViewState } from './SubView/InputView/InputView';
+import TooltipView from './SubView/TooltipView/TooltipView';
+import { TPointsMap, IViewProps, IViewState } from './ViewTypes';
 import './View.scss';
 
 class View extends Observable<IViewState> {
