@@ -38,10 +38,12 @@ const props: ISubViewProps = {
 
 describe('general methods', () => {
   beforeEach(() => {
-    document.body.innerHTML = '';
     parent = document.createElement('div');
     document.body.appendChild(parent);
     testView = new TestView(parent, props);
+  });
+  afterEach(() => {
+    parent.remove();
   });
 
   test('should render markup in the constructor', () => {
@@ -68,11 +70,11 @@ describe('general methods', () => {
   });
 
   test('should add and remove "disabled" class modifier', () => {
-    const isDisabled = () => testView.element.classList.contains(`${props.cssClass}_disabled`);
+    const checkIfDisabled = () => testView.element.classList.contains(`${props.cssClass}_disabled`);
     testView.disable();
-    expect(isDisabled()).toBe(true);
+    expect(checkIfDisabled()).toBe(true);
     testView.disable(false);
-    expect(isDisabled()).toBe(false);
+    expect(checkIfDisabled()).toBe(false);
   });
 
   test('should remove the element', () => {

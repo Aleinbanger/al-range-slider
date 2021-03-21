@@ -15,12 +15,13 @@ class TrackView extends SubView<ITrackViewState> {
 
   @bind
   private handleTrackPointerDown(): void {
+    this.setReferenceFrame(this.element);
+
     this.element.addEventListener('pointerup', this.handleTrackPointerUp);
   }
 
   @bind
   private handleTrackPointerUp(event: PointerEvent): void {
-    this.setReferenceFrame(this.element);
     const positionRatio = this.getRelativePointerPositionRatio(event);
     this.notifyObservers({ positionRatio });
 

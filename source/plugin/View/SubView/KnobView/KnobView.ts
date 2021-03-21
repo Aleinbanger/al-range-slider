@@ -122,5 +122,5 @@ class KnobView extends SubView<IKnobViewState, IKnobViewProps> {
   }
 }
 
-export type { IKnobViewState };
+export type { IKnobViewProps, IKnobViewState };
 export default KnobView;

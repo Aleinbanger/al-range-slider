@@ -137,7 +137,7 @@ class View extends Observable<IViewState> {
           marksStep,
         },
       );
-      this.grid.addObserver(this.handleGridPositionChange);
+      this.grid.addObserver(this.handleTrackAndGridPositionChange);
     }
   }
 
@@ -194,7 +194,7 @@ class View extends Observable<IViewState> {
         orientation,
       },
     );
-    this.track.addObserver(this.handleTrackPositionChange);
+    this.track.addObserver(this.handleTrackAndGridPositionChange);
 
     this.knobs = {};
     this.bars = {};
@@ -207,14 +207,8 @@ class View extends Observable<IViewState> {
   }
 
   @bind
-  private handleGridPositionChange({ positionRatio }: IGridViewState): void {
-    if (typeof positionRatio !== 'undefined') {
-      this.notifyObservers({ unknownPosition: positionRatio });
-    }
-  }
-
-  @bind
-  private handleTrackPositionChange({ positionRatio }: ITrackViewState): void {
+  private handleTrackAndGridPositionChange({ positionRatio }:
+  ITrackViewState | IGridViewState): void {
     if (typeof positionRatio !== 'undefined') {
       this.notifyObservers({ unknownPosition: positionRatio });
     }

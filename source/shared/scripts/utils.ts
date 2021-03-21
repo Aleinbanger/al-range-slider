@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 function requireAll(context: __WebpackModuleApi.RequireContext): Record<string, string> {
   const srcMap: Record<string, string> = {};
   context.keys().forEach((key: string) => {
