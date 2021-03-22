@@ -26,4 +26,5 @@ class WrapperView extends SubView<undefined, IWrapperViewProps> {
   }
 }
 
+export type { IWrapperViewProps };
 export default WrapperView;

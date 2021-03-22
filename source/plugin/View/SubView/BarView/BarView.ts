@@ -64,4 +64,5 @@ class BarView extends SubView<IBarViewState> {
   }
 }
 
+export type { IBarViewState };
 export default BarView;
