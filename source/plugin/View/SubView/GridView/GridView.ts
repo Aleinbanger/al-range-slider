@@ -150,5 +150,5 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
   }
 }
 
-export type { IGridViewState };
+export type { IGridViewProps, IGridViewState };
 export default GridView;
