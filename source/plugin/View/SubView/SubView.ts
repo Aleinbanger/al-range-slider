@@ -10,8 +10,9 @@ interface ISubViewProps extends ICommonViewProps {
 abstract class SubView<
   TState = undefined,
   TProps extends ISubViewProps = ISubViewProps,
+  TElement extends HTMLElement = HTMLElement,
 > extends Observable<TState> {
-  public readonly element: HTMLElement;
+  public readonly element: TElement;
 
   protected readonly parent: HTMLElement;
 
@@ -60,11 +61,7 @@ abstract class SubView<
     this.renderState(state);
   }
 
-  protected renderMarkup(): HTMLElement {
-    const element = document.createElement('div');
-    element.setAttribute('class', `${this.props.cssClass} js-${this.props.cssClass}`);
-    return element;
-  }
+  protected abstract renderMarkup(): TElement;
 
   // eslint-disable-next-line class-methods-use-this
   protected initialize(): void {}

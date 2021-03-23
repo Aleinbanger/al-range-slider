@@ -51,6 +51,11 @@ describe.each(propsCases)('%s', (_description, props) => {
       parent.remove();
     });
 
+    test('should render markup in the constructor', () => {
+      const element = parent.querySelector(`.${props.cssClass}`);
+      expect(element).toBeTruthy();
+    });
+
     test('should remove the element and all window event listeners', () => {
       grid.destroy();
       const element = parent.querySelector(`.${props.cssClass}`);

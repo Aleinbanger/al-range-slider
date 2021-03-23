@@ -12,7 +12,7 @@ interface IInputViewState {
   active?: boolean;
 }
 
-class InputView extends SubView<IInputViewState, IInputViewProps> {
+class InputView extends SubView<IInputViewState, IInputViewProps, HTMLInputElement> {
   protected state: IInputViewState = {
     value: '',
     active: false,
@@ -20,7 +20,7 @@ class InputView extends SubView<IInputViewState, IInputViewProps> {
 
   public disable(disabled = true): void {
     super.disable(disabled);
-    (this.element as HTMLInputElement).disabled = disabled;
+    this.element.disabled = disabled;
   }
 
   protected renderMarkup(): HTMLInputElement {
@@ -44,7 +44,7 @@ class InputView extends SubView<IInputViewState, IInputViewProps> {
 
   protected renderState({ value }: IInputViewState): void {
     if (typeof value !== 'undefined') {
-      (this.element as HTMLInputElement).value = value;
+      this.element.value = value;
     }
   }
 
@@ -65,5 +65,5 @@ class InputView extends SubView<IInputViewState, IInputViewProps> {
   }
 }
 
-export type { IInputViewState };
+export type { IInputViewProps, IInputViewState };
 export default InputView;

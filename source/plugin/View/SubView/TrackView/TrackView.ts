@@ -9,6 +9,12 @@ interface ITrackViewState {
 class TrackView extends SubView<ITrackViewState> {
   protected state: ITrackViewState = {};
 
+  protected renderMarkup(): HTMLElement {
+    const element = document.createElement('div');
+    element.setAttribute('class', `${this.props.cssClass} js-${this.props.cssClass}`);
+    return element;
+  }
+
   protected addEventListeners(): void {
     this.element.addEventListener('pointerdown', this.handleTrackPointerDown);
   }

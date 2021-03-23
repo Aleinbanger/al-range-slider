@@ -36,6 +36,20 @@ describe.each(propsCases)('%s', (_description, props) => {
     }
   };
 
+  describe('general methods', () => {
+    beforeEach(() => {
+      initializeTrack();
+    });
+    afterEach(() => {
+      parent.remove();
+    });
+
+    test('should render markup in the constructor', () => {
+      const element = parent.querySelector(`.${props.cssClass}`);
+      expect(element).toBeTruthy();
+    });
+  });
+
   describe('event listeners', () => {
     afterEach(() => {
       parent.remove();

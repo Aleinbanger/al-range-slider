@@ -27,6 +27,12 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
     window.removeEventListener('resize', this.handleWindowResize);
   }
 
+  protected renderMarkup(): HTMLElement {
+    const element = document.createElement('div');
+    element.setAttribute('class', `${this.props.cssClass} js-${this.props.cssClass}`);
+    return element;
+  }
+
   protected initialize(): void {
     this.props.ticks = [];
     this.props.marks = [];

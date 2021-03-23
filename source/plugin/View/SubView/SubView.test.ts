@@ -13,6 +13,12 @@ class TestView extends SubView<ITestViewState> {
     test: '1',
   };
 
+  protected renderMarkup(): HTMLElement {
+    const element = document.createElement('div');
+    element.setAttribute('class', `${this.props.cssClass} js-${this.props.cssClass}`);
+    return element;
+  }
+
   // eslint-disable-next-line class-methods-use-this
   protected initialize(): void {
     initializeMock();
