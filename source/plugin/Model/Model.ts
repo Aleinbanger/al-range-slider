@@ -323,4 +323,5 @@ class Model extends Observable<IModelData> {
   }
 }
 
+export type { IModelProps, IModelState, IModelData };
 export default Model;

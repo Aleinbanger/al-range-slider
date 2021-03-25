@@ -2,24 +2,9 @@ import bind from 'bind-decorator';
 
 import { cloneDeep } from 'shared/scripts/utils';
 
-import View from '../View/View';
-import { IViewProps, IViewState } from '../View/ViewTypes';
-import Model from '../Model/Model';
-import { IModelProps, IModelState, IModelData } from '../Model/ModelTypes';
-
-interface IProps extends Omit<IViewProps, 'cssClass'>,
-  Omit<IModelProps, 'pointsMapPrecision' | 'positionsArray'> {
-  onInit?: (state?: IState) => void;
-  onStart?: (state?: IState) => void;
-  onFinish?: (state?: IState) => void;
-  onChange?: (state?: IState) => void;
-  onUpdate?: (state?: IState) => void;
-}
-interface IState extends Partial<IViewState>, Partial<IModelState> {}
-interface IData {
-  values?: IProps['initialSelectedValues'];
-  positions?: Record<string, number>;
-}
+import Model, { IModelData } from '../Model/Model';
+import View, { IViewState } from '../View/View';
+import { IProps, IState, IData } from './PresenterTypes';
 
 class Presenter {
   private readonly parent: HTMLElement;
@@ -28,9 +13,9 @@ class Presenter {
 
   private state?: IState;
 
-  private view?: View;
-
   private model?: Model;
+
+  private view?: View;
 
   constructor(parent: HTMLElement, props: IProps) {
     this.parent = parent;
@@ -84,6 +69,11 @@ class Presenter {
   private initialize(): void {
     const { parent } = this;
     const {
+      initialSelectedValues = { to: 0 },
+      valuesPrecision = 4,
+      range = { min: -100, max: 100, step: 1 },
+      valuesArray,
+      pointsMap,
       orientation = 'horizontal',
       theme = 'light',
       grid = { minTicksStep: 1, marksStep: 1 },
@@ -92,25 +82,8 @@ class Presenter {
       collideTooltips = true,
       collideKnobs = true,
       allowSmoothTransition = true,
-      initialSelectedValues = { to: 0 },
-      valuesPrecision = 4,
-      range = { min: -100, max: 100, step: 1 },
-      valuesArray,
-      pointsMap,
     } = this.props;
-    this.view = new View(
-      parent,
-      {
-        cssClass: 'al-range-slider',
-        orientation,
-        theme,
-        grid,
-        showInputs,
-        showTooltips,
-        collideTooltips,
-        allowSmoothTransition,
-      },
-    );
+
     this.model = new Model({
       initialSelectedValues,
       valuesPrecision,
@@ -119,16 +92,28 @@ class Presenter {
       valuesArray,
       pointsMap,
     });
+    this.view = new View(
+      parent,
+      {
+        cssClass: 'al-range-slider',
+        orientation,
+        theme,
+        selectedIds: Object.keys(initialSelectedValues).map((id) => id),
+        grid: {
+          ...grid,
+          pointsMap: grid.pointsMap ?? this.model.getPointsMap(),
+        },
+        showInputs,
+        showTooltips,
+        collideTooltips,
+        allowSmoothTransition,
+      },
+    );
     this.addObservers();
 
-    const selectedValues = Object.entries(initialSelectedValues);
-    this.view.initializeGrid(this.model.getPointsMap());
-    this.view.initializeBars(selectedValues.map(([id]) => id));
-    selectedValues.forEach(([id, value]) => {
-      this.view?.initializePoint(id);
-      this.model?.selectPointByValue([id, value]);
+    Object.entries(initialSelectedValues).forEach((currentValue) => {
+      this.model?.selectPointByValue(currentValue);
     });
-
     if (typeof this.props.onInit === 'function') {
       this.updateState();
       this.props.onInit.call(this, this.state);
@@ -136,28 +121,50 @@ class Presenter {
   }
 
   private addObservers(): void {
+    this.model?.addObserver(this.handleCurrentPointLimitsChange);
+    this.model?.addObserver(this.handleCurrentPointChange);
     this.view?.addObserver(this.handleCurrentActiveStatusChange);
     this.view?.addObserver(this.handleCurrentPositionChange);
     this.view?.addObserver(this.handleCurrentValueChange);
     this.view?.addObserver(this.handleUnknownPositionChange);
-    this.model?.addObserver(this.handleCurrentPointLimitsChange);
-    this.model?.addObserver(this.handleCurrentPointChange);
   }
 
   private removeObservers(): void {
+    this.model?.removeObserver(this.handleCurrentPointLimitsChange);
+    this.model?.removeObserver(this.handleCurrentPointChange);
     this.view?.removeObserver(this.handleCurrentActiveStatusChange);
     this.view?.removeObserver(this.handleCurrentPositionChange);
     this.view?.removeObserver(this.handleCurrentValueChange);
     this.view?.removeObserver(this.handleUnknownPositionChange);
-    this.model?.removeObserver(this.handleCurrentPointLimitsChange);
-    this.model?.removeObserver(this.handleCurrentPointChange);
   }
 
   private updateState(): void {
     this.state = {
-      ...this.view?.getState(),
       ...this.model?.getState(),
+      ...this.view?.getState(),
     };
+  }
+
+  @bind
+  private handleCurrentPointLimitsChange({ currentPointLimits }: IModelData): void {
+    if (currentPointLimits) {
+      this.view?.setState({ currentPositionLimits: currentPointLimits });
+    }
+  }
+
+  @bind
+  private handleCurrentPointChange({ currentPoint }: IModelData): void {
+    if (currentPoint) {
+      const [id, point] = currentPoint;
+      this.view?.setState({
+        currentPosition: [id, point[0]],
+        currentValue: [id, String(point[1])],
+      });
+      if (typeof this.props.onChange === 'function') {
+        this.updateState();
+        this.props.onChange.call(this, this.state);
+      }
+    }
   }
 
   @bind
@@ -198,29 +205,7 @@ class Presenter {
       this.model?.selectPointByUnknownPosition(unknownPosition);
     }
   }
-
-  @bind
-  private handleCurrentPointLimitsChange({ currentPointLimits }: IModelData): void {
-    if (currentPointLimits) {
-      this.view?.setState({ currentPositionLimits: currentPointLimits });
-    }
-  }
-
-  @bind
-  private handleCurrentPointChange({ currentPoint }: IModelData): void {
-    if (currentPoint) {
-      const [id, point] = currentPoint;
-      this.view?.setState({
-        currentPosition: [id, point[0]],
-        currentValue: [id, String(point[1])],
-      });
-      if (typeof this.props.onChange === 'function') {
-        this.updateState();
-        this.props.onChange.call(this, this.state);
-      }
-    }
-  }
 }
 
-export type { IProps, IState };
+export type { IProps, IState, IData };
 export default Presenter;

@@ -20,7 +20,9 @@ interface ICommonViewProps {
 
 interface IViewProps extends ICommonViewProps {
   readonly theme: TTheme;
+  readonly selectedIds: string[];
   readonly grid: {
+    readonly pointsMap: TPointsMap;
     readonly minTicksStep: number;
     readonly marksStep: number;
   } | undefined;

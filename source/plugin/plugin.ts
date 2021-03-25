@@ -1,3 +1,5 @@
+import { ExtractFunctionArgs } from 'shared/scripts/typeUtils';
+
 import Presenter, { IProps } from './Presenter/Presenter';
 
 declare global {
@@ -12,31 +14,22 @@ declare global {
 
 const pluginName = 'alRangeSlider';
 const defaults: IProps = {
+  initialSelectedValues: { to: 0 },
+  valuesPrecision: 4,
+  range: { min: -100, max: 100, step: 1 },
   orientation: 'horizontal',
   theme: 'light',
-  grid: {
-    minTicksStep: 1,
-    marksStep: 1,
-  },
+  grid: { minTicksStep: 1, marksStep: 1 },
   showInputs: true,
   showTooltips: true,
   collideTooltips: true,
   collideKnobs: true,
   allowSmoothTransition: true,
-  initialSelectedValues: {
-    to: 0,
-  },
-  valuesPrecision: 4,
-  range: {
-    min: -100,
-    max: 100,
-    step: 1,
-  },
 };
 const methods = ['destroy', 'disable', 'restart', 'update'] as const;
 type TOptions = Partial<IProps>;
 type TMethod = typeof methods[number];
-type TMethodArg<T extends TMethod> = Parameters<InstanceType<typeof Presenter>[T]>[number];
+type TMethodArg<T extends TMethod> = ExtractFunctionArgs<Presenter, T>;
 type TMethodFunc<T extends TMethod> = (arg: TMethodArg<T>) => void;
 
 function plugin<T extends TMethod>(

@@ -1,8 +1,10 @@
 import bind from 'bind-decorator';
 
 import { cloneDeep, getClosestNumber } from 'shared/scripts/utils';
+import { ExtractFunctionKeys, ExtractFunctionArgs } from 'shared/scripts/typeUtils';
 
 import Observable from '../Observable/Observable';
+import SubView from './SubView/SubView';
 import WrapperView from './SubView/WrapperView/WrapperView';
 import TrackView, { ITrackViewState } from './SubView/TrackView/TrackView';
 import GridView, { IGridViewState } from './SubView/GridView/GridView';
@@ -10,7 +12,7 @@ import KnobView, { IKnobViewState } from './SubView/KnobView/KnobView';
 import BarView from './SubView/BarView/BarView';
 import InputView, { IInputViewState } from './SubView/InputView/InputView';
 import TooltipView from './SubView/TooltipView/TooltipView';
-import { TPointsMap, IViewProps, IViewState } from './ViewTypes';
+import { IViewProps, IViewState } from './ViewTypes';
 import './View.scss';
 
 class View extends Observable<IViewState> {
@@ -20,19 +22,15 @@ class View extends Observable<IViewState> {
 
   private state: IViewState;
 
-  private wrapper!: WrapperView;
-
-  private track!: TrackView;
-
-  private grid?: GridView;
-
-  private knobs?: Record<string, KnobView>;
-
-  private bars?: Record<string, BarView>;
-
-  private inputs?: Record<string, InputView>;
-
-  private tooltips?: Record<string, TooltipView>;
+  private subViews!: {
+    wrapper: WrapperView;
+    track?: TrackView;
+    grid?: GridView;
+    knobs?: Record<string, KnobView | undefined>;
+    bars?: Record<string, BarView | undefined>;
+    inputs?: Record<string, InputView | undefined>;
+    tooltips?: Record<string, TooltipView | undefined>;
+  };
 
   constructor(parent: HTMLElement, props: IViewProps) {
     super();
@@ -43,39 +41,11 @@ class View extends Observable<IViewState> {
   }
 
   public destroy(): void {
-    this.wrapper.destroy();
-    this.track.destroy();
-    this.grid?.destroy();
-    if (this.knobs) {
-      Object.values(this.knobs).forEach((knob) => knob.destroy());
-    }
-    if (this.bars) {
-      Object.values(this.bars).forEach((bar) => bar.destroy());
-    }
-    if (this.inputs) {
-      Object.values(this.inputs).forEach((input) => input.destroy());
-    }
-    if (this.tooltips) {
-      Object.values(this.tooltips).forEach((tooltip) => tooltip.destroy());
-    }
+    View.callAllSubViews(this.subViews, 'destroy');
   }
 
   public disable(disabled = true): void {
-    this.wrapper.disable(disabled);
-    this.track.disable(disabled);
-    this.grid?.disable(disabled);
-    if (this.knobs) {
-      Object.values(this.knobs).forEach((knob) => knob.disable(disabled));
-    }
-    if (this.bars) {
-      Object.values(this.bars).forEach((bar) => bar.disable(disabled));
-    }
-    if (this.inputs) {
-      Object.values(this.inputs).forEach((input) => input.disable(disabled));
-    }
-    if (this.tooltips) {
-      Object.values(this.tooltips).forEach((tooltip) => tooltip.disable(disabled));
-    }
+    View.callAllSubViews(this.subViews, 'disable', disabled);
   }
 
   public getState(): IViewState {
@@ -93,20 +63,20 @@ class View extends Observable<IViewState> {
     if (currentPosition) {
       const [id, positionRatio] = currentPosition;
       this.state.currentPosition = currentPosition;
-      this.knobs?.[id].setState({ positionRatio });
+      this.subViews.knobs?.[id]?.setState({ positionRatio });
       this.updateBar(currentPosition);
     }
     if (currentPositionLimits) {
       const [id, positionRatioLimits] = currentPositionLimits;
       this.state.currentPositionLimits = currentPositionLimits;
-      this.knobs?.[id].setState({ positionRatioLimits });
+      this.subViews.knobs?.[id]?.setState({ positionRatioLimits });
     }
     if (currentActiveStatus) {
       const [id, active] = currentActiveStatus;
       this.state.currentActiveStatus = currentActiveStatus;
-      this.knobs?.[id].setState({ active });
-      this.inputs?.[id].setState({ active });
-      this.tooltips?.[id].setState({ active });
+      this.subViews.knobs?.[id]?.setState({ active });
+      this.subViews.inputs?.[id]?.setState({ active });
+      this.subViews.tooltips?.[id]?.setState({ active });
       if (active) {
         this.stackKnobs(id);
       }
@@ -114,21 +84,31 @@ class View extends Observable<IViewState> {
     if (currentValue) {
       const [id, value] = currentValue;
       this.state.currentValue = currentValue;
-      this.inputs?.[id].setState({ value });
-      this.tooltips?.[id].setState({ value });
-      this.tooltips?.[id].setState({ lastValue: value });
+      this.subViews.inputs?.[id]?.setState({ value });
+      this.subViews.tooltips?.[id]?.setState({ value, lastValue: value });
       if (this.props.collideTooltips) {
         this.collideTooltips(id);
       }
     }
   }
 
-  public initializeGrid(pointsMap: TPointsMap): void {
-    const { cssClass, orientation, grid } = this.props;
+  private initialize(): void {
+    const { parent } = this;
+    const {
+      cssClass, orientation, theme, selectedIds, grid, showInputs, showTooltips,
+    } = this.props;
+    this.subViews = {
+      wrapper: new WrapperView(parent, { cssClass, orientation, theme }),
+    };
+    this.subViews.track = new TrackView(
+      this.subViews.wrapper.element,
+      { cssClass: `${cssClass}__track`, orientation },
+    );
+    this.subViews.track.addObserver(this.handleTrackAndGridPositionChange);
     if (grid) {
-      const { minTicksStep, marksStep } = grid;
-      this.grid = new GridView(
-        this.track.element,
+      const { pointsMap, minTicksStep, marksStep } = grid;
+      this.subViews.grid = new GridView(
+        this.subViews.track.element,
         {
           cssClass: `${cssClass}__grid`,
           orientation,
@@ -137,73 +117,23 @@ class View extends Observable<IViewState> {
           marksStep,
         },
       );
-      this.grid.addObserver(this.handleTrackAndGridPositionChange);
+      this.subViews.grid.addObserver(this.handleTrackAndGridPositionChange);
     }
-  }
 
-  public initializeBars(ids: string[]): void {
-    if (this.bars) {
-      const { cssClass, orientation } = this.props;
-      const usedIds: string[] = [];
-      ids.forEach((id) => {
-        if (!usedIds.some((tmpId) => tmpId === id)) {
-          const fromMatch = id.match(/^(from)(.*)$/i);
-          const toMatch = id.match(/^(to)(.*)$/i);
-          let pairedId = '';
-          let combinedId = '';
-          if (fromMatch) {
-            pairedId = `to${fromMatch[2]}`;
-            combinedId = `${id}${pairedId}`;
-          } else if (toMatch) {
-            pairedId = `from${toMatch[2]}`;
-            combinedId = `${pairedId}${id}`;
-          }
-          if (ids.includes(pairedId)) {
-            usedIds.push(pairedId);
-          }
-          if (this.bars && combinedId) {
-            this.bars[combinedId] = new BarView(
-              this.track.element,
-              {
-                cssClass: `${cssClass}__bar`,
-                orientation,
-              },
-            );
-          }
-        }
-      });
-    }
-  }
-
-  public initializePoint(id: string): void {
-    this.addKnob(id);
-    this.addInput(id);
-    this.addTooltip(id);
-  }
-
-  private initialize(): void {
-    const { parent } = this;
-    const {
-      cssClass, orientation, theme, showInputs, showTooltips,
-    } = this.props;
-    this.wrapper = new WrapperView(parent, { cssClass, orientation, theme });
-    this.track = new TrackView(
-      this.wrapper.element,
-      {
-        cssClass: `${cssClass}__track`,
-        orientation,
-      },
-    );
-    this.track.addObserver(this.handleTrackAndGridPositionChange);
-
-    this.knobs = {};
-    this.bars = {};
+    this.subViews.knobs = {};
+    this.subViews.bars = {};
     if (showInputs) {
-      this.inputs = {};
+      this.subViews.inputs = {};
     }
     if (showTooltips) {
-      this.tooltips = {};
+      this.subViews.tooltips = {};
     }
+    selectedIds.forEach((id) => {
+      this.addKnob(id);
+      this.addInput(id);
+      this.addTooltip(id);
+    });
+    this.addBars(selectedIds);
   }
 
   @bind
@@ -215,25 +145,14 @@ class View extends Observable<IViewState> {
   }
 
   private addKnob(id: string): void {
-    if (this.knobs) {
+    if (this.subViews.knobs) {
       const { cssClass, orientation, allowSmoothTransition } = this.props;
-      this.knobs[id] = new KnobView(
-        this.track.element,
-        {
-          cssClass: `${cssClass}__knob`,
-          orientation,
-          allowSmoothTransition,
-        },
+      this.subViews.knobs[id] = new KnobView(
+        this.subViews.track?.element ?? this.subViews.wrapper.element,
+        { cssClass: `${cssClass}__knob`, orientation, allowSmoothTransition },
       );
-
-      const handleKnobActiveStatusChange = (state: IKnobViewState) => {
-        this.handleKnobActiveStatusChange(id, state);
-      };
-      const handleKnobPositionChange = (state: IKnobViewState) => {
-        this.handleKnobPositionChange(id, state);
-      };
-      this.knobs[id].addObserver(handleKnobActiveStatusChange);
-      this.knobs[id].addObserver(handleKnobPositionChange);
+      this.subViews.knobs[id]?.addObserver(this.handleKnobActiveStatusChange.bind(this, id));
+      this.subViews.knobs[id]?.addObserver(this.handleKnobPositionChange.bind(this, id));
     }
   }
 
@@ -252,44 +171,75 @@ class View extends Observable<IViewState> {
     }
   }
 
+  private stackKnobs(currentId: string): void {
+    if (this.subViews.knobs) {
+      const minZIndex = 2;
+      const newZIndexes: number[] = [];
+      const sortedKnobs = Object.values(this.subViews.knobs).sort((knob1, knob2) => (
+        (knob1?.getState()?.zIndex ?? minZIndex) - (knob2?.getState()?.zIndex ?? minZIndex)
+      ));
+      sortedKnobs.forEach((knob, index) => {
+        const zIndex = index + minZIndex;
+        newZIndexes.push(zIndex);
+        knob?.setState({ zIndex });
+      });
+      this.subViews.knobs[currentId]?.setState({ zIndex: Math.max(...newZIndexes) + 1 });
+    }
+  }
+
+  private addBars(ids: string[]): void {
+    if (this.subViews.bars) {
+      const { cssClass, orientation } = this.props;
+      const usedIds: string[] = [];
+      ids.forEach((id) => {
+        if (!usedIds.some((tmpId) => tmpId === id)) {
+          const fromMatch = id.match(/^(from)(.*)$/i);
+          const toMatch = id.match(/^(to)(.*)$/i);
+          let pairedId = '';
+          let combinedId = '';
+          if (fromMatch) {
+            pairedId = `to${fromMatch[2]}`;
+            combinedId = `${id}${pairedId}`;
+          } else if (toMatch) {
+            pairedId = `from${toMatch[2]}`;
+            combinedId = `${pairedId}${id}`;
+          }
+          if (ids.includes(pairedId)) {
+            usedIds.push(pairedId);
+          }
+          if (this.subViews.bars && combinedId) {
+            this.subViews.bars[combinedId] = new BarView(
+              this.subViews.track?.element ?? this.subViews.wrapper.element,
+              { cssClass: `${cssClass}__bar`, orientation },
+            );
+          }
+        }
+      });
+    }
+  }
+
   private updateBar([id, positionRatio]: [string, number]): void {
-    if (this.bars) {
+    if (this.subViews.bars) {
       const fromMatch = id.match(/^(from)(.*)$/i);
       const toMatch = id.match(/^(to)(.*)$/i);
       if (fromMatch) {
         const pairedId = `to${fromMatch[2]}`;
         const combinedId = `${id}${pairedId}`;
-        this.bars[combinedId].setState({ from: positionRatio });
+        this.subViews.bars[combinedId]?.setState({ from: positionRatio });
       } else if (toMatch) {
         const pairedId = `from${toMatch[2]}`;
         const combinedId = `${pairedId}${id}`;
-        this.bars[combinedId].setState({ to: positionRatio });
+        this.subViews.bars[combinedId]?.setState({ to: positionRatio });
       }
     }
   }
 
-  private stackKnobs(currentId: string): void {
-    if (this.knobs) {
-      const minZIndex = 2;
-      const newZIndexes: number[] = [];
-      const sortedKnobs = Object.values(this.knobs).sort((knob1, knob2) => (
-        (knob1.getState()?.zIndex ?? minZIndex) - (knob2.getState()?.zIndex ?? minZIndex)
-      ));
-      sortedKnobs.forEach((knob, index) => {
-        const zIndex = index + minZIndex;
-        newZIndexes.push(zIndex);
-        knob.setState({ zIndex });
-      });
-      this.knobs[currentId].setState({ zIndex: Math.max(...newZIndexes) + 1 });
-    }
-  }
-
   private addInput(id: string): void {
-    if (this.inputs) {
+    if (this.subViews.inputs) {
       const { cssClass, orientation, showInputs } = this.props;
       const hidden = showInputs === 'hidden';
-      this.inputs[id] = new InputView(
-        this.wrapper.element,
+      this.subViews.inputs[id] = new InputView(
+        this.subViews.wrapper.element,
         {
           cssClass: `${cssClass}__input`,
           orientation,
@@ -297,15 +247,8 @@ class View extends Observable<IViewState> {
           hidden,
         },
       );
-
-      const handleInputActiveStatusChange = (state: IInputViewState) => {
-        this.handleInputActiveStatusChange(id, state);
-      };
-      const handleInputValueChange = (state: IInputViewState) => {
-        this.handleInputValueChange(id, state);
-      };
-      this.inputs[id].addObserver(handleInputActiveStatusChange);
-      this.inputs[id].addObserver(handleInputValueChange);
+      this.subViews.inputs[id]?.addObserver(this.handleInputActiveStatusChange.bind(this, id));
+      this.subViews.inputs[id]?.addObserver(this.handleInputValueChange.bind(this, id));
     }
   }
 
@@ -322,50 +265,48 @@ class View extends Observable<IViewState> {
   }
 
   private addTooltip(id: string): void {
-    if (this.tooltips && this.knobs) {
+    if (this.subViews.tooltips) {
       const { cssClass, orientation } = this.props;
-      this.tooltips[id] = new TooltipView(
-        this.knobs[id].element,
-        {
-          cssClass: `${cssClass}__tooltip`,
-          orientation,
-        },
+      this.subViews.tooltips[id] = new TooltipView(
+        this.subViews.knobs?.[id]?.element ?? this.subViews.wrapper.element,
+        { cssClass: `${cssClass}__tooltip`, orientation },
       );
     }
   }
 
   private collideTooltips(currentId: string): void {
-    if (this.tooltips && this.knobs) {
-      const tooltips = Object.entries(this.tooltips);
+    if (this.subViews.tooltips && this.subViews.knobs) {
+      const tooltips = Object.entries(this.subViews.tooltips);
       const collidedIdsSets: Set<string>[] = [];
       tooltips.forEach(([tooltipId, tooltip]) => {
-        const currentRect = tooltip.element.getBoundingClientRect();
-        const collidedIdsSet = new Set([tooltipId]);
-        tooltips.forEach(([nextTooltipId, nextTooltip]) => {
-          if (nextTooltipId !== tooltipId) {
-            const nextRect = nextTooltip.element.getBoundingClientRect();
-            let isColliding = false;
-            if (this.props.orientation === 'vertical') {
-              const isCollidingOnTop = currentRect.top < nextRect.bottom
-                && currentRect.top > nextRect.top;
-              const isCollidingOnBottom = currentRect.bottom > nextRect.top
-                && currentRect.bottom < nextRect.bottom;
-              isColliding = isCollidingOnTop || isCollidingOnBottom;
-            } else {
-              const isCollidingOnLeft = currentRect.left < nextRect.right
-                && currentRect.left > nextRect.left;
-              const isCollidingOnRight = currentRect.right > nextRect.left
-                && currentRect.right < nextRect.right;
-              isColliding = isCollidingOnLeft || isCollidingOnRight;
+        if (tooltip) {
+          const currentRect = tooltip.element.getBoundingClientRect();
+          const collidedIdsSet = new Set([tooltipId]);
+          tooltips.forEach(([nextTooltipId, nextTooltip]) => {
+            if (nextTooltip && nextTooltipId !== tooltipId) {
+              const nextRect = nextTooltip.element.getBoundingClientRect();
+              let isColliding = false;
+              if (this.props.orientation === 'vertical') {
+                const isCollidingOnTop = currentRect.top < nextRect.bottom
+                  && currentRect.top > nextRect.top;
+                const isCollidingOnBottom = currentRect.bottom > nextRect.top
+                  && currentRect.bottom < nextRect.bottom;
+                isColliding = isCollidingOnTop || isCollidingOnBottom;
+              } else {
+                const isCollidingOnLeft = currentRect.left < nextRect.right
+                  && currentRect.left > nextRect.left;
+                const isCollidingOnRight = currentRect.right > nextRect.left
+                  && currentRect.right < nextRect.right;
+                isColliding = isCollidingOnLeft || isCollidingOnRight;
+              }
+              if (isColliding) {
+                collidedIdsSet.add(nextTooltipId);
+              }
             }
-            if (isColliding) {
-              collidedIdsSet.add(nextTooltipId);
-            }
-          }
-        });
-        collidedIdsSets.push(collidedIdsSet);
+          });
+          collidedIdsSets.push(collidedIdsSet);
+        }
       });
-
       const mergedCollidedIdsSets: Set<string>[] = [];
       const usedCollidedIdsSets: Set<string>[] = [];
       collidedIdsSets.forEach((idsSet) => {
@@ -383,53 +324,65 @@ class View extends Observable<IViewState> {
           mergedCollidedIdsSets.push(mergedCollidedIdsSet);
         }
       });
-
       mergedCollidedIdsSets.forEach((idsSet) => {
         const idsArray = [...idsSet];
         if (idsArray.length > 1) {
           let mainId = '';
-          let lastUsedId = idsArray.find((tmpId) => this.tooltips?.[tmpId].getState()?.lastUsed) ?? '';
+          let lastUsedId = idsArray.find((tmpId) => this.subViews.tooltips?.[tmpId]?.getState()?.lastUsed) ?? '';
           if (idsSet.has(currentId)) {
             mainId = currentId;
             tooltips.forEach(([, tooltip]) => {
-              if (tooltip.getState()?.lastUsed) {
+              if (tooltip?.getState()?.lastUsed) {
                 tooltip.setState({ lastUsed: false });
               }
             });
-            this.tooltips?.[currentId].setState({ lastUsed: true });
+            this.subViews.tooltips?.[currentId]?.setState({ lastUsed: true });
           } else if (idsSet.has(lastUsedId)) {
             mainId = lastUsedId;
           } else {
             const closestPosition = getClosestNumber(
-              idsArray.map((tmpId) => this.knobs?.[tmpId].getState()?.positionRatio ?? 0),
-              this.knobs?.[currentId].getState()?.positionRatio ?? 0,
+              idsArray.map((tmpId) => this.subViews.knobs?.[tmpId]?.getState()?.positionRatio ?? 0),
+              this.subViews.knobs?.[currentId]?.getState()?.positionRatio ?? 0,
             );
             lastUsedId = idsArray.find((tmpId) => (
-              this.knobs?.[tmpId].getState()?.positionRatio === closestPosition)) ?? '';
+              this.subViews.knobs?.[tmpId]?.getState()?.positionRatio === closestPosition)) ?? '';
             if (lastUsedId !== '') {
               mainId = lastUsedId;
             }
           }
           const sortedIdsArray = idsArray.sort((id1, id2) => (
-            (this.knobs?.[id1].getState()?.positionRatio ?? 0)
-              - (this.knobs?.[id2].getState()?.positionRatio ?? 0)));
-          const value = sortedIdsArray.map((tmpId) => this.tooltips?.[tmpId].getState()?.lastValue).join('; ');
-          this.tooltips?.[mainId].setState({ value, hidden: false });
+            (this.subViews.knobs?.[id1]?.getState()?.positionRatio ?? 0)
+              - (this.subViews.knobs?.[id2]?.getState()?.positionRatio ?? 0)));
+          const value = sortedIdsArray.map((tmpId) => this.subViews.tooltips?.[tmpId]?.getState()?.lastValue).join('; ');
+          this.subViews.tooltips?.[mainId]?.setState({ value, hidden: false });
           idsArray.forEach((tmpId) => {
             if (tmpId !== mainId) {
-              this.tooltips?.[tmpId].setState({ hidden: true });
+              this.subViews.tooltips?.[tmpId]?.setState({ hidden: true });
             }
           });
         } else {
           const tmpId = idsArray[0];
-          this.tooltips?.[tmpId].setState({
-            value: this.tooltips[tmpId].getState()?.lastValue,
+          this.subViews.tooltips?.[tmpId]?.setState({
+            value: this.subViews.tooltips[tmpId]?.getState()?.lastValue,
             hidden: false,
           });
         }
       });
     }
   }
+
+  private static callAllSubViews<T extends ExtractFunctionKeys<SubView>>(
+    subViews: View['subViews'], method: T, arg?: ExtractFunctionArgs<SubView, T>,
+  ): void {
+    Object.values(subViews).forEach((subView) => {
+      if (subView instanceof SubView && typeof subView[method] === 'function') {
+        (subView[method] as ((tArg: typeof arg) => void)).call(subView, arg);
+      } else if (typeof subView === 'object') {
+        View.callAllSubViews(subView as unknown as View['subViews'], method, arg);
+      }
+    });
+  }
 }
 
+export type { IViewProps, IViewState };
 export default View;
