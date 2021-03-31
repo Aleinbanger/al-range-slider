@@ -1,5 +1,4 @@
-import Model from './Model';
-import { IModelProps, IModelData } from './ModelTypes';
+import Model, { IModelProps, IModelData } from './Model';
 
 type TPropsCasesDescription = 'initialized from range' | 'initialized from number array'
 | 'initialized from string array' | 'initialized from points map';

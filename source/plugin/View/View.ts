@@ -41,11 +41,11 @@ class View extends Observable<IViewState> {
   }
 
   public destroy(): void {
-    View.callAllSubViews(this.subViews, 'destroy');
+    this.callAllSubViews('destroy');
   }
 
   public disable(disabled = true): void {
-    View.callAllSubViews(this.subViews, 'disable', disabled);
+    this.callAllSubViews('disable', disabled);
   }
 
   public getState(): IViewState {
@@ -104,7 +104,7 @@ class View extends Observable<IViewState> {
       this.subViews.wrapper.element,
       { cssClass: `${cssClass}__track`, orientation },
     );
-    this.subViews.track.addObserver(this.handleTrackAndGridPositionChange);
+    this.subViews.track.addObserver(this.handleTrackPositionChange);
     if (grid) {
       const { pointsMap, minTicksStep, marksStep } = grid;
       this.subViews.grid = new GridView(
@@ -117,7 +117,7 @@ class View extends Observable<IViewState> {
           marksStep,
         },
       );
-      this.subViews.grid.addObserver(this.handleTrackAndGridPositionChange);
+      this.subViews.grid.addObserver(this.handleTrackPositionChange);
     }
 
     this.subViews.knobs = {};
@@ -137,7 +137,7 @@ class View extends Observable<IViewState> {
   }
 
   @bind
-  private handleTrackAndGridPositionChange({ positionRatio }:
+  private handleTrackPositionChange({ positionRatio }:
   ITrackViewState | IGridViewState): void {
     if (typeof positionRatio !== 'undefined') {
       this.notifyObservers({ unknownPosition: positionRatio });
@@ -156,7 +156,8 @@ class View extends Observable<IViewState> {
     }
   }
 
-  private handleKnobActiveStatusChange(id: string, { active }: IKnobViewState): void {
+  private handleKnobActiveStatusChange(id: string, { active }:
+  IKnobViewState | IInputViewState): void {
     if (typeof active !== 'undefined') {
       this.notifyObservers({ currentActiveStatus: [id, active] });
     }
@@ -247,14 +248,8 @@ class View extends Observable<IViewState> {
           hidden,
         },
       );
-      this.subViews.inputs[id]?.addObserver(this.handleInputActiveStatusChange.bind(this, id));
+      this.subViews.inputs[id]?.addObserver(this.handleKnobActiveStatusChange.bind(this, id));
       this.subViews.inputs[id]?.addObserver(this.handleInputValueChange.bind(this, id));
-    }
-  }
-
-  private handleInputActiveStatusChange(id: string, { active }: IInputViewState): void {
-    if (typeof active !== 'undefined') {
-      this.notifyObservers({ currentActiveStatus: [id, active] });
     }
   }
 
@@ -371,14 +366,14 @@ class View extends Observable<IViewState> {
     }
   }
 
-  private static callAllSubViews<T extends ExtractFunctionKeys<SubView>>(
-    subViews: View['subViews'], method: T, arg?: ExtractFunctionArgs<SubView, T>,
+  private callAllSubViews<T extends ExtractFunctionKeys<SubView>>(
+    method: T, arg?: ExtractFunctionArgs<SubView, T>, subViews = this.subViews,
   ): void {
     Object.values(subViews).forEach((subView) => {
       if (subView instanceof SubView && typeof subView[method] === 'function') {
         (subView[method] as ((tArg: typeof arg) => void)).call(subView, arg);
       } else if (typeof subView === 'object') {
-        View.callAllSubViews(subView as unknown as View['subViews'], method, arg);
+        this.callAllSubViews(method, arg, subView as unknown as View['subViews']);
       }
     });
   }

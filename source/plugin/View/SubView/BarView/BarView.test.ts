@@ -33,6 +33,7 @@ describe.each(propsCases)('%s', (_description, props) => {
       initializeBar();
     });
     afterEach(() => {
+      bar.destroy();
       parent.remove();
     });
 

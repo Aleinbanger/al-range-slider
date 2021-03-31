@@ -1,9 +1,4 @@
 {
-  "env": {
-    "browser": true,
-    "es6": true,
-    "jquery": true
-  },
   "extends": [
     "airbnb-typescript/base",
     "plugin:@typescript-eslint/recommended",
@@ -11,7 +6,7 @@
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "ecmaVersion": 2020,
+    "ecmaVersion": 12,
     "sourceType": "module",
     "project": "./tsconfig.json"
   },
@@ -20,10 +15,11 @@
     "fsd"
   ],
   "ignorePatterns": [
-    "build/",
     "node_modules/",
+    "build/",
+    "coverage/",
     "webpack.*.js",
-    "jest.config.js"
+    "*.config.js"
   ],
   "settings": {
     "import/resolver": {
@@ -42,6 +38,11 @@
         "ts": "never",
         "tsx": "never"
       }
+    ],
+    "dot-notation": "off",
+    "@typescript-eslint/dot-notation": [
+      "error",
+      { "allowPrivateClassPropertyAccess": true }
     ]
   }
 }

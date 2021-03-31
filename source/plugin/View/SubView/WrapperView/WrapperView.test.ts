@@ -33,6 +33,7 @@ describe.each(propsCases)('%s', (_description, props) => {
       initializeWrapper();
     });
     afterEach(() => {
+      wrapper.destroy();
       parent.remove();
     });
 

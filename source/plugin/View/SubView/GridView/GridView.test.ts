@@ -48,6 +48,7 @@ describe.each(propsCases)('%s', (_description, props) => {
       initializeGrid();
     });
     afterEach(() => {
+      grid.destroy();
       parent.remove();
     });
 
@@ -80,6 +81,7 @@ describe.each(propsCases)('%s', (_description, props) => {
 
   describe('event listeners', () => {
     afterEach(() => {
+      grid.destroy();
       parent.remove();
     });
 
@@ -100,7 +102,7 @@ describe.each(propsCases)('%s', (_description, props) => {
       expect(mark).toBeDefined();
       mockPointerEvent(mark, { eventType: 'pointerdown' });
       mockPointerEvent(mark, { eventType: 'pointerup' });
-      expect(mockObserver.mock.results[0].value).toBe(position);
+      expect(mockObserver).lastReturnedWith(position);
     });
   });
 });

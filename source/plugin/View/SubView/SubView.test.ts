@@ -49,6 +49,7 @@ describe('general methods', () => {
     testView = new TestView(parent, props);
   });
   afterEach(() => {
+    testView.destroy();
     parent.remove();
   });
 
@@ -70,7 +71,7 @@ describe('general methods', () => {
   test('should set and get the correct state', () => {
     testView.setState({ test: 'one' });
     expect(renderStateMock).toBeCalledTimes(1);
-    expect(renderStateMock.mock.results[0].value).toStrictEqual({ test: 'one' });
+    expect(renderStateMock).lastReturnedWith({ test: 'one' });
     const state = testView.getState();
     expect(state?.test).toBe('one');
   });

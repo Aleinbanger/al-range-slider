@@ -41,6 +41,7 @@ describe.each(propsCases)('%s', (_description, props) => {
       initializeTrack();
     });
     afterEach(() => {
+      track.destroy();
       parent.remove();
     });
 
@@ -52,6 +53,7 @@ describe.each(propsCases)('%s', (_description, props) => {
 
   describe('event listeners', () => {
     afterEach(() => {
+      track.destroy();
       parent.remove();
     });
 
@@ -61,10 +63,10 @@ describe.each(propsCases)('%s', (_description, props) => {
       mockPointerEvent(track.element, { eventType: 'pointerdown' });
       if (props.orientation === 'vertical') {
         mockPointerEvent(track.element, { eventType: 'pointerup', clientY: 100 });
-        expect(mockObserver.mock.results[0].value).toBe(0.2);
+        expect(mockObserver).lastReturnedWith(0.2);
       } else {
         mockPointerEvent(track.element, { eventType: 'pointerup', clientX: 500 });
-        expect(mockObserver.mock.results[0].value).toBe(1);
+        expect(mockObserver).lastReturnedWith(1);
       }
     });
   });

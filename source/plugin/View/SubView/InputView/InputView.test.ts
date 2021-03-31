@@ -38,6 +38,7 @@ describe.each(propsCases)('%s', (_description, props) => {
       initializeInput();
     });
     afterEach(() => {
+      input.destroy();
       parent.remove();
     });
 
@@ -72,6 +73,7 @@ describe.each(propsCases)('%s', (_description, props) => {
 
   describe('event listeners', () => {
     afterEach(() => {
+      input.destroy();
       parent.remove();
     });
 
@@ -79,9 +81,9 @@ describe.each(propsCases)('%s', (_description, props) => {
       const mockObserver = jest.fn(({ active }: IInputViewState) => active);
       initializeInput(mockObserver);
       input.element.dispatchEvent(new FocusEvent('focus'));
-      expect(mockObserver.mock.results[0].value).toBe(true);
+      expect(mockObserver).nthReturnedWith(1, true);
       input.element.dispatchEvent(new FocusEvent('blur'));
-      expect(mockObserver.mock.results[1].value).toBe(false);
+      expect(mockObserver).nthReturnedWith(2, false);
     });
 
     test('should notify observers about value', () => {
@@ -89,7 +91,7 @@ describe.each(propsCases)('%s', (_description, props) => {
       initializeInput(mockObserver);
       input.element.value = '100';
       input.element.dispatchEvent(new Event('change', { bubbles: true }));
-      expect(mockObserver.mock.results[0].value).toBe('100');
+      expect(mockObserver).lastReturnedWith('100');
     });
   });
 });

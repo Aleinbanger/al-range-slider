@@ -32,6 +32,7 @@ describe.each(propsCases)('%s', (_description, props) => {
       initializeTooltip();
     });
     afterEach(() => {
+      tooltip.destroy();
       parent.remove();
     });
 
