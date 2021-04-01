@@ -66,6 +66,11 @@ class Presenter {
     }
   }
 
+  public getState(): IState | undefined {
+    this.updateState();
+    return cloneDeep(this.state);
+  }
+
   private initialize(): void {
     const { parent } = this;
     const {

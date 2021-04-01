@@ -43,10 +43,7 @@ abstract class SubView<
   }
 
   public getState(): TState | undefined {
-    if (this.state) {
-      return cloneDeep(this.state);
-    }
-    return undefined;
+    return cloneDeep(this.state);
   }
 
   public setState(state: TState): void {
