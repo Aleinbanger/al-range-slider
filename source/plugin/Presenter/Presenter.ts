@@ -1,6 +1,6 @@
 import bind from 'bind-decorator';
 
-import { cloneDeep } from 'shared/scripts/utils';
+import { cloneDeep } from 'shared/scripts/utils/utils';
 
 import Model, { IModelData } from '../Model/Model';
 import View, { IViewState } from '../View/View';

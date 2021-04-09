@@ -1,6 +1,6 @@
-import { cloneDeep } from 'shared/scripts/utils';
+import Observable from 'shared/scripts/Observable/Observable';
+import { cloneDeep } from 'shared/scripts/utils/utils';
 
-import Observable from '../../Observable/Observable';
 import { ICommonViewProps, TReferenceFrame } from '../ViewTypes';
 
 interface ISubViewProps extends ICommonViewProps {

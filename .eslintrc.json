@@ -38,11 +38,6 @@
         "ts": "never",
         "tsx": "never"
       }
-    ],
-    "dot-notation": "off",
-    "@typescript-eslint/dot-notation": [
-      "error",
-      { "allowPrivateClassPropertyAccess": true }
     ]
   }
 }

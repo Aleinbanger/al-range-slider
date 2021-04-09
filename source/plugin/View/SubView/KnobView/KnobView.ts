@@ -17,20 +17,22 @@ interface IKnobViewState {
 }
 
 class KnobView extends SubView<IKnobViewState, IKnobViewProps> {
-  protected state: IKnobViewState = {
-    positionRatio: 0,
-    positionRatioLimits: {
-      min: 0,
-      max: 1,
-    },
-    active: false,
-    zIndex: 2,
-  };
-
   protected renderMarkup(): HTMLElement {
     const element = document.createElement('span');
     element.setAttribute('class', `${this.props.cssClass} js-${this.props.cssClass}`);
     return element;
+  }
+
+  protected initialize(): void {
+    this.state = {
+      positionRatio: 0,
+      positionRatioLimits: {
+        min: 0,
+        max: 1,
+      },
+      active: false,
+      zIndex: 2,
+    };
   }
 
   protected addEventListeners(): void {
@@ -96,7 +98,9 @@ class KnobView extends SubView<IKnobViewState, IKnobViewProps> {
   @bind
   private handleKnobPointerUp(event: PointerEvent): void {
     this.setState({ active: false });
-    this.notifyObservers(this.state);
+    if (this.state) {
+      this.notifyObservers(this.state);
+    }
 
     this.handleKnobPointerCancel(event);
   }
@@ -110,7 +114,7 @@ class KnobView extends SubView<IKnobViewState, IKnobViewProps> {
   }
 
   private checkLimits(positionRatio: number): boolean {
-    if (this.state.positionRatioLimits) {
+    if (this.state?.positionRatioLimits) {
       const { min, max } = this.state.positionRatioLimits;
       const isInsideLimits = positionRatio >= min && positionRatio <= max;
       if (isInsideLimits) {

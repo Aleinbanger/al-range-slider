@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/dot-notation */
 
-import { ExtractFunctionKeys } from 'shared/scripts/typeUtils';
+import { ExtractFunctionKeys } from 'shared/scripts/utils/typeUtils';
 
 import { IViewProps, IViewState } from './ViewTypes';
 import View from './View';

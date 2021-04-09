@@ -6,22 +6,24 @@ interface IBarViewState {
 }
 
 class BarView extends SubView<IBarViewState> {
-  protected state: IBarViewState = {
-    from: 0,
-    to: 1,
-  };
-
   protected renderMarkup(): HTMLElement {
     const element = document.createElement('span');
     element.setAttribute('class', `${this.props.cssClass} js-${this.props.cssClass}`);
     return element;
   }
 
+  protected initialize(): void {
+    this.state = {
+      from: 0,
+      to: 1,
+    };
+  }
+
   protected renderState({ from, to }: IBarViewState): void {
     let percentFrom: number;
     let percentTo: number;
     let difference: number;
-    if (typeof from !== 'undefined' && typeof this.state.to !== 'undefined') {
+    if (typeof from !== 'undefined' && typeof this.state?.to !== 'undefined') {
       if (from < 0) {
         percentFrom = 0;
       } else if (from > 1) {
@@ -42,7 +44,7 @@ class BarView extends SubView<IBarViewState> {
         this.element.style.width = `${difference}%`;
       }
     }
-    if (typeof to !== 'undefined' && typeof this.state.from !== 'undefined') {
+    if (typeof to !== 'undefined' && typeof this.state?.from !== 'undefined') {
       if (to < 0) {
         percentTo = 0;
       } else if (to > 1) {

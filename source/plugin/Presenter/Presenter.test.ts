@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/dot-notation */
 
 import Model from '../Model/Model';
 import View from '../View/View';

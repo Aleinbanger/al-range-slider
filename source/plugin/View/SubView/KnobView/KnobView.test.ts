@@ -1,6 +1,6 @@
 import {
   mockElementDimensions, mockPointerEvent,
-} from 'shared/scripts/jestUtils';
+} from 'shared/scripts/utils/jestUtils';
 
 import KnobView, { IKnobViewProps, IKnobViewState } from './KnobView';
 

@@ -18,10 +18,6 @@ interface IGridViewState {
 }
 
 class GridView extends SubView<IGridViewState, IGridViewProps> {
-  protected state: IGridViewState = {
-    ticksStep: 1,
-  };
-
   public destroy(): void {
     super.destroy();
     window.removeEventListener('resize', this.handleWindowResize);
@@ -34,6 +30,9 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
   }
 
   protected initialize(): void {
+    this.state = {
+      ticksStep: 1,
+    };
     this.props.ticks = [];
     this.props.marks = [];
     this.props.minTicksStep = Math.ceil(Math.abs(this.props.minTicksStep));

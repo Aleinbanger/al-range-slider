@@ -1,9 +1,9 @@
 import bind from 'bind-decorator';
 
-import { cloneDeep, getClosestNumber } from 'shared/scripts/utils';
-import { ExtractFunctionKeys, ExtractFunctionArgs } from 'shared/scripts/typeUtils';
+import Observable from 'shared/scripts/Observable/Observable';
+import { cloneDeep, getClosestNumber } from 'shared/scripts/utils/utils';
+import { ExtractFunctionKeys, ExtractFunctionArgs } from 'shared/scripts/utils/typeUtils';
 
-import Observable from '../Observable/Observable';
 import SubView from './SubView/SubView';
 import WrapperView from './SubView/WrapperView/WrapperView';
 import TrackView, { ITrackViewState } from './SubView/TrackView/TrackView';

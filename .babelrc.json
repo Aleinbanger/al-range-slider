@@ -10,8 +10,9 @@
     "@babel/preset-typescript"
   ],
   "plugins": [
+    ["@babel/plugin-transform-typescript", { "allowDeclareFields": true }],
     ["@babel/plugin-proposal-decorators", { "legacy": true }],
-    ["@babel/proposal-class-properties", { "loose": true }],
+    "@babel/proposal-class-properties",
     "@babel/proposal-object-rest-spread"
   ]
 }

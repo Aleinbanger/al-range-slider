@@ -13,11 +13,6 @@ interface IInputViewState {
 }
 
 class InputView extends SubView<IInputViewState, IInputViewProps, HTMLInputElement> {
-  protected state: IInputViewState = {
-    value: '',
-    active: false,
-  };
-
   public disable(disabled = true): void {
     super.disable(disabled);
     this.element.disabled = disabled;
@@ -34,6 +29,13 @@ class InputView extends SubView<IInputViewState, IInputViewProps, HTMLInputEleme
       element.classList.remove(`${this.props.cssClass}_hidden`);
     }
     return element;
+  }
+
+  protected initialize(): void {
+    this.state = {
+      value: '',
+      active: false,
+    };
   }
 
   protected addEventListeners(): void {

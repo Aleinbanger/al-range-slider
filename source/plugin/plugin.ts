@@ -1,4 +1,4 @@
-import { ExtractFunctionArgs } from 'shared/scripts/typeUtils';
+import { ExtractFunctionArgs } from 'shared/scripts/utils/typeUtils';
 
 import Presenter, { IProps } from './Presenter/Presenter';
 

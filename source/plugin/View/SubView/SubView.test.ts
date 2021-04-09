@@ -9,18 +9,16 @@ const addEventListenersMock = jest.fn();
 const renderStateMock = jest.fn((state: ITestViewState) => state);
 
 class TestView extends SubView<ITestViewState> {
-  protected state: ITestViewState = {
-    test: '1',
-  };
-
   protected renderMarkup(): HTMLElement {
     const element = document.createElement('div');
     element.setAttribute('class', `${this.props.cssClass} js-${this.props.cssClass}`);
     return element;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   protected initialize(): void {
+    this.state = {
+      test: '1',
+    };
     initializeMock();
   }
 

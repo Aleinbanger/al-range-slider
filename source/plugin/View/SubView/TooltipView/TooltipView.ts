@@ -9,18 +9,20 @@ interface ITooltipViewState {
 }
 
 class TooltipView extends SubView<ITooltipViewState> {
-  protected state: ITooltipViewState = {
-    value: '',
-    lastValue: '',
-    active: false,
-    hidden: false,
-    lastUsed: false,
-  };
-
   protected renderMarkup(): HTMLElement {
     const element = document.createElement('span');
     element.setAttribute('class', `${this.props.cssClass} js-${this.props.cssClass}`);
     return element;
+  }
+
+  protected initialize(): void {
+    this.state = {
+      value: '',
+      lastValue: '',
+      active: false,
+      hidden: false,
+      lastUsed: false,
+    };
   }
 
   protected renderState({ value, active, hidden }: ITooltipViewState): void {

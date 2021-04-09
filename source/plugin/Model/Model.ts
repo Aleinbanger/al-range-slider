@@ -1,12 +1,12 @@
+import Observable from 'shared/scripts/Observable/Observable';
 import {
   cloneDeep,
   getKeyByValue,
   getClosestNumber,
   isNumeric,
   isNumberArray,
-} from 'shared/scripts/utils';
+} from 'shared/scripts/utils/utils';
 
-import Observable from '../Observable/Observable';
 import {
   TPointValue,
   TCurrentPoint,
