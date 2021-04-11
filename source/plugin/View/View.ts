@@ -36,7 +36,9 @@ class View extends Observable<IViewState> {
     super();
     this.parent = parent;
     this.props = cloneDeep(props);
-    this.state = {};
+    this.state = {
+      selectedValues: {},
+    };
     this.initialize();
   }
 
@@ -84,6 +86,9 @@ class View extends Observable<IViewState> {
     if (currentValue) {
       const [id, value] = currentValue;
       this.state.currentValue = currentValue;
+      if (this.state.selectedValues) {
+        this.state.selectedValues[id] = value;
+      }
       this.subViews.inputs?.[id]?.setState({ value });
       this.subViews.tooltips?.[id]?.setState({ value, lastValue: value });
       if (this.props.collideTooltips) {

@@ -38,9 +38,10 @@ class Presenter {
     }
   }
 
-  public restart(props?: IProps): void {
+  public restart(props?: Partial<IProps>): void {
     if (typeof props === 'object') {
-      this.props = cloneDeep(props);
+      const oldProps = this.props;
+      this.props = { ...oldProps, ...cloneDeep(props) };
     }
     this.destroy();
     this.initialize();

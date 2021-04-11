@@ -84,14 +84,8 @@ describe('general methods', () => {
     expect(destroySpy).toBeCalled();
     expect(presenter['model']).toBeInstanceOf(Model);
     expect(presenter['view']).toBeInstanceOf(View);
-    presenter.restart({ ...props, initialSelectedValues: { to: 10 } });
+    presenter.restart({ initialSelectedValues: { to: 10 } });
     expect(presenter.getState()?.selectedPoints?.to[1]).toBe(10);
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore: test runtime error prevention and fallback to default props
-    presenter.restart({});
-    expect(presenter['model']).toBeInstanceOf(Model);
-    expect(presenter['view']).toBeInstanceOf(View);
-    expect(presenter.getState()?.selectedPoints?.to).toStrictEqual([0.5, 0]);
   });
 
   test('should update selected points by values', () => {

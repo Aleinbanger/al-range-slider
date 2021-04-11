@@ -11,7 +11,9 @@ type TReferenceFrame = {
   height: number;
 };
 
-type TPointsMap = [position: string, value: number | string][];
+type TPointValue = number | string;
+
+type TPointsMap = [position: string, value: TPointValue][];
 
 interface ICommonViewProps {
   readonly cssClass: string;
@@ -33,6 +35,7 @@ interface IViewProps extends ICommonViewProps {
 }
 
 interface IViewState {
+  selectedValues?: Record<string, TPointValue>;
   currentPosition?: [id: string, position: number];
   currentPositionLimits?: [id: string, limits: { min: number; max: number }];
   currentActiveStatus?: [id: string, active: boolean];
