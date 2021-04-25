@@ -1,0 +1,11 @@
+mixin InputToggle({ labelText = '' })
+  -
+    const cssClass = 'input-toggle';
+    const wrapperClass = [cssClass, `js-${cssClass}`];
+    attributes.type = 'checkbox';
+    attributes.class = `${cssClass}__state`;
+
+  label(class=wrapperClass) #{labelText}
+    input&attributes(attributes)
+    span(class=`${cssClass}__box`)
+      span(class=`${cssClass}__mark`)

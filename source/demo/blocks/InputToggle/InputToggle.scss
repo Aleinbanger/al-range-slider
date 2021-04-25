@@ -1,0 +1,71 @@
+@import '~shared/styles/mixins';
+@import '~shared/styles/variables';
+
+.input-toggle {
+  $block: &;
+  $width_toggle: 4rem;
+  $height_toggle: 2rem;
+  $width_toggle-mark: 1.2rem;
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: $height_toggle;
+  padding-left: $width_toggle + 1rem;
+  color: theme-var($color_main);
+  font-family: $font-family_body;
+  font-size: $font-size_body;
+  line-height: $height_toggle;
+  cursor: pointer;
+
+  &__state {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+  }
+
+  &__box {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: $width_toggle;
+    height: $height_toggle;
+    padding: 0.4rem;
+    border: 0.1rem solid theme-var($color_surface);
+    border-radius: 1rem;
+    transition: padding 0.2s ease-in-out;
+
+    // #{$block}:hover & {
+    //   // border-color: theme-var($color_secondary);
+    //   box-shadow: 0 0 0.2rem 0.1rem theme-var($color_secondary);
+    // }
+
+    #{$block}__state:focus ~ & {
+      // border-color: theme-var($color_secondary);
+      box-shadow: 0 0 0.2rem 0.1rem theme-var($color_secondary);
+    }
+  
+    #{$block}__state:checked ~ & {
+      // box-shadow: inset 0 0 0.2em 0.1em theme-var($color_secondary);
+      border-color: theme-var($color_primary);
+      padding-left: $width_toggle - $width_toggle-mark - 0.4rem - 2*0.1rem;
+    }
+  }
+
+  &__mark {
+    display: inline-block;
+    min-width: $width_toggle-mark;
+    min-height: $width_toggle-mark;
+    background: theme-var($color_surface);
+    border-radius: 50%;
+    transition: background-color 0.2s ease-in-out;
+
+    #{$block}__state:checked ~ #{$block}__box & {
+      background: theme-var($color_primary);
+    }
+  }
+}
