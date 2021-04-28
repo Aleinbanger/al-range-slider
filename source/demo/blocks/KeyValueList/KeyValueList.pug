@@ -1,0 +1,8 @@
+mixin KeyValueList()
+  -
+    const cssClass = 'key-value-list';
+    const wrapperClass = [cssClass, `js-${cssClass}`];
+    const addButtonClass = [`${cssClass}__button`, `${cssClass}__button_add`, `js-${cssClass}__button_add`];
+
+  div(class=wrapperClass)
+    button(class=addButtonClass type="button") &#10133;

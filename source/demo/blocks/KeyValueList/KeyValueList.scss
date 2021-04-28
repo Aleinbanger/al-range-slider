@@ -1,0 +1,89 @@
+@import '~shared/styles/mixins';
+@import '~shared/styles/variables';
+
+.key-value-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+
+  &__item {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    margin: 0 1rem 1rem 0;
+  }
+
+  &__input {
+    display: inline-block;
+    height: 2.6rem;
+    width: 6rem;
+    padding: 0.5rem 1rem;
+    background: inherit;
+    border: 0;
+    box-shadow: inset 0 0 0.3rem 0.1rem theme-var($color_surface);
+    text-align: center;
+    color: theme-var($color_main);
+    font-size: 1.2rem;
+    outline: none;
+
+    &:first-child {
+      border-radius: 1rem 0 0 1rem;
+    }
+
+    &:nth-last-child(2) {
+      border-radius: 0 1rem 1rem 0;
+    }
+
+    &:disabled {
+      box-shadow: inset 0 0 0.1rem 0.1rem theme-var($color_surface);
+      filter: opacity(0.5);
+      pointer-events: none;
+    }
+
+    &:focus,
+    &:hover {
+      box-shadow: inset 0 0 0.3rem 0.1rem theme-var($color_surface),
+        0 0 0 0.1rem theme-var($color_secondary);
+      color: theme-var($color_secondary);
+    }
+
+    &::placeholder {
+      color: theme-var($color_surface);
+    }
+  }
+
+  &__button {
+    display: inline-block;
+    height: 2.3rem;
+    width: 2.3rem;
+    margin: 0 1rem;
+    background: inherit;
+    border: 0;
+    border-radius: 1rem;
+    box-shadow: 0 0 0.3rem 0.1rem theme-var($color_surface);
+    padding: 0.4rem;
+    color: theme-var($color_main);
+    font-size: 1.1rem;
+    user-select: none;
+    cursor: pointer;
+
+    &:active {
+      box-shadow: inset 0 0 0.3rem 0.1rem theme-var($color_surface);
+      font-size: 1rem;
+    }
+
+    &:disabled {
+      box-shadow: inset 0 0 0.1rem 0.1rem theme-var($color_surface);
+      filter: opacity(0.5);
+      pointer-events: none;
+    }
+
+    &_add {
+      margin: 0 1rem 1rem;
+    }
+
+    &_close {
+      color: theme-var($color_primary_dark);
+    }
+  }
+}

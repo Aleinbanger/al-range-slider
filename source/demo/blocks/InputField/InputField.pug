@@ -1,0 +1,25 @@
+mixin InputField({ inpType='text', labelText })
+  -
+    const cssClass = 'input-field';
+    const wrapperClass = [cssClass];
+    attributes.class = [`${cssClass}__field`];
+  case inpType
+    when 'email'
+      - attributes.type = inpType
+      - attributes.name = 'email'
+      if (!attributes.placeholder)
+        - attributes.placeholder = 'Email'
+    when 'password'
+      - attributes.type = inpType
+      - attributes.name = 'password'
+      if (!attributes.placeholder)
+        - attributes.placeholder = 'Password'
+    when 'number'
+      - attributes.type = inpType
+    default
+      - attributes.type = 'text'
+
+  div(class=wrapperClass)
+    if (labelText)
+      label(class=`${cssClass}__label`) #{labelText}
+    input&attributes(attributes)
