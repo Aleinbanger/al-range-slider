@@ -41,6 +41,7 @@ class InputToggle extends Component<IInputToggleState> {
   @bind
   private handleElementClick(): void {
     this.state.checked = this.children.input?.checked;
+    this.notifyObservers(this.state);
     this.children.input?.blur();
   }
 }

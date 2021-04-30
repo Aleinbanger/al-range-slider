@@ -1,8 +1,10 @@
-mixin KeyValueList()
+mixin KeyValueList({ labelText })
   -
     const cssClass = 'key-value-list';
     const wrapperClass = [cssClass, `js-${cssClass}`];
     const addButtonClass = [`${cssClass}__button`, `${cssClass}__button_add`, `js-${cssClass}__button_add`];
 
   div(class=wrapperClass)
+    if (labelText)
+      label(class=`${cssClass}__label`) #{labelText}
     button(class=addButtonClass type="button") &#10133;

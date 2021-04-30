@@ -6,6 +6,17 @@
   flex-wrap: wrap;
   align-items: center;
 
+  &__label {
+    display: inline-block;
+    width: 100%;
+    margin-bottom: 0.5rem;
+    font-family: $font-family_h3;
+    font-weight: bold;
+    font-size: $font-size_h3;
+    line-height: 1.5rem;
+    text-transform: uppercase;
+  }
+
   &__item {
     position: relative;
     display: inline-flex;
@@ -25,6 +36,7 @@
     color: theme-var($color_main);
     font-size: 1.2rem;
     outline: none;
+    appearance: textfield;
 
     &:first-child {
       border-radius: 1rem 0 0 1rem;
@@ -49,6 +61,13 @@
 
     &::placeholder {
       color: theme-var($color_surface);
+      font-size: 1rem;
+    }
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      appearance: none;
+      margin: 0;
     }
   }
 

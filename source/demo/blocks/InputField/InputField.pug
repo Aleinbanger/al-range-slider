@@ -1,8 +1,9 @@
-mixin InputField({ inpType='text', labelText })
+mixin InputField({ inpType='text', labelText, long=false })
   -
     const cssClass = 'input-field';
-    const wrapperClass = [cssClass];
-    attributes.class = [`${cssClass}__field`];
+    const wrapperClass = [cssClass, `js-${cssClass}`];
+    attributes.class = [`${cssClass}__field`, `js-${cssClass}__field`];
+
   case inpType
     when 'email'
       - attributes.type = inpType
@@ -18,6 +19,9 @@ mixin InputField({ inpType='text', labelText })
       - attributes.type = inpType
     default
       - attributes.type = 'text'
+
+  if (long)
+    - attributes.class.push(`${cssClass}__field_long`)
 
   div(class=wrapperClass)
     if (labelText)

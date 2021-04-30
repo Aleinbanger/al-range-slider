@@ -4,18 +4,30 @@ import Component from 'shared/scripts/Component/Component';
 
 import './KeyValueList.scss';
 
+interface ITextInputProps {
+  type: 'text';
+  placeholder?: string;
+}
+
+interface INumberInputProps {
+  type: 'number';
+  placeholder?: string;
+  min?: number;
+  max?: number;
+  step?: number;
+}
+
 interface IKeyValueListProps {
-  placeholders: [key: string, value: string];
+  keyInput?: ITextInputProps | INumberInputProps;
+  valueInput?: ITextInputProps | INumberInputProps;
 }
 
 interface IKeyValueListState {
-  items?: Record<string, string | number>;
+  items?: Record<string | number, string | number>;
   tmpKey?: string;
 }
 
 class KeyValueList extends Component<IKeyValueListState, IKeyValueListProps> {
-  declare protected readonly props: IKeyValueListProps;
-
   declare protected state: IKeyValueListState;
 
   declare protected children: {
@@ -23,7 +35,7 @@ class KeyValueList extends Component<IKeyValueListState, IKeyValueListProps> {
     items: HTMLElement[];
   };
 
-  constructor(parent: HTMLElement | null, props: IKeyValueListProps = { placeholders: ['', ''] }) {
+  constructor(parent: HTMLElement | null, props?: IKeyValueListProps) {
     super(parent, 'key-value-list', props);
   }
 
@@ -51,7 +63,7 @@ class KeyValueList extends Component<IKeyValueListState, IKeyValueListProps> {
     }
   }
 
-  private createItem(key?: string, value?: string | number):
+  private createItem(key?: string | number, value?: string | number):
   [keyInput: HTMLInputElement, valueInput: HTMLInputElement] {
     const item = document.createElement('span');
     item.setAttribute('class', `${this.cssClass}__item js-${this.cssClass}__item`);
@@ -61,23 +73,55 @@ class KeyValueList extends Component<IKeyValueListState, IKeyValueListProps> {
     const keyInput = document.createElement('input');
     keyInput.setAttribute('class', `${this.cssClass}__input js-${this.cssClass}__input_key`);
     keyInput.type = 'text';
-    keyInput.value = key ?? '';
+    keyInput.value = String(key ?? '');
+    keyInput.pattern = '^\\S.*';
+    keyInput.required = true;
     keyInput.disabled = true;
+    if (this.props?.keyInput) {
+      const { type, placeholder } = this.props.keyInput;
+      keyInput.type = type;
+      keyInput.placeholder = placeholder ?? '';
+      if ('min' in this.props.keyInput) {
+        keyInput.min = String(this.props.keyInput.min ?? '');
+      }
+      if ('max' in this.props.keyInput) {
+        keyInput.max = String(this.props.keyInput.max ?? '');
+      }
+      if ('step' in this.props.keyInput) {
+        keyInput.step = String(this.props.keyInput.step ?? '');
+      }
+    }
     item.appendChild(keyInput);
+
     const valueInput = document.createElement('input');
     valueInput.setAttribute('class', `${this.cssClass}__input js-${this.cssClass}__input_value`);
     valueInput.type = 'text';
-    valueInput.value = value ? String(value) : '';
+    valueInput.value = String(value ?? '');
+    valueInput.pattern = '^\\S.*';
+    valueInput.required = true;
     valueInput.disabled = true;
+    if (this.props?.valueInput) {
+      const { type, placeholder } = this.props.valueInput;
+      valueInput.type = type;
+      valueInput.placeholder = placeholder ?? '';
+      if ('min' in this.props.valueInput) {
+        keyInput.min = String(this.props.valueInput.min ?? '');
+      }
+      if ('max' in this.props.valueInput) {
+        keyInput.max = String(this.props.valueInput.max ?? '');
+      }
+      if ('step' in this.props.valueInput) {
+        keyInput.step = String(this.props.valueInput.step ?? '');
+      }
+    }
     item.appendChild(valueInput);
-    [keyInput.placeholder, valueInput.placeholder] = this.props.placeholders;
 
     const closeButton = document.createElement('button');
     closeButton.setAttribute('class',
       `${this.cssClass}__button ${this.cssClass}__button_close js-${this.cssClass}__button_close`);
     closeButton.type = 'button';
     closeButton.textContent = '\u274C';
-    closeButton.dataset.key = key ?? '';
+    closeButton.dataset.key = String(key ?? '');
     item.appendChild(closeButton);
     closeButton.addEventListener('mousedown', this.handleButtonMouseDown);
     closeButton.addEventListener('click', this.handleCloseButtonClick);
@@ -118,6 +162,12 @@ class KeyValueList extends Component<IKeyValueListState, IKeyValueListProps> {
     const input = event.currentTarget as HTMLInputElement;
     const isKeyDuplicated = this.state.items && Object.keys(this.state.items).includes(input.value);
     if (isKeyDuplicated) {
+      input.setCustomValidity('Key cannot be duplicated.');
+    } else {
+      input.setCustomValidity('');
+    }
+    const isValid = input.reportValidity();
+    if (isKeyDuplicated || !isValid) {
       input.focus();
     } else {
       input.disabled = true;
@@ -139,13 +189,17 @@ class KeyValueList extends Component<IKeyValueListState, IKeyValueListProps> {
   @bind
   private handleValueInputChange(event: Event): void {
     const input = event.currentTarget as HTMLInputElement;
-    input.disabled = true;
-    if (this.state.items && this.state.tmpKey) {
-      this.state.items[this.state.tmpKey] = input.value;
-    }
-    this.notifyObservers(this.state);
+    if (!input.reportValidity()) {
+      input.focus();
+    } else {
+      input.disabled = true;
+      if (this.state.items && this.state.tmpKey) {
+        this.state.items[this.state.tmpKey] = input.value;
+      }
+      this.notifyObservers(this.state);
 
-    input.removeEventListener('change', this.handleValueInputChange);
+      input.removeEventListener('change', this.handleValueInputChange);
+    }
   }
 }
 
