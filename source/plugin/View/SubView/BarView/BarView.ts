@@ -37,7 +37,7 @@ class BarView extends SubView<IBarViewState> {
         difference = 0;
       }
       if (this.props.orientation === 'vertical') {
-        this.element.style.top = `${percentFrom}%`;
+        this.element.style.bottom = `${percentFrom}%`;
         this.element.style.height = `${difference}%`;
       } else {
         this.element.style.left = `${percentFrom}%`;

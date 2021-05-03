@@ -54,7 +54,7 @@ describe.each(propsCases)('%s', (_description, props) => {
       test('should set and render "positionRatio" state', () => {
         const checkStyle = () => {
           if (props.orientation === 'vertical') {
-            return knob.element.style.top;
+            return knob.element.style.bottom;
           }
           return knob.element.style.left;
         };
@@ -96,7 +96,7 @@ describe.each(propsCases)('%s', (_description, props) => {
       expect(mockObserver).nthReturnedWith(1, undefined);
       if (props.orientation === 'vertical') {
         mockPointerEvent(knob.element, { eventType: 'pointermove', clientY: 100 });
-        expect(mockObserver).nthReturnedWith(2, 0.2);
+        expect(mockObserver).nthReturnedWith(2, 0.8);
       } else {
         mockPointerEvent(knob.element, { eventType: 'pointermove', clientX: 250 });
         expect(mockObserver).nthReturnedWith(2, 0.5);

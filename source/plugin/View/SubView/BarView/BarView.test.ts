@@ -45,7 +45,7 @@ describe.each(propsCases)('%s', (_description, props) => {
     describe('render state', () => {
       const checkStyle = () => {
         if (props.orientation === 'vertical') {
-          return [bar.element.style.top, bar.element.style.height];
+          return [bar.element.style.bottom, bar.element.style.height];
         }
         return [bar.element.style.left, bar.element.style.width];
       };

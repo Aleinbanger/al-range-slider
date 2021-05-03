@@ -63,7 +63,7 @@ describe.each(propsCases)('%s', (_description, props) => {
       mockPointerEvent(track.element, { eventType: 'pointerdown' });
       if (props.orientation === 'vertical') {
         mockPointerEvent(track.element, { eventType: 'pointerup', clientY: 100 });
-        expect(mockObserver).lastReturnedWith(0.2);
+        expect(mockObserver).lastReturnedWith(0.8);
       } else {
         mockPointerEvent(track.element, { eventType: 'pointerup', clientX: 500 });
         expect(mockObserver).lastReturnedWith(1);

@@ -50,7 +50,7 @@ class KnobView extends SubView<IKnobViewState, IKnobViewProps> {
         percent = positionRatio * 100;
       }
       if (this.props.orientation === 'vertical') {
-        this.element.style.top = `${percent}%`;
+        this.element.style.bottom = `${percent}%`;
       } else {
         this.element.style.left = `${percent}%`;
       }

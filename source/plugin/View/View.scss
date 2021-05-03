@@ -15,17 +15,28 @@
   display: flex;
   flex-wrap: wrap;
   width: 100%;
+  font-size: 10px;
   margin: 0;
   padding: 2em;
-  // background: theme-var($color_background); //temp
   color: theme-var($color_main);
-  font-size: 10px;
+
+  @media #{$breakpoint_mobile_l} {
+    font-size: 9px;
+  }
+
+  @media #{$breakpoint_mobile_m} {
+    font-size: 8px;
+  }
 
   &_vertical {
-    flex-direction: column;
-    flex-wrap: nowrap;
-    align-content: flex-start;
+    display: grid;
+    grid-template-columns: auto;
+    grid-template-rows: repeat(auto-fill, minmax(3.6em, 1fr));
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(4.8em, 1fr);
+    gap: 0 1em;
     height: 100%;
+    min-height: 20em;
   }
 
   &_dark {
@@ -43,16 +54,17 @@
     height: $thickness_track;
     width: 100%;
     margin: 5em 0;
-    // background: theme-var($color_background); // temp
     border-radius: 1em;
     box-shadow: inset 0 0 0.2em 0.1em theme-var($color_surface);
     user-select: none;
     cursor: pointer;
 
     #{$block_vertical} & {
+      grid-column: 1/2;
+      grid-row: 1/-1;
       height: 100%;
       width: $thickness_track;
-      margin: 0 7em 2em;
+      margin: 0 10em;
     }
   }
 
@@ -66,8 +78,9 @@
 
   &__grid-tick {
     position: absolute;
+    top: 100%;
     display: inline-block;
-    height: 100%;
+    height: 50%;
     width: $thickness_tick;
     background: theme-var($color_surface);
 
@@ -77,16 +90,17 @@
     }
 
     &_long {
-      height: 200%;
+      height: 100%;
     }
 
     #{$block_vertical} & {
+      top: auto;
+      left: 100%;
       height: $thickness_tick;
-      width: 100%;
+      width: 50%;
 
       &_long {
-        width: 200%;
-        transform: translateX(-50%);
+        width: 100%;
       }
     }
   }
@@ -108,11 +122,9 @@
 
     #{$block_vertical} & {
       top: 0%;
-      left: -250%;
+      left: 100%;
       transform: translateY(-50%);
-      width: 250%;
       padding: 0.3em 0.5em;
-      text-align: right;
     }
   }
 
@@ -126,9 +138,11 @@
     background: linear-gradient(90deg, theme-var($color_primary_dark), theme-var($color_primary_light));
     border-radius: 1em;
     box-shadow: inset 0 0 0.2em theme-var($color_secondary),
-      0 0 0.5em theme-var($color_primary);
+      0 0 0.2em theme-var($color_primary);
 
     #{$block_vertical} & {
+      top: auto;
+      bottom: 0%;
       height: 0%;
       width: 100%;
       background: linear-gradient(180deg, theme-var($color_primary_dark), theme-var($color_primary_light));
@@ -136,7 +150,7 @@
 
     #{$block_dark} & {
       box-shadow: inset 0 0 0.2em theme-var($color_surface),
-        0 0 0.5em theme-var($color_primary);
+        0 0 0.2em theme-var($color_primary);
     }
   }
 
@@ -149,22 +163,26 @@
     height: $diameter_knob;
     width: $diameter_knob;
     background: theme-var($color_background);
-    border: 0.5em solid theme-var($color_primary);
+    border: 0.5em solid theme-var($color_surface);
     border-radius: 50%;
     box-shadow: inset 0 0 0.2em 0.1em theme-var($color_surface),
-      0 0 1em theme-var($color_primary);
+      0 0 0.4em theme-var($color_surface);
     user-select: none;
     touch-action: none;
     cursor: pointer;
 
     &:hover,
     &_active {
-      background: theme-var($color_secondary);
+      border-color: theme-var($color_primary);
+      box-shadow: inset 0 0 0.2em 0.1em theme-var($color_surface),
+        0 0 0.4em 0.1em theme-var($color_primary);
     }
 
     #{$block_vertical} & {
-      top: 0%;
+      top: auto;
+      bottom: 0%;
       left: 50%;
+      transform: translate(-50%, 50%);
     }
   }
 
@@ -176,41 +194,45 @@
     transform: translate(-50%, -50%);
     display: inline-block;
     width: max-content;
+    font-size: 1.2em;
     padding: 0.5em;
     background: theme-var($color_background);
-    border-radius: 0.5em;
+    border-radius: 0.6em;
     box-shadow: inset 0 0 0.2em 0.1em theme-var($color_surface);
-    font-size: 1.2em;
 
-    &:hover,
-    &_active,
-    #{$block}__knob:hover & {
-      background: theme-var($color_secondary);
-      color: theme-var($color_background);
-    }
+    // &:hover,
+    // &_active,
+    // #{$block}__knob:hover & {
+    //   box-shadow: inset 0 0 0.2em 0.1em theme-var($color_surface),
+    //     0 0 0 0.1em theme-var($color_secondary);
+    // }
 
     &_hidden {
       visibility: hidden;
     }
 
     #{$block_vertical} & {
+      left: auto;
       top: 50%;
-      left: 200%;
+      right: 200%;
       transform: translateY(-50%);
+      text-align: right;
     }
   }
 
   &__input {
+    display: block;
     flex: 1;
-    height: min-content;
+    font-size: 1.2em;
+    max-height: 2.17em;
     width: 100%;
     min-width: 4em;
     max-width: 10em;
-    margin: 0.5em;
+    margin: 0 0.84em 0.84em 0;
     padding: 0.5em 1em;
     background: inherit;
     border: 0;
-    border-radius: 1em;
+    border-radius: 0.84em;
     box-shadow: inset 0 0 0.2em 0.1em theme-var($color_surface);
     color: theme-var($color_main);
     outline: none;
@@ -222,12 +244,21 @@
       color: theme-var($color_secondary);
     }
 
+    &:disabled {
+      box-shadow: inset 0 0 0.1rem 0.1rem theme-var($color_surface);
+      pointer-events: none;
+    }
+
+    &::placeholder {
+      color: theme-var($color_surface);
+    }
+
     &_hidden {
       display: none;
     }
 
     #{$block_vertical} & {
-      flex: initial;
+      margin: 0 0 0.84em;
     }
   }
 }

@@ -94,7 +94,7 @@ abstract class SubView<
       let ratio: number;
 
       if (this.props.orientation === 'vertical') {
-        ratio = (event.clientY - offsetY) / height;
+        ratio = (offsetY + height - event.clientY) / height;
       } else {
         ratio = (event.clientX - offsetX) / width;
       }

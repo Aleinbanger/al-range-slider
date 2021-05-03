@@ -64,7 +64,7 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
           const tick = document.createElement('span');
           tick.setAttribute('class', `${this.props.cssClass}-tick js-${this.props.cssClass}-tick`);
           if (this.props.orientation === 'vertical') {
-            tick.style.top = `${Number(positionRatio) * 100}%`;
+            tick.style.bottom = `${Number(positionRatio) * 100}%`;
           } else {
             tick.style.left = `${Number(positionRatio) * 100}%`;
           }
@@ -96,7 +96,7 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
         const rect3 = this.props.marks[index + 2].getBoundingClientRect();
         let isOverlapping = false;
         if (this.props.orientation === 'vertical') {
-          isOverlapping = rect1.bottom > rect2.top || rect2.bottom > rect3.top;
+          isOverlapping = rect1.top < rect2.bottom || rect2.top < rect3.bottom;
         } else {
           isOverlapping = rect1.right > rect2.left || rect2.right > rect3.left;
         }
