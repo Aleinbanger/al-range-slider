@@ -77,7 +77,7 @@ class Presenter {
     const {
       initialSelectedValues = { to: 0 },
       valuesPrecision = 4,
-      range = { min: -100, max: 100, step: 1 },
+      range = { min: 0, max: 100, step: 1 },
       valuesArray,
       pointsMap,
       orientation = 'horizontal',

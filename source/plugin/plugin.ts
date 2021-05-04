@@ -1,3 +1,5 @@
+/* eslint-disable import/prefer-default-export */
+
 import { ExtractFunctionArgs } from 'shared/scripts/utils/typeUtils';
 
 import Presenter, { IProps } from './Presenter/Presenter';
@@ -16,7 +18,7 @@ const pluginName = 'alRangeSlider';
 const defaults: IProps = {
   initialSelectedValues: { to: 0 },
   valuesPrecision: 4,
-  range: { min: -100, max: 100, step: 1 },
+  range: { min: 0, max: 100, step: 1 },
   orientation: 'horizontal',
   theme: 'light',
   grid: { minTicksStep: 1, marksStep: 1 },
@@ -61,3 +63,5 @@ $.fn[pluginName] = Object.assign(
     methods,
   },
 );
+
+export type { TOptions };

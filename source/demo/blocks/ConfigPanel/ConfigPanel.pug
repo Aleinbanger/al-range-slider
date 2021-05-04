@@ -1,0 +1,72 @@
+include ../InputField/InputField.pug
+include ../InputToggle/InputToggle.pug
+include ../KeyValueList/KeyValueList.pug
+
+mixin ConfigPanel({ titleText } = {})
+  -
+    const cssClass = 'config-panel';
+    const wrapperClass = [cssClass, `js-${cssClass}`];
+    const titleClass = [`${cssClass}__title`];
+    const controlsClass = [`${cssClass}__controls`, `js-${cssClass}__controls`];
+    const rangeClass = [`${cssClass}__inputs`, `js-${cssClass}__range`];
+    const rangeInputClass = [`${cssClass}__input`, `js-${cssClass}__range-input`];
+    const arrayClass = [`${cssClass}__array`, `js-${cssClass}__array`];
+    const mapClass = [`${cssClass}__map`, `js-${cssClass}__map`];
+    const knobsListClass = [`${cssClass}__knobs-list`, `js-${cssClass}__knobs-list`];
+    const gridClass = [`${cssClass}__inputs`, `js-${cssClass}__grid`];
+    const gridInputClass = [`${cssClass}__input`, `js-${cssClass}__grid-input`];
+    const orientationClass = [`${cssClass}__toggle`, `js-${cssClass}__orientation`];
+    const showTooltipsClass = [`${cssClass}__toggle`, `js-${cssClass}__show-tooltips`];
+    const collideTooltipsClass = [`${cssClass}__toggle`, `js-${cssClass}__collide-tooltips`];
+    const collideKnobsClass = [`${cssClass}__toggle`, `js-${cssClass}__collide-knobs`];
+    const smoothTransitionClass = [`${cssClass}__toggle`, `js-${cssClass}__smooth-transition`];
+    const sliderClass = [`${cssClass}__range-slider`, `js-${cssClass}__range-slider`];
+
+  div(class=wrapperClass)
+    if (titleText)
+      h3(class=titleClass) #{titleText}
+    div(class=`${cssClass}__container`)
+      div(class=controlsClass)
+        div(class=rangeClass)
+          div(class=rangeInputClass, data-name='min')
+            +InputField({ inpType: 'number', labelText: 'Min value' })(
+              required=true, step=0.0001, placeholder='Min',
+            )
+          div(class=rangeInputClass, data-name='max')
+            +InputField({ inpType: 'number', labelText: 'Max value' })(
+              required=true, step=0.0001, placeholder='Max',
+            )
+          div(class=rangeInputClass, data-name='step')
+            +InputField({ inpType: 'number', labelText: 'Value step' })(
+              required=true, min=0.0001, step=0.0001, placeholder='Step',
+            )
+        div(class=arrayClass)
+          +InputField({ inpType: 'text', labelText: 'Values array', long: true })(
+            required=true, pattern='^\\w+(?:,\\s*\\w+)*', placeholder='Comma separated list',
+          )
+        div(class=mapClass)
+          +KeyValueList({ labelText: 'Points map' })
+        div(class=knobsListClass)
+          +KeyValueList({ labelText: 'Knobs' })
+        div(class=gridClass)
+          div(class=gridInputClass, data-name='ticks')
+            +InputField({ inpType: 'number', labelText: 'Min ticks step' })(
+              required=true, min=0, step=1, placeholder='Min ticks step',
+            )
+          div(class=gridInputClass, data-name='marks')
+            +InputField({ inpType: 'number', labelText: 'Marks step' })(
+              required=true, min=0, step=1, placeholder='Marks step',
+            )
+        div(class=`${cssClass}__toggles`)
+          div(class=orientationClass)
+            +InputToggle({ labelText: 'Vertical' })
+          div(class=showTooltipsClass)
+            +InputToggle({ labelText: 'Show tooltips' })
+          div(class=collideTooltipsClass)
+            +InputToggle({ labelText: 'Collide tooltips' })
+          div(class=collideKnobsClass)
+            +InputToggle({ labelText: 'Collide knobs' })
+          div(class=smoothTransitionClass)
+            +InputToggle({ labelText: 'Smooth knobs' })
+
+      div(class=sliderClass)

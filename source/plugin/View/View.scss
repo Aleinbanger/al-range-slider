@@ -145,7 +145,7 @@
       bottom: 0%;
       height: 0%;
       width: 100%;
-      background: linear-gradient(180deg, theme-var($color_primary_dark), theme-var($color_primary_light));
+      background: linear-gradient(0deg, theme-var($color_primary_dark), theme-var($color_primary_light));
     }
 
     #{$block_dark} & {
