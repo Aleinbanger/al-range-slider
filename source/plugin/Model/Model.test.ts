@@ -56,6 +56,12 @@ describe.each(propsCases)('%s', (description, props) => {
   describe('general methods', () => {
     const model = new Model(props);
 
+    test('should correctly initialize all points', () => {
+      const selectedPoints = model.getSelectedPoints();
+      const selectedValues = selectedPoints.map(([id, point]) => [id, point[1]]);
+      expect(Object.entries(props.initialSelectedValues)).toStrictEqual(selectedValues);
+    });
+
     test('should get the state', () => {
       const state = model.getState();
       expect(state).toBeInstanceOf(Object);

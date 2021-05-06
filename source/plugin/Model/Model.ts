@@ -5,6 +5,7 @@ import {
   getClosestNumber,
   isNumeric,
   isNumberArray,
+  isStringArray,
 } from 'shared/scripts/utils/utils';
 
 import {
@@ -52,27 +53,18 @@ class Model extends Observable<IModelData> {
     const selectedPositions = selectedPoints.map(([, point]) => point[0]);
     const closestSelectedPoint = selectedPoints
       .find(([, point]) => point[0] === getClosestNumber(selectedPositions, positionRatio));
-
     if (closestSelectedPoint) {
       const closestId = closestSelectedPoint[0];
       this.selectPointLimits(closestId);
-      if (this.props.range) {
-        this.selectPointByPosition([closestId, positionRatio]);
-      } else if (this.props.positionsArray) {
-        const closestPosition = getClosestNumber(this.props.positionsArray, positionRatio)
-          ?? positionRatio;
-        this.selectPointByPosition([closestId, closestPosition]);
-      } else {
-        throw new Error('Neither "range" nor "pointsMap" is defined');
-      }
+      this.selectPointByPosition([closestId, positionRatio]);
     } else {
       throw new Error('Could not find the closest selected point');
     }
   }
 
   public selectPointByPosition([id, positionRatio]: [string, number]): void | never {
-    if (this.checkPointLimits([id, positionRatio])) {
-      if (this.props.range) {
+    if (this.props.range) {
+      if (this.checkPointLimits([id, positionRatio])) {
         const tmpValue = this.getValueByPositionRatio(positionRatio, this.props.range);
         const roundedValue = this.getRoundedByStepValue(tmpValue, this.props.range);
         this.state.selectedPoints[id][1] = roundedValue;
@@ -80,15 +72,16 @@ class Model extends Observable<IModelData> {
           roundedValue,
           this.props.range,
         );
-      } else if (this.props.pointsMap && this.props.pointsMapPrecision) {
-        const fixedPositionRatio = Number(positionRatio.toFixed(this.props.pointsMapPrecision));
-        if (typeof this.props.pointsMap[fixedPositionRatio] !== 'undefined') {
-          this.state.selectedPoints[id][0] = fixedPositionRatio;
-          this.state.selectedPoints[id][1] = this.props.pointsMap[fixedPositionRatio];
-        }
-      } else {
-        throw new Error('Neither "range" nor "pointsMap" is defined');
       }
+    } else if (this.props.pointsMap && this.props.positionsArray) {
+      const closestPosition = getClosestNumber(this.props.positionsArray, positionRatio)
+        ?? positionRatio;
+      if (this.checkPointLimits([id, closestPosition])) {
+        this.state.selectedPoints[id][0] = closestPosition;
+        this.state.selectedPoints[id][1] = this.props.pointsMap[closestPosition];
+      }
+    } else {
+      throw new Error('Neither "range" nor "pointsMap" is defined');
     }
     this.notifyObservers({ currentPoint: [id, this.state.selectedPoints[id]] });
   }
@@ -173,10 +166,22 @@ class Model extends Observable<IModelData> {
       delete this.props.range;
     }
     if (this.props.range) {
-      this.generateValuesArrayFromRange(this.props.range);
+      const { min, max, step } = this.props.range;
+      if (min >= max) {
+        throw new Error('"min" must be less than "max"');
+      }
+      if (step <= 0) {
+        throw new Error('"step" must be greater than 0');
+      }
+      this.generateValuesArrayFromRange();
     }
     if (this.props.valuesArray) {
-      this.generatePointsMapFromArray(this.props.valuesArray);
+      const isArrayValid = isNumberArray(this.props.valuesArray)
+        || isStringArray(this.props.valuesArray);
+      if (!isArrayValid) {
+        throw new Error('Type of "valuesArray" must be either "number[]" or "string[]"');
+      }
+      this.generatePointsMapFromArray();
     } else if (this.props.pointsMap) {
       this.activatePointsMap();
     } else {
@@ -195,10 +200,9 @@ class Model extends Observable<IModelData> {
     });
   }
 
-  private generateValuesArrayFromRange(
-    { min, max, step }: { min: number; max: number; step: number },
-  ): void {
+  private generateValuesArrayFromRange(): void {
     if (this.props.range) {
+      const { min, max, step } = this.props.range;
       const pointsNumber = Math.ceil((max - min) / step);
       const maxPointsNumber = 100;
       let visiblePointsNumber = pointsNumber;
@@ -218,58 +222,49 @@ class Model extends Observable<IModelData> {
     }
   }
 
-  private generatePointsMapFromArray(array: number[] | string[]): void {
-    const pointsNumber = array.length;
-    let valuesArray = array;
-    let min = 0;
-    let max = pointsNumber - 1;
-    this.props.pointsMap = {};
-
-    if (isNumberArray(array)) {
-      valuesArray = array.sort((value1, value2) => value1 - value2);
-      // eslint-disable-next-line prefer-destructuring
-      min = valuesArray[0];
-      max = valuesArray[pointsNumber - 1];
-    }
-    if (this.props.range) {
+  private generatePointsMapFromArray(): void {
+    if (this.props.valuesArray) {
+      let { valuesArray } = this.props;
+      const pointsNumber = valuesArray.length;
+      let min = 0;
+      let max = pointsNumber - 1;
       this.props.pointsMapPrecision = 6;
-    } else {
-      this.calculatePointsMapPrecision(pointsNumber);
-    }
+      this.props.pointsMap = {};
 
-    valuesArray.forEach((value: number | string, index: number) => {
-      if (this.props.pointsMap) {
-        if (typeof value === 'number') {
-          const positionRatio = Number(this.getPositionRatioByValue(value, { min, max })
-            .toFixed(this.props.pointsMapPrecision));
-          this.props.pointsMap[positionRatio] = Number(value.toFixed(this.props.valuesPrecision));
-        } else if (typeof value === 'string') {
-          const positionRatio = Number(this.getPositionRatioByValue(index, { min, max })
-            .toFixed(this.props.pointsMapPrecision));
-          this.props.pointsMap[positionRatio] = value;
-        }
+      if (isNumberArray(valuesArray)) {
+        valuesArray = valuesArray.sort((value1, value2) => value1 - value2);
+        // eslint-disable-next-line prefer-destructuring
+        min = valuesArray[0];
+        max = valuesArray[pointsNumber - 1];
       }
-    });
-    this.generatePositionsArray();
+      valuesArray.forEach((value: number | string, index: number) => {
+        if (this.props.pointsMap) {
+          if (typeof value === 'number') {
+            const positionRatio = Number(this.getPositionRatioByValue(value, { min, max })
+              .toFixed(this.props.pointsMapPrecision));
+            this.props.pointsMap[positionRatio] = Number(value.toFixed(this.props.valuesPrecision));
+          } else if (typeof value === 'string') {
+            const positionRatio = Number(this.getPositionRatioByValue(index, { min, max })
+              .toFixed(this.props.pointsMapPrecision));
+            this.props.pointsMap[positionRatio] = value;
+          }
+        }
+      });
+      this.generatePositionsArray();
+    }
   }
 
   private activatePointsMap(): void {
     if (this.props.pointsMap) {
       const pointsMap = Object.entries(this.props.pointsMap);
-      const pointsNumber = pointsMap.length;
       pointsMap.forEach(([positionRatio]) => {
         const numPositionRatio = Number(positionRatio);
         if (numPositionRatio < 0 || numPositionRatio > 1) {
           delete this.props.pointsMap?.[numPositionRatio];
         }
       });
-      this.calculatePointsMapPrecision(pointsNumber);
       this.generatePositionsArray();
     }
-  }
-
-  private calculatePointsMapPrecision(pointsNumber: number): void {
-    this.props.pointsMapPrecision = pointsNumber <= 10 ? 2 : Math.ceil(Math.log10(pointsNumber));
   }
 
   private generatePositionsArray(): void {
