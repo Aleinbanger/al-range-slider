@@ -90,22 +90,35 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
           tick.classList.add(`${this.props.cssClass}-tick_long`);
         }
       });
-      for (let index = 0; index < this.props.marks.length - 2; index += 1) {
-        const rect1 = this.props.marks[index].getBoundingClientRect();
-        const rect2 = this.props.marks[index + 1].getBoundingClientRect();
-        const rect3 = this.props.marks[index + 2].getBoundingClientRect();
-        let isOverlapping = false;
-        if (this.props.orientation === 'vertical') {
-          isOverlapping = rect1.top < rect2.bottom || rect2.top < rect3.bottom;
-        } else {
-          isOverlapping = rect1.right > rect2.left || rect2.right > rect3.left;
+      const usedMarks: HTMLElement[] = [];
+      for (let index = 0; index < this.props.marks.length / 2; index += 1) {
+        const firstMark = this.props.marks[index];
+        const lastMark = this.props.marks[this.props.marks.length - index - 1];
+        if (!usedMarks.includes(firstMark) && !usedMarks.includes(lastMark)) {
+          const firstRect = firstMark.getBoundingClientRect();
+          const lastRect = lastMark.getBoundingClientRect();
+          this.props.marks?.forEach((nextMark) => {
+            const wasMarkChecked = usedMarks.includes(nextMark)
+              || nextMark === firstMark || nextMark === lastMark;
+            if (!wasMarkChecked) {
+              const nextRect = nextMark.getBoundingClientRect();
+              let isOverlapping = false;
+              if (this.props.orientation === 'vertical') {
+                isOverlapping = firstRect.top < nextRect.bottom || lastRect.bottom > nextRect.top;
+              } else {
+                isOverlapping = firstRect.right > nextRect.left || lastRect.left < nextRect.right;
+              }
+              if (isOverlapping) {
+                nextMark.classList.add(`${this.props.cssClass}-mark_hidden`);
+                usedMarks.push(nextMark);
+              } else {
+                nextMark.classList.remove(`${this.props.cssClass}-mark_hidden`);
+              }
+            }
+          });
         }
-        if (isOverlapping) {
-          this.props.marks[index + 1].classList.add(`${this.props.cssClass}-mark_hidden`);
-          index += 1;
-        } else {
-          this.props.marks[index + 1].classList.remove(`${this.props.cssClass}-mark_hidden`);
-        }
+        usedMarks.push(firstMark);
+        usedMarks.push(lastMark);
       }
     }
   }

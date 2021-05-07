@@ -198,7 +198,7 @@ class View extends Observable<IViewState> {
       const { cssClass, orientation } = this.props;
       const usedIds: string[] = [];
       ids.forEach((id) => {
-        if (!usedIds.some((tmpId) => tmpId === id)) {
+        if (!usedIds.includes(id)) {
           const fromMatch = id.match(/^(from)(.*)$/i);
           const toMatch = id.match(/^(to)(.*)$/i);
           let pairedId = '';
@@ -310,7 +310,7 @@ class View extends Observable<IViewState> {
       const mergedCollidedIdsSets: Set<string>[] = [];
       const usedCollidedIdsSets: Set<string>[] = [];
       collidedIdsSets.forEach((idsSet) => {
-        if (!usedCollidedIdsSets.some((tmpSet) => tmpSet === idsSet)) {
+        if (!usedCollidedIdsSets.includes(idsSet)) {
           let mergedCollidedIdsSet = new Set([...idsSet]);
           collidedIdsSets.forEach((nextIdsSet) => {
             if (idsSet !== nextIdsSet) {

@@ -6,7 +6,7 @@
   $block_vertical: #{&}_vertical;
   $block_dark: #{&}_dark;
   $thickness_track: 1.2em;
-  $thickness_tick: 0.05em;
+  $thickness_tick: 1px;
   $diameter_knob: 2.5em;
   @include spread-map($theme-map_light);
 
@@ -117,7 +117,7 @@
     }
 
     &_hidden {
-      visibility: hidden;
+      display: none;
     }
 
     #{$block_vertical} & {
