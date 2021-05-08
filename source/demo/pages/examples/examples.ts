@@ -1,53 +1,143 @@
-import 'plugin/plugin';
+import bind from 'bind-decorator';
+
+import Component from 'shared/scripts/Component/Component';
+import InputToggle, { IInputToggleState } from 'demo/blocks/InputToggle/InputToggle';
+import ConfigPanel from 'demo/blocks/ConfigPanel/ConfigPanel';
+import type { TOptions } from 'plugin/plugin';
 
 import './examples.scss';
 
-function renderSliders() {
-  const slider = $('.js-example-slider').alRangeSlider({
-    initialSelectedValues: {
-      from: -50,
-      to: -20,
-      from1: 30,
-      to1: 70,
-      // from: 'zxc',
-      // to: 'qaz',
-    },
-    // range: {
-    //   min: -50,
-    //   max: 50,
-    //   step: 1,
-    // },
-    // valuesArray: [
-    //   0, 1, 13, 34, 55, 13, 53, 66, 87, 200, 100, 101, 102, 102.5, 103,
-    //   5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 100.5, 101.5, 103.5,
-    // ],
-    // valuesArray: [
-    //   'qwe', 'asd', 'zxc', 'qaz', 'wsx', 'edc',
-    //   '1a', '2a', '3a', '4a', '5a',
-    // ],
-    // pointsMap: {
-    //   0: 0,
-    //   0.1: 1,
-    //   0.3: 'asd',
-    //   0.5: 50,
-    //   1: 'qwe',
-    // },
-    grid: {
-      minTicksStep: 1,
-      marksStep: 1,
-    },
-    // theme: 'dark',
-    // orientation: 'vertical',
-    onInit: (state) => console.log('init', state),
-    onStart: (state) => console.log('start', state),
-    onFinish: (state) => console.log('finish', state),
-    onChange: (state) => console.log('change', state),
-  });
-  // slider.alRangeSlider('disable');
-  // slider.alRangeSlider('disable', false);
-  // slider.alRangeSlider('destroy');
-  // slider.alRangeSlider('restart');
-  // slider.alRangeSlider('update', { positions: { from: 0 } });
+interface IExamplesState {
+  theme?: 'light' | 'dark';
 }
 
-export default renderSliders();
+class Examples extends Component<IExamplesState> {
+  declare protected state: IExamplesState;
+
+  declare protected children: {
+    root: HTMLElement;
+    themeToggle: InputToggle;
+    configPanels: ConfigPanel[];
+  };
+
+  constructor(parent: HTMLElement) {
+    super(parent, 'examples');
+  }
+
+  protected initialize(): void {
+    const sliderOptionsArray: TOptions[] = [
+      {},
+      {
+        range: { min: -100, max: 100, step: 1 },
+        initialSelectedValues: {
+          from: -50,
+          to: 50,
+        },
+        grid: { minTicksStep: 1, marksStep: 5 },
+      },
+      {
+        range: { min: -1000, max: 1000, step: 5 },
+        initialSelectedValues: {
+          'to-2': -800,
+          from: -400,
+          to: -200,
+          'no-bar': 0,
+          'from-1': 200,
+          'to-1': 400,
+          'from-3': 800,
+        },
+        grid: { minTicksStep: 1, marksStep: 5 },
+        orientation: 'vertical',
+      },
+      {
+        valuesArray: [
+          0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233,
+          377, 610, 987, 1597, 2584, 4181, 6765, 10946, 17711,
+        ],
+        initialSelectedValues: {
+          from: 6765,
+          to: 10946,
+        },
+        valuesPrecision: 6,
+        grid: { minTicksStep: 1, marksStep: 2 },
+      },
+      {
+        valuesArray: [
+          '1a', '2b', '3c', '4d', '5e', '6f', '7g', '8h', '9i', '10j',
+        ],
+        initialSelectedValues: {
+          from: '4d',
+          to: '7g',
+        },
+        orientation: 'vertical',
+      },
+      {
+        pointsMap: {
+          0: 0,
+          0.1: 'qwe',
+          0.2: 'asd',
+          0.3: 'zxc',
+          0.5: 1,
+          0.7: 'edc',
+          0.8: 'wsx',
+          0.9: 'qaz',
+          1: 0,
+        },
+        initialSelectedValues: {
+          'from-1': 'qaz',
+          'to-2': 'qwe',
+        },
+      },
+    ];
+
+    this.state = {
+      theme: 'dark',
+    };
+    this.children = {
+      root: document.documentElement,
+      themeToggle: new InputToggle(
+        this.element.querySelector(`.js-${this.cssClass}__theme-toggle`),
+      ),
+      configPanels: Array.from(this.element.querySelectorAll(`.js-${this.cssClass}__panel`))
+        .map((parent, index) => new ConfigPanel(parent as HTMLElement, {
+          sliderOptions: sliderOptionsArray[index],
+        })),
+    };
+
+    const theme = localStorage.getItem('theme') === 'light' ? 'light' : 'dark';
+    this.setState({ theme });
+    this.children.configPanels.forEach((panel) => panel.setState({ theme }));
+    this.children.themeToggle.setState({ checked: theme === 'dark' });
+  }
+
+  protected addEventListeners(): void {
+    this.children.themeToggle.addObserver(this.handleThemeToggleChange);
+  }
+
+  protected renderState({ theme }: IExamplesState): void {
+    if (typeof theme !== 'undefined') {
+      if (theme === 'dark') {
+        this.children.root.classList.add('dark');
+      } else {
+        this.children.root.classList.remove('dark');
+      }
+    }
+  }
+
+  @bind
+  private handleThemeToggleChange({ checked }: IInputToggleState): void {
+    if (typeof checked !== 'undefined') {
+      const theme = checked ? 'dark' : 'light';
+      this.setState({ theme });
+      this.children.configPanels.forEach((panel) => panel.setState({ theme }));
+      localStorage.setItem('theme', theme);
+    }
+  }
+}
+
+function renderBlock(): void {
+  const parents = document.querySelectorAll<HTMLElement>('.js-examples');
+  parents.forEach((parent) => new Examples(parent));
+}
+
+export default renderBlock();

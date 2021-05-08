@@ -51,7 +51,6 @@ class KeyValueList extends Component<IKeyValueListState, IKeyValueListProps> {
   }
 
   protected addEventListeners(): void {
-    this.children.addButton?.addEventListener('mousedown', this.handleButtonMouseDown);
     this.children.addButton?.addEventListener('click', this.handleAddButtonClick);
   }
 
@@ -123,16 +122,9 @@ class KeyValueList extends Component<IKeyValueListState, IKeyValueListProps> {
     closeButton.textContent = '\u274C';
     closeButton.dataset.key = String(key ?? '');
     item.appendChild(closeButton);
-    closeButton.addEventListener('mousedown', this.handleButtonMouseDown);
     closeButton.addEventListener('click', this.handleCloseButtonClick);
 
     return [keyInput, valueInput];
-  }
-
-  @bind
-  // eslint-disable-next-line class-methods-use-this
-  private handleButtonMouseDown(event: MouseEvent): void {
-    event.preventDefault();
   }
 
   @bind

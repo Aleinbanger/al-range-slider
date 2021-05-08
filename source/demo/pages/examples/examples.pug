@@ -3,9 +3,45 @@ extends ../_layout.pug
 block append variables
   - const pageTitle = 'Examples'
 
+block append mixins
+  include /blocks/InputToggle/InputToggle.pug
+  include /blocks/ConfigPanel/ConfigPanel.pug
+
 block content
-  .examples.js-examples
-    .examples__item
-      div(class="js-example-slider", style="height: 100%")
-    //- .examples__item
-    //-   div(class="js-example-slider", style="height: 100%")
+  -
+    const cssClass = 'examples';
+    const wrapperClass = [cssClass, `js-${cssClass}`];
+    const themeToggleClass = [`${cssClass}__theme-toggle`, `js-${cssClass}__theme-toggle`];
+    const panelClass = [`${cssClass}__panel`, `js-${cssClass}__panel`];
+
+  div(class=wrapperClass)
+    div(class=`${cssClass}__header`)
+      a(class=`${cssClass}__link`, href="https://github.com/Aleinbanger/fsd-slider")
+        | AlRangeSlider
+      div(class=themeToggleClass)
+        +InputToggle()
+
+    div(class=panelClass)
+      +ConfigPanel({
+        titleText: 'Initialized from range: Single slider (Default config)',
+      })
+    div(class=panelClass)
+      +ConfigPanel({
+        titleText: 'Initialized from range: Double slider',
+      })
+    div(class=panelClass)
+      +ConfigPanel({
+        titleText: 'Initialized from range: Multiple knobs',
+      })
+    div(class=panelClass)
+      +ConfigPanel({
+        titleText: 'Initialized from values array: Numbers',
+      })
+    div(class=panelClass)
+      +ConfigPanel({
+        titleText: 'Initialized from values array: Strings',
+      })
+    div(class=panelClass)
+      +ConfigPanel({
+        titleText: 'Initialized from points map: Custom positioning',
+      })
