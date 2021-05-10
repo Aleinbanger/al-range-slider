@@ -3,6 +3,7 @@ module.exports = {
   moduleNameMapper: {
     '^.*\.(css|scss)$': 'babel-jest',
   },
+  setupFiles: ['./jest.setup.js'],
   clearMocks: true,
   verbose: true,
   collectCoverage: true,

@@ -19,7 +19,8 @@
     "build/",
     "coverage/",
     "webpack.*.js",
-    "*.config.js"
+    "*.config.js",
+    "*.setup.js"
   ],
   "settings": {
     "import/resolver": {
