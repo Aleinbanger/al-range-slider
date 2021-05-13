@@ -1,9 +1,16 @@
 const { merge } = require('webpack-merge');
+const HtmlPlugin = require('html-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
+
 const common = require('./webpack.common');
 
 module.exports = merge(common, {
   mode: 'development',
-  // devtool: 'none',
+  devtool: 'source-map',
+
+  entry: {
+    demo: './demo/index.ts',
+  },
 
   module: {
     rules: [
@@ -18,4 +25,17 @@ module.exports = merge(common, {
       },
     ],
   },
+
+  plugins: [
+    ...global.pages.filter((page) => !/layout/i.test(page))
+    .map((page) => new HtmlPlugin({
+      template: `${global.paths.demo.pages}/${page}/${page}.pug`,
+      filename: `${page}.html`,
+    })),
+    // new CopyPlugin({
+    //   patterns: [
+    //     { from: paths.demo.favicons, to: 'assets/favicons/' },
+    //   ],
+    // }),
+  ],
 });

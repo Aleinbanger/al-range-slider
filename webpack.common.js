@@ -1,103 +1,78 @@
 const webpack = require('webpack');
 const path = require('path');
 const fs = require('fs');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CopyPlugin = require('copy-webpack-plugin');
 
-const PATHS = {
-  plugin: {
-    src: path.resolve(__dirname, './source/plugin'),
-  },
+global.paths = {
   demo: {
     src: path.resolve(__dirname, './source/demo'),
+    blocks: path.resolve(__dirname, './source/demo/blocks'),
     pages: path.resolve(__dirname, './source/demo/pages'),
+    favicons: path.resolve(__dirname, './source/demo/favicons'),
+    build: path.resolve(__dirname, './build/demo'),
   },
-  fonts: path.resolve(__dirname, './source/shared/fonts'),
-  build: path.resolve(__dirname, './build'),
-  // scripts: path.resolve(__dirname, './source/scripts'),
-  // styles: path.resolve(__dirname, './source/styles'),
-  // favicons: path.resolve(__dirname, './source/favicons'),
-  // blocks: path.resolve(__dirname, './source/blocks'),
+  plugin: {
+    src: path.resolve(__dirname, './source/plugin'),
+    build: path.resolve(__dirname, './build/plugin'),
+  },
+  shared: {
+    fonts: path.resolve(__dirname, './source/shared/fonts'),
+  },
 };
-const PAGES = fs.readdirSync(PATHS.demo.pages);
+global.pages = fs.readdirSync(global.paths.demo.pages);
 
 module.exports = {
+  context: path.resolve(__dirname, './source'),
+
   resolve: {
     extensions: ['.ts', '.js'],
     modules: [path.resolve(__dirname, './source'), 'node_modules'],
-    alias: {
-      // node_modules: path.resolve(__dirname, './node_modules'),
-      // scripts: PATHS.scripts,
-      // styles: PATHS.styles,
-      // blocks: PATHS.blocks,
-    },
-  },
-
-  entry: {
-    main: `${PATHS.demo.src}/index.ts`,
-  },
-
-  output: {
-    filename: 'js/[name].[contentHash].js',
-    path: PATHS.build,
   },
 
   module: {
     rules: [
-      {
-        test: /\.pug$/,
-        use: [
-          'html-loader',
-          'pug-html-loader',
-        ],
-      },
       {
         test: /\.ts$/,
         exclude: /node_modules/,
         use: 'babel-loader',
       },
       {
+        test: /\.pug$/,
+        use: [
+          'html-loader',
+          {
+            loader: 'pug-html-loader',
+            options: {
+              basedir: global.paths.demo.src,
+            },
+          },
+        ],
+      },
+      {
         test: /\.(woff2?|ttf|eot|svg)$/,
         include: [
-          PATHS.fonts,
+          global.paths.shared.fonts,
           /node_modules/,
         ],
-        use: {
-          loader: 'file-loader',
-          options: {
-            name: '[name].[contentHash].[ext]',
-            outputPath: 'assets/fonts/',
-          },
+        type: 'asset/resource',
+        generator: {
+          filename: 'assets/fonts/[name].[hash][ext]'
         },
       },
       {
         test: /\.(svg|png|jpe?g|gif)$/,
         include: [
-          // PATHS.blocks,
-          PATHS.demo.pages,
+          global.paths.demo.blocks,
+          global.paths.demo.pages,
         ],
-        use: {
-          loader: 'file-loader',
-          options: {
-            name: '[name].[contentHash].[ext]',
-            outputPath: 'assets/images/',
-          },
+        type: 'asset/resource',
+        generator: {
+          filename: 'assets/images/[name].[hash][ext]'
         },
       },
     ],
   },
 
   plugins: [
-    ...PAGES.filter((page) => !/layout/i.test(page))
-      .map((page) => new HtmlWebpackPlugin({
-        template: `${PATHS.demo.pages}/${page}/${page}.pug`,
-        filename: `${page}.html`,
-      })),
-    // new CopyPlugin({
-    //   patterns: [
-    //     { from: PATHS.favicons, to: 'assets/favicons/' },
-    //   ],
-    // }),
     new webpack.ProvidePlugin({
       $: 'jquery',
       jQuery: 'jquery',

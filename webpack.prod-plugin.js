@@ -1,26 +1,45 @@
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const OptimizeCssPlugin = require('optimize-css-assets-webpack-plugin');
-const TerserPlugin = require('terser-webpack-plugin');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const { merge } = require('webpack-merge');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
+
 const common = require('./webpack.common');
 
 module.exports = merge(common, {
   mode: 'production',
 
+  entry: {
+    'al-range-slider': './plugin/plugin.ts',
+  },
+
+  output: {
+    filename: 'js/[name].js',
+    path: global.paths.plugin.build,
+    clean: true,
+  },
+
+  externals: {
+    jquery: 'jQuery',
+  },
+
   optimization: {
+    moduleIds: 'deterministic',
     splitChunks: {
-      chunks: 'all',
+      cacheGroups: {
+        polyfills: {
+          test: /[\\/]node_modules[\\/](core-js)[\\/]/,
+          name: 'polyfills',
+          chunks: 'all',
+        },
+      },
     },
     minimizer: [
-      new OptimizeCssPlugin({
-        cssProcessorPluginOptions: {
+      new CssMinimizerPlugin({
+        minimizerOptions: {
           preset: [
             'default',
             {
-              discardComments: {
-                removeAll: true,
-              },
+              discardComments: { removeAll: true },
             },
           ],
         },
@@ -28,7 +47,7 @@ module.exports = merge(common, {
       new TerserPlugin({
         extractComments: false,
         terserOptions: {
-          output: {
+          format: {
             comments: false,
           },
         },
@@ -57,8 +76,7 @@ module.exports = merge(common, {
 
   plugins: [
     new MiniCssExtractPlugin({
-      filename: 'css/[name].[contentHash].css',
+      filename: 'css/[name].css',
     }),
-    new CleanWebpackPlugin(),
   ],
 });
