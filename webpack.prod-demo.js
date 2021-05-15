@@ -25,14 +25,14 @@ module.exports = merge(common, {
     runtimeChunk: 'single',
     splitChunks: {
       cacheGroups: {
-        jquery: {
-          test: /[\\/]node_modules[\\/](jquery)[\\/]/,
-          name: 'jquery',
+        vendor: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendor',
           chunks: 'all',
         },
-        polyfills: {
-          test: /[\\/]node_modules[\\/](core-js)[\\/]/,
-          name: 'polyfills',
+        plugin: {
+          test: /[\\/]source[\\/]plugin[\\/]/,
+          name: 'plugin',
           chunks: 'all',
         },
       },
