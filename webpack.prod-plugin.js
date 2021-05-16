@@ -23,16 +23,6 @@ module.exports = merge(common, {
   },
 
   optimization: {
-    moduleIds: 'deterministic',
-    splitChunks: {
-      cacheGroups: {
-        polyfills: {
-          test: /[\\/]node_modules[\\/](core-js)[\\/]/,
-          name: 'polyfills',
-          chunks: 'all',
-        },
-      },
-    },
     minimizer: [
       new CssMinimizerPlugin({
         minimizerOptions: {

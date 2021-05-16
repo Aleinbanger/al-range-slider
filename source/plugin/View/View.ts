@@ -13,7 +13,8 @@ import BarView from './SubView/BarView/BarView';
 import InputView, { IInputViewState } from './SubView/InputView/InputView';
 import TooltipView from './SubView/TooltipView/TooltipView';
 import { IViewProps, IViewState } from './ViewTypes';
-import './View.scss';
+
+require('./View.scss');
 
 class View extends Observable<IViewState> {
   private readonly parent: HTMLElement;

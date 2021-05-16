@@ -9,7 +9,7 @@
     "eslint": "eslint . --ext .js,.ts",
     "test": "tsc && jest",
     "prod-demo": "tsc && webpack --config webpack.prod-demo.js",
-    "prod-plugin": "tsc && webpack --config webpack.prod-plugin.js"
+    "prod-plugin": "tsc && webpack --config webpack.prod-plugin.js && tsc --project tsconfig.plugin.json"
   },
   "dependencies": {
     "@babel/cli": "^7.13.16",
@@ -62,5 +62,7 @@
     "stylelint-scss": "^3.19.0",
     "webpack-dev-server": "^3.11.2"
   },
-  "browserslist": "defaults"
+  "browserslist": [
+    "defaults"
+  ]
 }
