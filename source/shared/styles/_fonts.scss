@@ -1,6 +1,10 @@
 @import './mixins';
 
-@include font-face('Open Sans', '../fonts/open-sans-v17-latin_cyrillic/open-sans-v17-latin_cyrillic-regular');
-@include font-face('Open Sans', '../fonts/open-sans-v17-latin_cyrillic/open-sans-v17-latin_cyrillic-italic', italic, normal);
-@include font-face('Open Sans', '../fonts/open-sans-v17-latin_cyrillic/open-sans-v17-latin_cyrillic-700', normal, bold);
-@include font-face('Open Sans', '../fonts/open-sans-v17-latin_cyrillic/open-sans-v17-latin_cyrillic-700italic', italic, bold);
+@include font-face(
+  'Fira Mono',
+  '../fonts/fira-mono-v9-latin_cyrillic/fira-mono-v9-latin_cyrillic-regular',
+);
+@include font-face(
+  'Fira Mono',
+  '../fonts/fira-mono-v9-latin_cyrillic/fira-mono-v9-latin_cyrillic-700', normal, bold,
+);
