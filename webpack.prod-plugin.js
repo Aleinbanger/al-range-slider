@@ -7,6 +7,7 @@ const common = require('./webpack.common');
 
 module.exports = merge(common, {
   mode: 'production',
+  target: 'browserslist',
 
   entry: {
     'al-range-slider': './plugin/plugin.ts',
