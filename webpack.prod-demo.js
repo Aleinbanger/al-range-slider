@@ -1,6 +1,5 @@
 const { merge } = require('webpack-merge');
 const HtmlPlugin = require('html-webpack-plugin');
-const CopyPlugin = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
@@ -88,10 +87,5 @@ module.exports = merge(common, {
     new MiniCssExtractPlugin({
       filename: 'css/[name].[contenthash].css',
     }),
-    // new CopyPlugin({
-    //   patterns: [
-    //     { from: paths.demo.favicons, to: 'assets/favicons/' },
-    //   ],
-    // }),
   ],
 });

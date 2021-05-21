@@ -69,6 +69,16 @@ module.exports = {
           filename: 'assets/images/[name].[hash][ext]'
         },
       },
+      {
+        test: /\.(svg|png|xml|ico|webmanifest)$/,
+        include: [
+          global.paths.demo.favicons,
+        ],
+        type: 'asset/resource',
+        generator: {
+          filename: 'assets/favicons/[name].[hash][ext]'
+        },
+      },
     ],
   },
 

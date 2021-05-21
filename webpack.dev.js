@@ -1,6 +1,5 @@
 const { merge } = require('webpack-merge');
 const HtmlPlugin = require('html-webpack-plugin');
-const CopyPlugin = require('copy-webpack-plugin');
 
 const common = require('./webpack.common');
 
@@ -33,10 +32,5 @@ module.exports = merge(common, {
       template: `${global.paths.demo.pages}/${page}/${page}.pug`,
       filename: `${page}.html`,
     })),
-    // new CopyPlugin({
-    //   patterns: [
-    //     { from: paths.demo.favicons, to: 'assets/favicons/' },
-    //   ],
-    // }),
   ],
 });
