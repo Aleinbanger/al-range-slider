@@ -189,9 +189,9 @@
   &__tooltip {
     position: absolute;
     z-index: 3;
-    top: -150%;
+    bottom: 200%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translateX(-50%);
     display: inline-block;
     width: max-content;
     font-size: 1.2em;
@@ -200,18 +200,12 @@
     border-radius: 0.6em;
     box-shadow: inset 0 0 0.2em 0.1em theme-var($color_surface);
 
-    // &:hover,
-    // &_active,
-    // #{$block}__knob:hover & {
-    //   box-shadow: inset 0 0 0.2em 0.1em theme-var($color_surface),
-    //     0 0 0 0.1em theme-var($color_secondary);
-    // }
-
     &_hidden {
       visibility: hidden;
     }
 
     #{$block_vertical} & {
+      bottom: auto;
       left: auto;
       top: 50%;
       right: 200%;
@@ -235,6 +229,7 @@
     border-radius: 0.84em;
     box-shadow: inset 0 0 0.2em 0.1em theme-var($color_surface);
     color: theme-var($color_main);
+    font-family: $font-family_body;
     outline: none;
 
     &:focus,
