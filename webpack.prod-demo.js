@@ -35,6 +35,13 @@ module.exports = merge(common, {
           name: 'plugin',
           chunks: 'all',
         },
+        pluginStyles: {
+          test: /[\\/]source[\\/]plugin[\\/]/,
+          type: 'css/mini-extract',
+          name: 'plugin',
+          chunks: 'all',
+          enforce: true,
+        },
       },
     },
     minimizer: [
