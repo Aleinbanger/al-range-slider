@@ -28,14 +28,17 @@ interface IViewProps extends ICommonViewProps {
     readonly minTicksStep: number;
     readonly marksStep: number;
   } | undefined;
+  readonly allowSmoothTransition: boolean;
   readonly showInputs: boolean | 'hidden';
   readonly showTooltips: boolean;
   readonly collideTooltips: boolean;
-  readonly allowSmoothTransition: boolean;
+  readonly tooltipsSeparator: string;
+  readonly prettify?: (value: string) => string;
 }
 
 interface IViewState {
   selectedValues?: Record<string, TPointValue>;
+  selectedPrettyValues?: Record<string, string>;
   currentPosition?: [id: string, position: number];
   currentPositionLimits?: [id: string, limits: { min: number; max: number }];
   currentActiveStatus?: [id: string, active: boolean];

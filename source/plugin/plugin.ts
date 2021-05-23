@@ -18,15 +18,16 @@ const pluginName = 'alRangeSlider';
 const defaults: IProps = {
   initialSelectedValues: { to: 0 },
   valuesPrecision: 4,
+  collideKnobs: true,
   range: { min: 0, max: 100, step: 1 },
   orientation: 'horizontal',
   theme: 'light',
   grid: { minTicksStep: 1, marksStep: 1 },
+  allowSmoothTransition: true,
   showInputs: true,
   showTooltips: true,
   collideTooltips: true,
-  collideKnobs: true,
-  allowSmoothTransition: true,
+  tooltipsSeparator: ' \u2192 ',
 };
 const methods = ['destroy', 'disable', 'restart', 'update'] as const;
 type TOptions = Partial<IProps>;

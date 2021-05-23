@@ -39,6 +39,7 @@ class View extends Observable<IViewState> {
     this.props = cloneDeep(props);
     this.state = {
       selectedValues: {},
+      selectedPrettyValues: {},
     };
     this.initialize();
   }
@@ -86,12 +87,16 @@ class View extends Observable<IViewState> {
     }
     if (currentValue) {
       const [id, value] = currentValue;
+      const prettyValue = this.props.prettify ? this.props.prettify(value) : value;
       this.state.currentValue = currentValue;
       if (this.state.selectedValues) {
         this.state.selectedValues[id] = value;
       }
+      if (this.state.selectedPrettyValues) {
+        this.state.selectedPrettyValues[id] = prettyValue;
+      }
       this.subViews.inputs?.[id]?.setState({ value });
-      this.subViews.tooltips?.[id]?.setState({ value, lastValue: value });
+      this.subViews.tooltips?.[id]?.setState({ value: prettyValue, lastValue: prettyValue });
       if (this.props.collideTooltips) {
         this.collideTooltips(id);
       }
@@ -101,7 +106,7 @@ class View extends Observable<IViewState> {
   private initialize(): void {
     const { parent } = this;
     const {
-      cssClass, orientation, theme, selectedIds, grid, showInputs, showTooltips,
+      cssClass, orientation, theme, selectedIds, grid, showInputs, showTooltips, prettify,
     } = this.props;
     this.subViews = {
       wrapper: new WrapperView(parent, { cssClass, orientation, theme }),
@@ -121,6 +126,7 @@ class View extends Observable<IViewState> {
           pointsMap,
           minTicksStep,
           marksStep,
+          prettify,
         },
       );
       this.subViews.grid.addObserver(this.handleTrackPositionChange);
@@ -354,7 +360,9 @@ class View extends Observable<IViewState> {
           const sortedIdsArray = idsArray.sort((id1, id2) => (
             (this.subViews.knobs?.[id1]?.getState()?.positionRatio ?? 0)
               - (this.subViews.knobs?.[id2]?.getState()?.positionRatio ?? 0)));
-          const value = sortedIdsArray.map((tmpId) => this.subViews.tooltips?.[tmpId]?.getState()?.lastValue).join('; ');
+          const value = sortedIdsArray
+            .map((tmpId) => this.subViews.tooltips?.[tmpId]?.getState()?.lastValue)
+            .join(this.props.tooltipsSeparator);
           this.subViews.tooltips?.[mainId]?.setState({ value, hidden: false });
           idsArray.forEach((tmpId) => {
             if (tmpId !== mainId) {

@@ -75,19 +75,9 @@ class Presenter {
   private initialize(): void {
     const { parent } = this;
     const {
-      initialSelectedValues = { to: 0 },
-      valuesPrecision = 4,
-      range = { min: 0, max: 100, step: 1 },
-      valuesArray,
-      pointsMap,
-      orientation = 'horizontal',
-      theme = 'light',
-      grid = { minTicksStep: 1, marksStep: 1 },
-      showInputs = true,
-      showTooltips = true,
-      collideTooltips = true,
-      collideKnobs = true,
-      allowSmoothTransition = true,
+      initialSelectedValues, valuesPrecision, collideKnobs, range, valuesArray, pointsMap,
+      orientation, theme, grid, allowSmoothTransition, showInputs,
+      showTooltips, collideTooltips, tooltipsSeparator, prettify,
     } = this.props;
 
     this.model = new Model({
@@ -109,10 +99,12 @@ class Presenter {
           ...grid,
           pointsMap: grid.pointsMap ?? this.model.getPointsMap(),
         },
+        allowSmoothTransition,
         showInputs,
         showTooltips,
         collideTooltips,
-        allowSmoothTransition,
+        tooltipsSeparator,
+        prettify,
       },
     );
     this.addObservers();

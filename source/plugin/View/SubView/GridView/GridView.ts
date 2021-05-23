@@ -7,6 +7,7 @@ interface IGridViewProps extends ISubViewProps {
   readonly pointsMap: TPointsMap;
   minTicksStep: number;
   marksStep: number,
+  readonly prettify?: (value: string) => string;
   minTicksGap?: number;
   ticks?: HTMLElement[];
   marks?: HTMLElement[];
@@ -82,9 +83,10 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
           newIndex = this.props.pointsMap.length - 1;
         }
         if (typeof newIndex !== 'undefined' && newIndex < this.props.pointsMap.length) {
+          const value = String(this.props.pointsMap[newIndex][1]);
           const mark = document.createElement('span');
           mark.setAttribute('class', `${this.props.cssClass}-mark js-${this.props.cssClass}-mark`);
-          mark.textContent = String(this.props.pointsMap[newIndex][1]);
+          mark.textContent = this.props.prettify ? this.props.prettify(value) : value;
           this.props.marks?.push(mark);
           tick.appendChild(mark);
           tick.classList.add(`${this.props.cssClass}-tick_long`);
