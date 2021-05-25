@@ -36,18 +36,37 @@ class Examples extends Component<IExamplesState> {
         grid: { minTicksStep: 1, marksStep: 5 },
       },
       {
-        range: { min: -1000, max: 1000, step: 5 },
+        range: { min: -10000, max: 10000, step: 5 },
         initialSelectedValues: {
-          'to-2': -800,
-          from: -400,
-          to: -200,
+          'to-2': -8000,
+          from: -4000,
+          to: -2000,
           'no-bar': 0,
-          'from-1': 200,
-          'to-1': 400,
-          'from-3': 800,
+          'from-1': 2000,
+          'to-1': 4000,
+          'from-3': 8000,
         },
         grid: { minTicksStep: 1, marksStep: 5 },
         orientation: 'vertical',
+        prettify: (value) => Number(value).toLocaleString(
+          undefined, { style: 'currency', currency: 'USD' },
+        ),
+      },
+      {
+        range: {
+          min: new Date().getTime(),
+          max: new Date(2050, 0, 1).getTime(),
+          step: 8640000,
+        },
+        initialSelectedValues: {
+          'to-ms': new Date().getTime(),
+        },
+        grid: { minTicksStep: 1, marksStep: 5 },
+        prettify: (value) => {
+          const date = new Date();
+          date.setTime(Number(value));
+          return date.toLocaleDateString();
+        },
       },
       {
         valuesArray: [
@@ -60,6 +79,7 @@ class Examples extends Component<IExamplesState> {
         },
         valuesPrecision: 6,
         grid: { minTicksStep: 1, marksStep: 2 },
+        prettify: (value) => Number(value).toLocaleString(),
       },
       {
         valuesArray: [

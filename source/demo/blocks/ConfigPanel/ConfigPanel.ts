@@ -33,6 +33,7 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
       ticks: InputField;
       marks: InputField;
     };
+    prettifyInput: InputField;
     orientationToggle: InputToggle;
     showTooltipsToggle: InputToggle;
     collideTooltipsToggle: InputToggle;
@@ -78,23 +79,39 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
           this.element.querySelector(`[data-name="marks"].js-${this.cssClass}__grid-input`),
         ),
       },
-      orientationToggle: new InputToggle(this.element.querySelector(`.js-${this.cssClass}__orientation`)),
-      showTooltipsToggle: new InputToggle(this.element.querySelector(`.js-${this.cssClass}__show-tooltips`)),
-      collideTooltipsToggle: new InputToggle(this.element.querySelector(`.js-${this.cssClass}__collide-tooltips`)),
-      collideKnobsToggle: new InputToggle(this.element.querySelector(`.js-${this.cssClass}__collide-knobs`)),
-      smoothTransitionToggle: new InputToggle(this.element.querySelector(`.js-${this.cssClass}__smooth-transition`)),
+      prettifyInput: new InputField(
+        this.element.querySelector(`.js-${this.cssClass}__prettify`),
+      ),
+      orientationToggle: new InputToggle(
+        this.element.querySelector(`.js-${this.cssClass}__orientation`),
+      ),
+      showTooltipsToggle: new InputToggle(
+        this.element.querySelector(`.js-${this.cssClass}__show-tooltips`),
+      ),
+      collideTooltipsToggle: new InputToggle(
+        this.element.querySelector(`.js-${this.cssClass}__collide-tooltips`),
+      ),
+      collideKnobsToggle: new InputToggle(
+        this.element.querySelector(`.js-${this.cssClass}__collide-knobs`),
+      ),
+      smoothTransitionToggle: new InputToggle(
+        this.element.querySelector(`.js-${this.cssClass}__smooth-transition`),
+      ),
     };
     this.children.knobsList.setState({ items: this.state.sliderSelectedValues });
 
     const { defaults } = this.children.rangeSlider.alRangeSlider;
     const { sliderOptions } = this.props;
     const {
-      grid, orientation, showTooltips, collideTooltips, collideKnobs, allowSmoothTransition,
-      range, valuesArray, pointsMap,
+      grid, prettify, orientation, showTooltips, collideTooltips, collideKnobs,
+      allowSmoothTransition, range, valuesArray, pointsMap,
     } = { ...defaults, ...sliderOptions };
     this.props.sliderOptions.grid = grid;
     this.children.gridInputs.ticks.setState({ value: String(grid.minTicksStep) });
     this.children.gridInputs.marks.setState({ value: String(grid.marksStep) });
+    this.children.prettifyInput.setState({
+      value: prettify?.toString().replace(/\s+/g, ' ').trim().match(/{\s*(.*);\s*}$/)?.[1],
+    });
     this.setState({ orientation });
     this.children.orientationToggle.setState({ checked: orientation === 'vertical' });
     this.children.showTooltipsToggle.setState({ checked: showTooltips });
@@ -147,6 +164,7 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
     this.children.knobsList.addObserver(this.handleKnobsListChange);
     this.children.gridInputs.ticks.addObserver(this.handleGridInputChange.bind(this, 'minTicksStep'));
     this.children.gridInputs.marks.addObserver(this.handleGridInputChange.bind(this, 'marksStep'));
+    this.children.prettifyInput.addObserver(this.handlePrettifyInputChange);
     this.children.orientationToggle.addObserver(this.handleOrientationToggleChange);
     this.children.showTooltipsToggle.addObserver(this.handleShowTooltipsToggleChange);
     this.children.collideTooltipsToggle.addObserver(this.handleCollideTooltipsToggleChange);
@@ -194,6 +212,19 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
       this.children.rangeSlider.alRangeSlider('restart', {
         initialSelectedValues: this.state.sliderSelectedValues,
         grid,
+      });
+    }
+  }
+
+  @bind
+  private handlePrettifyInputChange({ value }: IInputFieldState): void {
+    if (typeof value !== 'undefined') {
+      // eslint-disable-next-line @typescript-eslint/no-implied-eval
+      const prettify = value ? new Function('value', `${value}`) as (value: string) => string
+        : undefined;
+      this.children.rangeSlider.alRangeSlider('restart', {
+        initialSelectedValues: this.state.sliderSelectedValues,
+        prettify,
       });
     }
   }

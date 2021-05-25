@@ -50,10 +50,10 @@
 
   &__input {
     margin: 0 1rem 1rem 0;
-  }
 
-  &__array {
-    margin-bottom: 1rem;
+    &_big {
+      margin: 0 0 1rem;
+    }
   }
 
   &__toggles {

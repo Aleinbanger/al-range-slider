@@ -16,7 +16,7 @@ block content
 
   div(class=wrapperClass)
     div(class=`${cssClass}__header`)
-      a(class=`${cssClass}__link`, href="https://github.com/Aleinbanger/fsd-slider")
+      a(class=`${cssClass}__link`, href="https://github.com/Aleinbanger/al-range-slider")
         | AlRangeSlider
       div(class=themeToggleClass)
         +InputToggle()
@@ -31,7 +31,11 @@ block content
       })
     div(class=panelClass)
       +ConfigPanel({
-        titleText: 'Initialized from range: Multiple knobs',
+        titleText: 'Initialized from range: Multiple knobs with prettify',
+      })
+    div(class=panelClass)
+      +ConfigPanel({
+        titleText: 'Initialized from range: Dates using prettify',
       })
     div(class=panelClass)
       +ConfigPanel({

@@ -10,11 +10,12 @@ mixin ConfigPanel({ titleText } = {})
     const controlsClass = [`${cssClass}__controls`, `js-${cssClass}__controls`];
     const rangeClass = [`${cssClass}__inputs`, `js-${cssClass}__range`];
     const rangeInputClass = [`${cssClass}__input`, `js-${cssClass}__range-input`];
-    const arrayClass = [`${cssClass}__array`, `js-${cssClass}__array`];
+    const arrayClass = [`${cssClass}__input`, `${cssClass}__input_big`, `js-${cssClass}__array`];
     const mapClass = [`${cssClass}__map`, `js-${cssClass}__map`];
     const knobsListClass = [`${cssClass}__knobs-list`, `js-${cssClass}__knobs-list`];
     const gridClass = [`${cssClass}__inputs`, `js-${cssClass}__grid`];
     const gridInputClass = [`${cssClass}__input`, `js-${cssClass}__grid-input`];
+    const prettifyClass = [`${cssClass}__input`, `${cssClass}__input_big`, `js-${cssClass}__prettify`];
     const orientationClass = [`${cssClass}__toggle`, `js-${cssClass}__orientation`];
     const showTooltipsClass = [`${cssClass}__toggle`, `js-${cssClass}__show-tooltips`];
     const collideTooltipsClass = [`${cssClass}__toggle`, `js-${cssClass}__collide-tooltips`];
@@ -57,6 +58,10 @@ mixin ConfigPanel({ titleText } = {})
             +InputField({ inpType: 'number', labelText: 'Marks step' })(
               required=true, min=0, step=1, placeholder='Marks step',
             )
+        div(class=prettifyClass)
+          +InputField({ inpType: 'text', labelText: 'Prettify', long: true })(
+            placeholder='return value',
+          )
         div(class=`${cssClass}__toggles`)
           div(class=orientationClass)
             +InputToggle({ labelText: 'Vertical' })
