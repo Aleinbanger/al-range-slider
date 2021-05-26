@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/dot-notation */
 
 import { ExtractFunctionKeys } from 'shared/scripts/utils/typeUtils';
+import { mockElementDimensions } from 'shared/scripts/utils/jestUtils';
 
 import { IViewProps, IViewState } from './ViewTypes';
 import View from './View';
@@ -18,10 +19,12 @@ const propsCases: [description: string, props: IViewProps][] = [
       theme: 'light',
       selectedIds: ['from', 'to'],
       grid: { pointsMap: [], minTicksStep: 1, marksStep: 1 },
+      allowSmoothTransition: true,
       showInputs: true,
       showTooltips: true,
       collideTooltips: true,
-      allowSmoothTransition: true,
+      tooltipsSeparator: ' \u2192 ',
+      prettify: (value) => `${value}k`,
     },
   ],
   [
@@ -32,10 +35,11 @@ const propsCases: [description: string, props: IViewProps][] = [
       theme: 'dark',
       selectedIds: ['from', 'to'],
       grid: undefined,
-      showInputs: false,
-      showTooltips: false,
-      collideTooltips: false,
       allowSmoothTransition: false,
+      showInputs: false,
+      showTooltips: true,
+      collideTooltips: true,
+      tooltipsSeparator: ' \u2192 ',
     },
   ],
 ];
@@ -195,9 +199,49 @@ describe.each(propsCases)('%s', (_description, props) => {
         expect(inputSpy).lastCalledWith({ value });
       }
       if (tooltipSpy) {
-        expect(tooltipSpy).nthCalledWith(1, { value, lastValue: value });
+        const prettyValue = props.prettify?.(value) ?? value;
+        expect(tooltipSpy).nthCalledWith(1, { value: prettyValue, lastValue: prettyValue });
         if (props.collideTooltips) {
-          expect(tooltipSpy).nthCalledWith(2, { value, hidden: false });
+          expect(tooltipSpy).nthCalledWith(2, { value: prettyValue, hidden: false });
+        }
+      }
+    });
+
+    test('should correctly collide tooltips', () => {
+      if (props.showTooltips && props.collideTooltips) {
+        const { track } = view['subViews'];
+        expect(track).toBeDefined();
+        const tooltipFrom = view['subViews'].tooltips?.['from'];
+        const tooltipTo = view['subViews'].tooltips?.['to'];
+        expect(tooltipFrom).toBeDefined();
+        expect(tooltipTo).toBeDefined();
+        if (props.orientation === 'vertical') {
+          mockElementDimensions(track!.element, { width: 10, height: 100 });
+          mockElementDimensions(tooltipFrom!.element, { width: 25, height: 25, y: 100 });
+          mockElementDimensions(tooltipTo!.element, { width: 25, height: 25, y: 0 });
+        } else {
+          mockElementDimensions(track!.element, { width: 100, height: 10 });
+          mockElementDimensions(tooltipFrom!.element, { width: 25, height: 25, x: 0 });
+          mockElementDimensions(tooltipTo!.element, { width: 25, height: 25, x: 100 });
+        }
+        view.setState({ currentValue: ['from', '0'] });
+        view.setState({ currentValue: ['to', '100'] });
+        const tooltipFromSpy = jest.spyOn(tooltipFrom!, 'setState');
+        const tooltipToSpy = jest.spyOn(tooltipTo!, 'setState');
+        const getValue = (from: string, to: string) => (props.prettify?.(from) ?? from)
+          + props.tooltipsSeparator + (props.prettify?.(to) ?? to);
+        if (props.orientation === 'vertical') {
+          mockElementDimensions(tooltipFrom!.element, { width: 25, height: 25, y: 10 });
+          view.setState({ currentValue: ['from', '90'] });
+          expect(tooltipFromSpy).nthCalledWith(2, { lastUsed: true });
+          expect(tooltipFromSpy).nthCalledWith(3, { value: getValue('90', '100'), hidden: false });
+          expect(tooltipToSpy).nthCalledWith(1, { hidden: true });
+        } else {
+          mockElementDimensions(tooltipTo!.element, { width: 25, height: 25, x: 10 });
+          view.setState({ currentValue: ['to', '10'] });
+          expect(tooltipFromSpy).nthCalledWith(1, { hidden: true });
+          expect(tooltipToSpy).nthCalledWith(2, { lastUsed: true });
+          expect(tooltipToSpy).nthCalledWith(3, { value: getValue('0', '10'), hidden: false });
         }
       }
     });

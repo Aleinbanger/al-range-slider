@@ -87,7 +87,7 @@ class View extends Observable<IViewState> {
     }
     if (currentValue) {
       const [id, value] = currentValue;
-      const prettyValue = this.props.prettify ? this.props.prettify(value) : value;
+      const prettyValue = this.props.prettify?.(value) ?? value;
       this.state.currentValue = currentValue;
       if (this.state.selectedValues) {
         this.state.selectedValues[id] = value;

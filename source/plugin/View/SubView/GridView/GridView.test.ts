@@ -17,6 +17,7 @@ const propsCases: [description: string, props: IGridViewProps][] = [
       pointsMap: pointsMapMock,
       minTicksStep: 1,
       marksStep: 1,
+      prettify: (value) => `${value}k`,
     },
   ],
   [
@@ -75,6 +76,16 @@ describe.each(propsCases)('%s', (_description, props) => {
         grid.setState({ ticksStep });
         expect(countTicks()).toBe(Math.ceil(props.pointsMap.length / ticksStep));
         expect(countMarks()).toBe(Math.ceil(props.pointsMap.length / ticksStep / props.marksStep));
+      });
+
+      test('should correctly prettify marks', () => {
+        grid.setState({ ticksStep: 1 });
+        const marks = Array.from(grid.element.querySelectorAll(`.${props.cssClass}-mark`))
+          .map((mark) => mark.textContent);
+        const values = props.prettify
+          ? props.pointsMap.map(([, value]) => props.prettify?.(String(value)))
+          : props.pointsMap.map(([, value]) => String(value));
+        expect(marks).toStrictEqual(values);
       });
     });
   });

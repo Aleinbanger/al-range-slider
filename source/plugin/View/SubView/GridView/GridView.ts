@@ -86,7 +86,7 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
           const value = String(this.props.pointsMap[newIndex][1]);
           const mark = document.createElement('span');
           mark.setAttribute('class', `${this.props.cssClass}-mark js-${this.props.cssClass}-mark`);
-          mark.textContent = this.props.prettify ? this.props.prettify(value) : value;
+          mark.textContent = this.props.prettify?.(value) ?? value;
           this.props.marks?.push(mark);
           tick.appendChild(mark);
           tick.classList.add(`${this.props.cssClass}-tick_long`);
