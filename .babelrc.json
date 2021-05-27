@@ -12,8 +12,10 @@
   ],
   "plugins": [
     ["@babel/plugin-transform-typescript", { "allowDeclareFields": true }],
-    ["@babel/plugin-proposal-decorators", { "legacy": true }],
-    "@babel/proposal-class-properties",
-    "@babel/proposal-object-rest-spread"
-  ]
+    ["@babel/plugin-proposal-decorators", { "legacy": true }]
+  ],
+  "assumptions": {
+    "privateFieldsAsProperties": true,
+    "setPublicClassFields": true
+  }
 }

@@ -8,6 +8,7 @@
     "esModuleInterop": true, // Import non-ES modules as default imports.
     "isolatedModules": true, // Disallow features that require cross-file information for emit.
     "strict": true, // Enable strictest settings like strictNullChecks & noImplicitAny.
+    "noImplicitOverride": true,
     "experimentalDecorators": true,
     "types": [
       "jquery",
