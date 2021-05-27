@@ -1,0 +1,296 @@
+@startuml
+!theme spacelab
+skinparam defaultFontName Consolas
+abstract class Observable<TData> {
+    -observers: TObserverMethod<TData>[]
+    +addObserver(observer: TObserverMethod<TData>): void
+    +removeObserver(observer: TObserverMethod<TData>): void
+    #notifyObservers(data: TData): void
+}
+interface IModelProps {
+    +initialSelectedValues: Record<string, TPointValue>
+    +valuesPrecision: number
+    +collideKnobs: boolean
+    +range?: { min: number; max: number; step: number; positionStep?: number | undefined; } | undefined
+    +valuesArray?: number[] | string[] | undefined
+    +pointsMap?: Record<number, TPointValue> | undefined
+    +pointsMapPrecision?: number | undefined
+    +positionsArray?: number[] | undefined
+}
+interface IModelState {
+    +selectedPoints: Record<string, TPoint>
+    +selectedPointsLimits: Record<string, { min: number; max: number; }>
+}
+interface IModelData {
+    +currentPoint?: TCurrentPoint | undefined
+    +currentPointLimits?: [id: string, limits: { min: number; max: number; }] | undefined
+}
+class Model extends Observable {
+    -props: IModelProps
+    -state: IModelState
+    +getState(): IModelState
+    +getSelectedPoints(): TCurrentPoint[]
+    +getPointsMap(): [position: string, value: TPointValue][]
+    +selectPointByUnknownPosition(positionRatio: number): void
+    +selectPointByPosition(__0: [string, number]): void
+    +selectPointByValue(__0: [string, TPointValue]): void
+    +selectPointLimits(id: string): void
+    -initialize(): void
+    -generateValuesArrayFromRange(): void
+    -generatePointsMapFromArray(): void
+    -activatePointsMap(): void
+    -generatePositionsArray(): void
+    -getPositionRatioByValue(value: number, __1: { min: number; max: number; }): number
+    -getValueByPositionRatio(positionRatio: number, __1: { min: number; max: number; }): number
+    -getRoundedByStepValue(value: number, __1: { min: number; max: number; step: number; }): number
+    -checkPointLimits(__0: [string, number]): boolean
+}
+interface ICommonViewProps {
+    +cssClass: string
+    +orientation: TOrientation
+}
+interface IViewProps extends ICommonViewProps {
+    +theme: TTheme
+    +selectedIds: string[]
+    +grid: { readonly pointsMap: TPointsMap; readonly minTicksStep: number; readonly marksStep: number; } | undefined
+    +allowSmoothTransition: boolean
+    +showInputs: boolean | "hidden"
+    +showTooltips: boolean
+    +collideTooltips: boolean
+    +tooltipsSeparator: string
+    +prettify?: ((value: string) => string) | undefined
+}
+interface IViewState {
+    +selectedValues?: Record<string, TPointValue> | undefined
+    +selectedPrettyValues?: Record<string, string> | undefined
+    +currentPosition?: [id: string, position: number] | undefined
+    +currentPositionLimits?: [id: string, limits: { min: number; max: number; }] | undefined
+    +currentActiveStatus?: [id: string, active: boolean] | undefined
+    +currentValue?: [id: string, value: string] | undefined
+    +unknownPosition?: number | undefined
+}
+interface ISubViewProps extends ICommonViewProps {
+    +referenceFrame?: TReferenceFrame | undefined
+}
+abstract class SubView<TState, TProps extends ISubViewProps, TElement extends HTMLElement> extends Observable {
+    +element: TElement
+    #parent: HTMLElement
+    #props: TProps
+    #state?: TState | undefined
+    +destroy(): void
+    +disable(disabled?: boolean): void
+    +getState(): TState | undefined
+    +setState(state: TState): void
+    #{abstract} renderMarkup(): TElement
+    #initialize(): void
+    #addEventListeners(): void
+    #renderState(_state?: TState | undefined): void
+    #setReferenceFrame(reference: HTMLElement): void
+    #getRelativePointerPositionRatio(event: PointerEvent): number
+}
+interface IWrapperViewProps extends ISubViewProps {
+    +theme: TTheme
+}
+class WrapperView extends SubView {
+    #renderMarkup(): HTMLElement
+}
+interface ITrackViewState {
+    +positionRatio?: number | undefined
+}
+class TrackView extends SubView {
+    #renderMarkup(): HTMLElement
+    #initialize(): void
+    #addEventListeners(): void
+    -handleTrackPointerDown(): void
+    -handleTrackPointerUp(event: PointerEvent): void
+}
+interface IGridViewProps extends ISubViewProps {
+    +pointsMap: TPointsMap
+    +minTicksStep: number
+    +marksStep: number
+    +prettify?: ((value: string) => string) | undefined
+    +minTicksGap?: number | undefined
+    +ticks?: HTMLElement[] | undefined
+    +marks?: HTMLElement[] | undefined
+}
+interface IGridViewState {
+    +ticksStep?: number | undefined
+    +positionRatio?: number | undefined
+}
+class GridView extends SubView {
+    +destroy(): void
+    #renderMarkup(): HTMLElement
+    #initialize(): void
+    #addEventListeners(): void
+    #renderState(__0: IGridViewState): void
+    -updateState(): void
+    -handleWindowResize(): void
+    -handleGridPointerDown(event: PointerEvent): void
+    -handleGridPointerUp(event: PointerEvent): void
+}
+interface IKnobViewProps extends ISubViewProps {
+    +allowSmoothTransition: boolean
+}
+interface IKnobViewState {
+    +positionRatio?: number | undefined
+    +positionRatioLimits?: { min: number; max: number; } | undefined
+    +active?: boolean | undefined
+    +zIndex?: number | undefined
+}
+class KnobView extends SubView {
+    #renderMarkup(): HTMLElement
+    #initialize(): void
+    #addEventListeners(): void
+    #renderState(__0: IKnobViewState): void
+    -handleKnobPointerDown(event: PointerEvent): void
+    -handleKnobPointerMove(event: PointerEvent): void
+    -handleKnobPointerUp(event: PointerEvent): void
+    -handleKnobPointerCancel(event: PointerEvent): void
+    -checkLimits(positionRatio: number): boolean
+}
+interface IBarViewState {
+    +from?: number | undefined
+    +to?: number | undefined
+}
+class BarView extends SubView {
+    #renderMarkup(): HTMLElement
+    #initialize(): void
+    #renderState(__0: IBarViewState): void
+}
+interface IInputViewProps extends ISubViewProps {
+    +name: string
+    +hidden: boolean
+}
+interface IInputViewState {
+    +value?: string | undefined
+    +active?: boolean | undefined
+}
+class InputView extends SubView {
+    +disable(disabled?: boolean): void
+    #renderMarkup(): HTMLInputElement
+    #initialize(): void
+    #addEventListeners(): void
+    #renderState(__0: IInputViewState): void
+    -handleInputFocus(): void
+    -handleInputBlur(): void
+    -handleInputChange(event: Event): void
+}
+interface ITooltipViewState {
+    +value?: string | undefined
+    +lastValue?: string | undefined
+    +active?: boolean | undefined
+    +hidden?: boolean | undefined
+    +lastUsed?: boolean | undefined
+}
+class TooltipView extends SubView {
+    #renderMarkup(): HTMLElement
+    #initialize(): void
+    #renderState(__0: ITooltipViewState): void
+}
+class View extends Observable {
+    -parent: HTMLElement
+    -props: IViewProps
+    -state: IViewState
+    -subViews: {
+        wrapper: WrapperView;
+        track?: TrackView | undefined;
+        grid?: GridView | undefined;
+        knobs?: Record<string, KnobView | undefined> | undefined;
+        bars?: Record<string, BarView | undefined> | undefined;
+        inputs?: Record<string, InputView | undefined> | undefined;
+        tooltips?: Record<string, TooltipView | undefined> | undefined;
+    };
+    +destroy(): void
+    +disable(disabled?: boolean): void
+    +getState(): IViewState
+    +setState(state: IViewState): void
+    -initialize(): void
+    -handleTrackPositionChange(__0: IGridViewState | ITrackViewState): void
+    -addKnob(id: string): void
+    -handleKnobActiveStatusChange(id: string, __1: IKnobViewState | IInputViewState): void
+    -handleKnobPositionChange(id: string, __1: IKnobViewState): void
+    -stackKnobs(currentId: string): void
+    -addBars(ids: string[]): void
+    -updateBar(__0: [string, number]): void
+    -addInput(id: string): void
+    -handleInputValueChange(id: string, __1: IInputViewState): void
+    -addTooltip(id: string): void
+    -collideTooltips(currentId: string): void
+    -callAllSubViews(method: T, arg?: ExtractFunctionArgs<SubView, T> | undefined, subViews?: TSubViews): void
+}
+interface IProps << extends Omit<IModelProps, 'pointsMapPrecision' | 'positionsArray'>, Omit<IViewProps, 'cssClass' | 'selectedIds' | 'grid'> >> {
+    +grid: { readonly minTicksStep: number; readonly marksStep: number; readonly pointsMap?: TPointsMap | undefined; }
+    +onInit?: ((state?: IState | undefined) => void) | undefined
+    +onStart?: ((state?: IState | undefined) => void) | undefined
+    +onFinish?: ((state?: IState | undefined) => void) | undefined
+    +onChange?: ((state?: IState | undefined) => void) | undefined
+    +onUpdate?: ((state?: IState | undefined) => void) | undefined
+}
+interface IState << extends Partial<IViewState>, Partial<IModelState> >> {}
+interface IData {
+    +values?: Record<string, TPointValue> | undefined
+    +positions?: Record<string, number> | undefined
+}
+class Presenter {
+    -parent: HTMLElement
+    -props: IProps
+    -state?: IState | undefined
+    -model?: Model | undefined
+    -view?: View | undefined
+    +destroy(): void
+    +disable(disabled?: boolean): void
+    +restart(props?: Partial<IProps> | undefined): void
+    +update(data?: IData | undefined): void
+    +getState(): IState | undefined
+    -initialize(): void
+    -addObservers(): void
+    -removeObservers(): void
+    -updateState(): void
+    -handleCurrentPointLimitsChange(__0: IModelData): void
+    -handleCurrentPointChange(__0: IModelData): void
+    -handleCurrentActiveStatusChange(__0: IViewState): void
+    -handleCurrentPositionChange(__0: IViewState): void
+    -handleCurrentValueChange(__0: IViewState): void
+    -handleUnknownPositionChange(__0: IViewState): void
+}
+SubView *-- ISubViewProps
+GridView *-- IGridViewState
+KnobView *-- IKnobViewState
+BarView *-- IBarViewState
+InputView *-- IInputViewState
+TooltipView *-- ITooltipViewState
+TrackView *-- ITrackViewState
+GridView *-- IGridViewProps
+KnobView *-- IKnobViewProps
+InputView *-- IInputViewProps
+WrapperView *-- IWrapperViewProps
+View *-- IViewProps
+View *-- IViewState
+View *-- WrapperView
+View *-- TrackView
+View *-- GridView
+View *-- KnobView
+View *-- InputView
+View *-- TooltipView
+View *-- BarView
+View *-- IGridViewState
+View *-- ITrackViewState
+View *-- IKnobViewState
+View *-- IInputViewState
+View *-- SubView
+Model *-- IModelProps
+Model *-- IModelState
+Model *-- IModelData
+Presenter *-- IProps
+Presenter *-- IState
+Presenter *-- IData
+Presenter *-- View
+Presenter *-- Model
+Presenter *-- IViewState
+Presenter *-- IModelData
+IProps *-- IState
+IModelProps <|-- IProps
+IViewProps <|-- IProps
+IModelState <|-- IState
+IViewState <|-- IState
+@enduml
