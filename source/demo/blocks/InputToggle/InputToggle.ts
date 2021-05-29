@@ -19,7 +19,7 @@ class InputToggle extends Component<IInputToggleState> {
     super(parent, 'input-toggle');
   }
 
-  protected initialize(): void {
+  protected override initialize(): void {
     this.children = {
       input: this.element.querySelector('input'),
     };
@@ -28,11 +28,11 @@ class InputToggle extends Component<IInputToggleState> {
     };
   }
 
-  protected addEventListeners(): void {
+  protected override addEventListeners(): void {
     this.element.addEventListener('click', this.handleElementClick);
   }
 
-  protected renderState({ checked }: IInputToggleState): void {
+  protected override renderState({ checked }: IInputToggleState): void {
     if (typeof checked !== 'undefined' && this.children.input) {
       this.children.input.checked = checked;
     }

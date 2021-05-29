@@ -18,12 +18,17 @@ beforeEach(() => {
 
 test('should add observer if it does not already exist', () => {
   testObservable.addObserver(mockObserver);
-  expect(testObservable['observers'].length).toBe(1);
+  expect(testObservable.getObserverNames().length).toBe(1);
 });
 
 test('should remove observer if it exists', () => {
   testObservable.removeObserver(mockObserver);
-  expect(testObservable['observers'].length).toBe(0);
+  expect(testObservable.getObserverNames().length).toBe(0);
+});
+
+test('should get observers names', () => {
+  const names = testObservable.getObserverNames();
+  expect(names).toStrictEqual(['mockConstructor']);
 });
 
 test('should notify observers', () => {

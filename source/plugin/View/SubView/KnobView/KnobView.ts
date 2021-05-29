@@ -23,7 +23,7 @@ class KnobView extends SubView<IKnobViewState, IKnobViewProps> {
     return element;
   }
 
-  protected initialize(): void {
+  protected override initialize(): void {
     this.state = {
       positionRatio: 0,
       positionRatioLimits: {
@@ -35,11 +35,11 @@ class KnobView extends SubView<IKnobViewState, IKnobViewProps> {
     };
   }
 
-  protected addEventListeners(): void {
+  protected override addEventListeners(): void {
     this.element.addEventListener('pointerdown', this.handleKnobPointerDown);
   }
 
-  protected renderState({ positionRatio, active, zIndex }: IKnobViewState): void {
+  protected override renderState({ positionRatio, active, zIndex }: IKnobViewState): void {
     if (typeof positionRatio !== 'undefined') {
       let percent: number;
       if (positionRatio < 0) {
@@ -87,7 +87,7 @@ class KnobView extends SubView<IKnobViewState, IKnobViewProps> {
   private handleKnobPointerMove(event: PointerEvent): void {
     event.preventDefault();
     const positionRatio = this.getRelativePointerPositionRatio(event);
-    if (this.checkLimits(positionRatio)) {
+    if (this.#checkLimits(positionRatio)) {
       this.notifyObservers({ positionRatio });
       if (this.props.allowSmoothTransition) {
         this.renderState({ positionRatio });
@@ -113,7 +113,7 @@ class KnobView extends SubView<IKnobViewState, IKnobViewProps> {
     this.element.removeEventListener('pointercancel', this.handleKnobPointerCancel);
   }
 
-  private checkLimits(positionRatio: number): boolean {
+  #checkLimits(positionRatio: number): boolean {
     if (this.state?.positionRatioLimits) {
       const { min, max } = this.state.positionRatioLimits;
       const isInsideLimits = positionRatio >= min && positionRatio <= max;

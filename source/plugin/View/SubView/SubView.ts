@@ -1,3 +1,5 @@
+/* eslint-disable class-methods-use-this */
+
 import Observable from 'shared/scripts/Observable/Observable';
 import { cloneDeep } from 'shared/scripts/utils/utils';
 
@@ -60,16 +62,14 @@ abstract class SubView<
 
   protected abstract renderMarkup(): TElement;
 
-  // eslint-disable-next-line class-methods-use-this
   protected initialize(): void {}
 
-  // eslint-disable-next-line class-methods-use-this
   protected addEventListeners(): void {}
 
-  // eslint-disable-next-line class-methods-use-this
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected renderState(_state?: TState): void {}
 
-  protected setReferenceFrame(reference: HTMLElement): void | never {
+  protected setReferenceFrame(reference: HTMLElement): void {
     const rect = reference.getBoundingClientRect();
     const offsetX = rect.x;
     const offsetY = rect.y;

@@ -52,7 +52,7 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
     super(parent, 'config-panel', props);
   }
 
-  protected initialize(): void {
+  protected override initialize(): void {
     this.state = {
       theme: 'dark',
     };
@@ -160,7 +160,7 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
     }
   }
 
-  protected addEventListeners(): void {
+  protected override addEventListeners(): void {
     this.children.knobsList.addObserver(this.handleKnobsListChange);
     this.children.gridInputs.ticks.addObserver(this.handleGridInputChange.bind(this, 'minTicksStep'));
     this.children.gridInputs.marks.addObserver(this.handleGridInputChange.bind(this, 'marksStep'));
@@ -178,7 +178,7 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
     this.children.rangeInputs?.step.addObserver(this.handleRangeInputChange.bind(this, 'step'));
   }
 
-  protected renderState({ theme, orientation }: IConfigPanelState): void {
+  protected override renderState({ theme, orientation }: IConfigPanelState): void {
     if (typeof theme !== 'undefined') {
       this.children.rangeSlider.alRangeSlider('restart', {
         initialSelectedValues: this.state.sliderSelectedValues,

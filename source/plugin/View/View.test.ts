@@ -4,12 +4,12 @@
 import { ExtractFunctionKeys } from 'shared/scripts/utils/typeUtils';
 import { mockElementDimensions } from 'shared/scripts/utils/jestUtils';
 
-import { IViewProps, IViewState } from './ViewTypes';
-import View from './View';
+import View, { IViewProps, IViewState, ISubViews } from './View';
 import SubView from './SubView/SubView';
 
-let view: View;
 let parent: HTMLElement;
+let view: View;
+let subViews: ISubViews;
 const propsCases: [description: string, props: IViewProps][] = [
   [
     'initialized with orientation: "horizontal"',
@@ -52,16 +52,17 @@ describe.each(propsCases)('%s', (_description, props) => {
     if (mockObserver) {
       view.addObserver(mockObserver);
     }
+    subViews = view['__private_3_subViews' as keyof View] as unknown as ISubViews;
   };
   const spyOnAllSubViews = (
-    method: ExtractFunctionKeys<SubView>, subViews = view['subViews'],
+    method: ExtractFunctionKeys<SubView>, sViews = subViews,
   ) => {
     const spies: Array<jest.SpyInstance> = [];
-    Object.values(subViews).forEach((subView) => {
+    Object.values(sViews).forEach((subView) => {
       if (subView instanceof SubView && typeof subView[method] === 'function') {
         spies.push(jest.spyOn(subView, method));
       } else if (typeof subView === 'object') {
-        spies.push(...spyOnAllSubViews(method, subView as unknown as View['subViews']));
+        spies.push(...spyOnAllSubViews(method, subView as ISubViews));
       }
     });
     return spies;
@@ -124,10 +125,10 @@ describe.each(propsCases)('%s', (_description, props) => {
       ['from', 0.1],
       ['to', 0.9],
     ])('should set "currentPosition" state on the corresponding SubViews with id "%s"', (id, positionRatio) => {
-      const knob = view['subViews'].knobs?.[id];
+      const knob = subViews.knobs?.[id];
       expect(knob).toBeDefined();
       const knobSpy = jest.spyOn(knob!, 'setState');
-      const bar = view['subViews'].bars?.fromto;
+      const bar = subViews.bars?.fromto;
       expect(bar).toBeDefined();
       const barSpy = jest.spyOn(bar!, 'setState');
       view.setState({ currentPosition: [id, positionRatio] });
@@ -139,7 +140,7 @@ describe.each(propsCases)('%s', (_description, props) => {
       ['from', { min: 0, max: 0.5 }],
       ['to', { min: 0.6, max: 1 }],
     ])('should set "currentPositionLimits" state on the corresponding SubViews with id "%s"', (id, positionRatioLimits) => {
-      const knob = view['subViews'].knobs?.[id];
+      const knob = subViews.knobs?.[id];
       expect(knob).toBeDefined();
       const knobSpy = jest.spyOn(knob!, 'setState');
       view.setState({ currentPositionLimits: [id, positionRatioLimits] });
@@ -150,18 +151,18 @@ describe.each(propsCases)('%s', (_description, props) => {
       ['from', false],
       ['to', true],
     ])('should set "currentActiveStatus" state on the corresponding SubViews with id "%s"', (id, active) => {
-      const knob = view['subViews'].knobs?.[id];
+      const knob = subViews.knobs?.[id];
       expect(knob).toBeDefined();
       const knobSpy = jest.spyOn(knob!, 'setState');
       let inputSpy: jest.SpyInstance | undefined;
       let tooltipSpy: jest.SpyInstance | undefined;
       if (props.showInputs) {
-        const input = view['subViews'].inputs?.[id];
+        const input = subViews.inputs?.[id];
         expect(input).toBeDefined();
         inputSpy = jest.spyOn(input!, 'setState');
       }
       if (props.showTooltips) {
-        const tooltip = view['subViews'].tooltips?.[id];
+        const tooltip = subViews.tooltips?.[id];
         expect(tooltip).toBeDefined();
         tooltipSpy = jest.spyOn(tooltip!, 'setState');
       }
@@ -185,12 +186,12 @@ describe.each(propsCases)('%s', (_description, props) => {
       let inputSpy: jest.SpyInstance | undefined;
       let tooltipSpy: jest.SpyInstance | undefined;
       if (props.showInputs) {
-        const input = view['subViews'].inputs?.[id];
+        const input = subViews.inputs?.[id];
         expect(input).toBeDefined();
         inputSpy = jest.spyOn(input!, 'setState');
       }
       if (props.showTooltips) {
-        const tooltip = view['subViews'].tooltips?.[id];
+        const tooltip = subViews.tooltips?.[id];
         expect(tooltip).toBeDefined();
         tooltipSpy = jest.spyOn(tooltip!, 'setState');
       }
@@ -207,44 +208,60 @@ describe.each(propsCases)('%s', (_description, props) => {
       }
     });
 
-    test('should correctly collide tooltips', () => {
-      if (props.showTooltips && props.collideTooltips) {
-        const { track } = view['subViews'];
-        expect(track).toBeDefined();
-        const tooltipFrom = view['subViews'].tooltips?.['from'];
-        const tooltipTo = view['subViews'].tooltips?.['to'];
-        expect(tooltipFrom).toBeDefined();
-        expect(tooltipTo).toBeDefined();
-        if (props.orientation === 'vertical') {
-          mockElementDimensions(track!.element, { width: 10, height: 100 });
-          mockElementDimensions(tooltipFrom!.element, { width: 25, height: 25, y: 100 });
-          mockElementDimensions(tooltipTo!.element, { width: 25, height: 25, y: 0 });
-        } else {
-          mockElementDimensions(track!.element, { width: 100, height: 10 });
-          mockElementDimensions(tooltipFrom!.element, { width: 25, height: 25, x: 0 });
-          mockElementDimensions(tooltipTo!.element, { width: 25, height: 25, x: 100 });
-        }
-        view.setState({ currentValue: ['from', '0'] });
-        view.setState({ currentValue: ['to', '100'] });
-        const tooltipFromSpy = jest.spyOn(tooltipFrom!, 'setState');
-        const tooltipToSpy = jest.spyOn(tooltipTo!, 'setState');
-        const getValue = (from: string, to: string) => (props.prettify?.(from) ?? from)
-          + props.tooltipsSeparator + (props.prettify?.(to) ?? to);
-        if (props.orientation === 'vertical') {
-          mockElementDimensions(tooltipFrom!.element, { width: 25, height: 25, y: 10 });
-          view.setState({ currentValue: ['from', '90'] });
-          expect(tooltipFromSpy).nthCalledWith(2, { lastUsed: true });
-          expect(tooltipFromSpy).nthCalledWith(3, { value: getValue('90', '100'), hidden: false });
-          expect(tooltipToSpy).nthCalledWith(1, { hidden: true });
-        } else {
-          mockElementDimensions(tooltipTo!.element, { width: 25, height: 25, x: 10 });
-          view.setState({ currentValue: ['to', '10'] });
-          expect(tooltipFromSpy).nthCalledWith(1, { hidden: true });
-          expect(tooltipToSpy).nthCalledWith(2, { lastUsed: true });
-          expect(tooltipToSpy).nthCalledWith(3, { value: getValue('0', '10'), hidden: false });
-        }
-      }
-    });
+    if (props.showTooltips && props.collideTooltips) {
+      describe('collide tooltips', () => {
+        const getValue = (from: string, to: string) => (
+          (props.prettify?.(from) ?? from) + props.tooltipsSeparator + (props.prettify?.(to) ?? to)
+        );
+        const initFromValue = '0';
+        const initToValue = '100';
+
+        beforeEach(() => {
+          const { track } = subViews;
+          const tooltipFrom = subViews.tooltips?.['from'];
+          const tooltipTo = subViews.tooltips?.['to'];
+          expect(track).toBeDefined();
+          expect(tooltipFrom).toBeDefined();
+          expect(tooltipTo).toBeDefined();
+          if (props.orientation === 'vertical') {
+            mockElementDimensions(track!.element, { width: 10, height: 100 });
+            mockElementDimensions(tooltipFrom!.element, { width: 25, height: 25, y: 100 });
+            mockElementDimensions(tooltipTo!.element, { width: 25, height: 25, y: 0 });
+          } else {
+            mockElementDimensions(track!.element, { width: 100, height: 10 });
+            mockElementDimensions(tooltipFrom!.element, { width: 25, height: 25, x: 0 });
+            mockElementDimensions(tooltipTo!.element, { width: 25, height: 25, x: 100 });
+          }
+          view.setState({ currentValue: ['from', initFromValue] });
+          view.setState({ currentValue: ['to', initToValue] });
+        });
+
+        test.each([
+          ['from', 90, 10, '90'],
+          ['to', 10, 90, '10'],
+        ])('should correctly collide tooltip "%s" with others', (activeId, x, y, value) => {
+          const passiveId = ['from', 'to'].find((id) => id !== activeId) ?? '';
+          const tooltipActive = subViews.tooltips?.[activeId];
+          const tooltipPassive = subViews.tooltips?.[passiveId];
+          expect(tooltipActive).toBeDefined();
+          expect(tooltipPassive).toBeDefined();
+          const tooltipActiveSpy = jest.spyOn(tooltipActive!, 'setState');
+          const tooltipPassiveSpy = jest.spyOn(tooltipPassive!, 'setState');
+          const expectedValue = activeId === 'from'
+            ? getValue(value, initToValue)
+            : getValue(initFromValue, value);
+          if (props.orientation === 'vertical') {
+            mockElementDimensions(tooltipActive!.element, { width: 25, height: 25, y });
+          } else {
+            mockElementDimensions(tooltipActive!.element, { width: 25, height: 25, x });
+          }
+          view.setState({ currentValue: [activeId, value] });
+          expect(tooltipActiveSpy).nthCalledWith(2, { lastUsed: true });
+          expect(tooltipActiveSpy).nthCalledWith(3, { value: expectedValue, hidden: false });
+          expect(tooltipPassiveSpy).nthCalledWith(1, { hidden: true });
+        });
+      });
+    }
   });
 
   describe('observers', () => {
@@ -256,10 +273,10 @@ describe.each(propsCases)('%s', (_description, props) => {
     test('should notify observers about unknownPosition change by track and gird', () => {
       const mockObserver = jest.fn(({ unknownPosition }: IViewState) => unknownPosition);
       initializeView(mockObserver);
-      view['subViews'].track?.['notifyObservers']({ positionRatio: 0 });
+      subViews.track?.['notifyObservers']({ positionRatio: 0 });
       expect(mockObserver).nthReturnedWith(1, 0);
       if (props.grid) {
-        view['subViews'].grid?.['notifyObservers']({ positionRatio: 0.5 });
+        subViews.grid?.['notifyObservers']({ positionRatio: 0.5 });
         expect(mockObserver).nthReturnedWith(2, 0.5);
       }
     });
@@ -270,10 +287,10 @@ describe.each(propsCases)('%s', (_description, props) => {
     ])('should notify observers about currentActiveStatus change by knob and input with id "%s"', (id, active) => {
       const mockObserver = jest.fn(({ currentActiveStatus }: IViewState) => currentActiveStatus);
       initializeView(mockObserver);
-      view['subViews'].knobs?.[id]?.['notifyObservers']({ active });
+      subViews.knobs?.[id]?.['notifyObservers']({ active });
       expect(mockObserver).nthReturnedWith(1, [id, active]);
       if (props.showInputs) {
-        view['subViews'].inputs?.[id]?.['notifyObservers']({ active });
+        subViews.inputs?.[id]?.['notifyObservers']({ active });
         expect(mockObserver).nthReturnedWith(2, [id, active]);
       }
     });
@@ -284,10 +301,10 @@ describe.each(propsCases)('%s', (_description, props) => {
     ])('should notify observers about currentPosition change by knob with id "%s"', (id, positionRatio) => {
       const mockObserver = jest.fn(({ currentPosition }: IViewState) => currentPosition);
       initializeView(mockObserver);
-      const bar = view['subViews'].bars?.fromto;
+      const bar = subViews.bars?.fromto;
       expect(bar).toBeDefined();
       const barSpy = jest.spyOn(bar!, 'setState');
-      view['subViews'].knobs?.[id]?.['notifyObservers']({ positionRatio });
+      subViews.knobs?.[id]?.['notifyObservers']({ positionRatio });
       expect(mockObserver).lastReturnedWith([id, positionRatio]);
       if (props.allowSmoothTransition) {
         expect(barSpy).lastCalledWith({ [id]: positionRatio });
@@ -301,7 +318,7 @@ describe.each(propsCases)('%s', (_description, props) => {
       const mockObserver = jest.fn(({ currentValue }: IViewState) => currentValue);
       initializeView(mockObserver);
       if (props.showInputs) {
-        view['subViews'].inputs?.[id]?.['notifyObservers']({ value });
+        subViews.inputs?.[id]?.['notifyObservers']({ value });
         expect(mockObserver).lastReturnedWith([id, value]);
       }
     });

@@ -7,44 +7,44 @@ import View, { IViewState } from '../View/View';
 import { IProps, IState, IData } from './PresenterTypes';
 
 class Presenter {
-  private readonly parent: HTMLElement;
+  readonly #parent: HTMLElement;
 
-  private props: IProps;
+  #props: IProps;
 
-  private state?: IState;
+  #state?: IState;
 
-  private model?: Model;
+  #model?: Model;
 
-  private view?: View;
+  #view?: View;
 
   constructor(parent: HTMLElement, props: IProps) {
-    this.parent = parent;
-    this.props = cloneDeep(props);
-    this.initialize();
+    this.#parent = parent;
+    this.#props = cloneDeep(props);
+    this.#initialize();
   }
 
   public destroy(): void {
-    this.view?.destroy();
-    delete this.view;
-    delete this.model;
+    this.#view?.destroy();
+    this.#view = undefined;
+    this.#model = undefined;
   }
 
   public disable(disabled = true): void {
-    this.view?.disable(disabled);
+    this.#view?.disable(disabled);
     if (disabled) {
-      this.removeObservers();
+      this.#removeObservers();
     } else {
-      this.addObservers();
+      this.#addObservers();
     }
   }
 
   public restart(props?: Partial<IProps>): void {
     if (typeof props === 'object') {
-      const oldProps = this.props;
-      this.props = { ...oldProps, ...cloneDeep(props) };
+      const oldProps = this.#props;
+      this.#props = { ...oldProps, ...cloneDeep(props) };
     }
     this.destroy();
-    this.initialize();
+    this.#initialize();
   }
 
   public update(data?: IData): void {
@@ -52,35 +52,34 @@ class Presenter {
       const { values, positions } = data;
       if (typeof values === 'object') {
         Object.entries(values).forEach((currentValue) => {
-          this.model?.selectPointByValue(currentValue);
+          this.#model?.selectPointByValue(currentValue);
         });
       }
       if (typeof positions === 'object') {
         Object.entries(positions).forEach((currentPosition) => {
-          this.model?.selectPointByPosition(currentPosition);
+          this.#model?.selectPointByPosition(currentPosition);
         });
       }
     }
-    if (typeof this.props.onUpdate === 'function') {
-      this.updateState();
-      this.props.onUpdate.call(this, this.state);
+    if (typeof this.#props.onUpdate === 'function') {
+      this.#updateState();
+      this.#props.onUpdate.call(this, this.#state);
     }
   }
 
   public getState(): IState | undefined {
-    this.updateState();
-    return cloneDeep(this.state);
+    this.#updateState();
+    return cloneDeep(this.#state);
   }
 
-  private initialize(): void {
-    const { parent } = this;
+  #initialize(): void {
     const {
       initialSelectedValues, valuesPrecision, collideKnobs, range, valuesArray, pointsMap,
       orientation, theme, grid, allowSmoothTransition, showInputs,
       showTooltips, collideTooltips, tooltipsSeparator, prettify,
-    } = this.props;
+    } = this.#props;
 
-    this.model = new Model({
+    this.#model = new Model({
       initialSelectedValues,
       valuesPrecision,
       collideKnobs,
@@ -88,8 +87,8 @@ class Presenter {
       valuesArray,
       pointsMap,
     });
-    this.view = new View(
-      parent,
+    this.#view = new View(
+      this.#parent,
       {
         cssClass: 'al-range-slider',
         orientation,
@@ -97,7 +96,7 @@ class Presenter {
         selectedIds: Object.keys(initialSelectedValues).map((id) => id),
         grid: {
           ...grid,
-          pointsMap: grid.pointsMap ?? this.model.getPointsMap(),
+          pointsMap: grid.pointsMap ?? this.#model.getPointsMap(),
         },
         allowSmoothTransition,
         showInputs,
@@ -107,46 +106,46 @@ class Presenter {
         prettify,
       },
     );
-    this.addObservers();
+    this.#addObservers();
 
     Object.entries(initialSelectedValues).forEach((currentValue) => {
-      this.model?.selectPointByValue(currentValue);
+      this.#model?.selectPointByValue(currentValue);
     });
-    if (typeof this.props.onInit === 'function') {
-      this.updateState();
-      this.props.onInit.call(this, this.state);
+    if (typeof this.#props.onInit === 'function') {
+      this.#updateState();
+      this.#props.onInit.call(this, this.#state);
     }
   }
 
-  private addObservers(): void {
-    this.model?.addObserver(this.handleCurrentPointLimitsChange);
-    this.model?.addObserver(this.handleCurrentPointChange);
-    this.view?.addObserver(this.handleCurrentActiveStatusChange);
-    this.view?.addObserver(this.handleCurrentPositionChange);
-    this.view?.addObserver(this.handleCurrentValueChange);
-    this.view?.addObserver(this.handleUnknownPositionChange);
+  #addObservers(): void {
+    this.#model?.addObserver(this.handleCurrentPointLimitsChange);
+    this.#model?.addObserver(this.handleCurrentPointChange);
+    this.#view?.addObserver(this.handleCurrentActiveStatusChange);
+    this.#view?.addObserver(this.handleCurrentPositionChange);
+    this.#view?.addObserver(this.handleCurrentValueChange);
+    this.#view?.addObserver(this.handleUnknownPositionChange);
   }
 
-  private removeObservers(): void {
-    this.model?.removeObserver(this.handleCurrentPointLimitsChange);
-    this.model?.removeObserver(this.handleCurrentPointChange);
-    this.view?.removeObserver(this.handleCurrentActiveStatusChange);
-    this.view?.removeObserver(this.handleCurrentPositionChange);
-    this.view?.removeObserver(this.handleCurrentValueChange);
-    this.view?.removeObserver(this.handleUnknownPositionChange);
+  #removeObservers(): void {
+    this.#model?.removeObserver(this.handleCurrentPointLimitsChange);
+    this.#model?.removeObserver(this.handleCurrentPointChange);
+    this.#view?.removeObserver(this.handleCurrentActiveStatusChange);
+    this.#view?.removeObserver(this.handleCurrentPositionChange);
+    this.#view?.removeObserver(this.handleCurrentValueChange);
+    this.#view?.removeObserver(this.handleUnknownPositionChange);
   }
 
-  private updateState(): void {
-    this.state = {
-      ...this.model?.getState(),
-      ...this.view?.getState(),
+  #updateState(): void {
+    this.#state = {
+      ...this.#model?.getState(),
+      ...this.#view?.getState(),
     };
   }
 
   @bind
   private handleCurrentPointLimitsChange({ currentPointLimits }: IModelData): void {
     if (currentPointLimits) {
-      this.view?.setState({ currentPositionLimits: currentPointLimits });
+      this.#view?.setState({ currentPositionLimits: currentPointLimits });
     }
   }
 
@@ -154,13 +153,13 @@ class Presenter {
   private handleCurrentPointChange({ currentPoint }: IModelData): void {
     if (currentPoint) {
       const [id, point] = currentPoint;
-      this.view?.setState({
+      this.#view?.setState({
         currentPosition: [id, point[0]],
         currentValue: [id, String(point[1])],
       });
-      if (typeof this.props.onChange === 'function') {
-        this.updateState();
-        this.props.onChange.call(this, this.state);
+      if (typeof this.#props.onChange === 'function') {
+        this.#updateState();
+        this.#props.onChange.call(this, this.#state);
       }
     }
   }
@@ -169,16 +168,16 @@ class Presenter {
   private handleCurrentActiveStatusChange({ currentActiveStatus }: IViewState): void {
     if (currentActiveStatus) {
       const [id, active] = currentActiveStatus;
-      this.view?.setState({ currentActiveStatus });
+      this.#view?.setState({ currentActiveStatus });
       if (active) {
-        this.model?.selectPointLimits(id);
-        if (typeof this.props.onStart === 'function') {
-          this.updateState();
-          this.props.onStart.call(this, this.state);
+        this.#model?.selectPointLimits(id);
+        if (typeof this.#props.onStart === 'function') {
+          this.#updateState();
+          this.#props.onStart.call(this, this.#state);
         }
-      } else if (typeof this.props.onFinish === 'function') {
-        this.updateState();
-        this.props.onFinish.call(this, this.state);
+      } else if (typeof this.#props.onFinish === 'function') {
+        this.#updateState();
+        this.#props.onFinish.call(this, this.#state);
       }
     }
   }
@@ -186,21 +185,21 @@ class Presenter {
   @bind
   private handleCurrentPositionChange({ currentPosition }: IViewState): void {
     if (currentPosition) {
-      this.model?.selectPointByPosition(currentPosition);
+      this.#model?.selectPointByPosition(currentPosition);
     }
   }
 
   @bind
   private handleCurrentValueChange({ currentValue }: IViewState): void {
     if (currentValue) {
-      this.model?.selectPointByValue(currentValue);
+      this.#model?.selectPointByValue(currentValue);
     }
   }
 
   @bind
   private handleUnknownPositionChange({ unknownPosition }: IViewState): void {
     if (typeof unknownPosition !== 'undefined') {
-      this.model?.selectPointByUnknownPosition(unknownPosition);
+      this.#model?.selectPointByUnknownPosition(unknownPosition);
     }
   }
 }

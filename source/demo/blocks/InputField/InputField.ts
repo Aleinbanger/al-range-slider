@@ -19,7 +19,7 @@ class InputField extends Component<IInputFieldState> {
     super(parent, 'input-field');
   }
 
-  protected initialize(): void {
+  protected override initialize(): void {
     this.state = {
       value: '',
     };
@@ -28,11 +28,11 @@ class InputField extends Component<IInputFieldState> {
     };
   }
 
-  protected addEventListeners(): void {
+  protected override addEventListeners(): void {
     this.children.input?.addEventListener('change', this.handleInputChange);
   }
 
-  protected renderState({ value }: IInputFieldState): void {
+  protected override renderState({ value }: IInputFieldState): void {
     if (typeof value !== 'undefined' && this.children.input) {
       this.children.input.value = value;
     }

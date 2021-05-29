@@ -1,3 +1,5 @@
+/* eslint-disable class-methods-use-this */
+
 import Observable from '../Observable/Observable';
 import { cloneDeep } from '../utils/utils';
 
@@ -20,7 +22,7 @@ abstract class Component<
     super();
     this.cssClass = cssClass;
     this.props = cloneDeep(props);
-    this.element = this.attachMarkup(parent);
+    this.element = this.#attachMarkup(parent);
     this.initialize();
     this.addEventListeners();
   }
@@ -45,16 +47,14 @@ abstract class Component<
     this.renderState(state);
   }
 
-  // eslint-disable-next-line class-methods-use-this
   protected initialize(): void {}
 
-  // eslint-disable-next-line class-methods-use-this
   protected addEventListeners(): void {}
 
-  // eslint-disable-next-line class-methods-use-this
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected renderState(_state?: TState): void {}
 
-  private attachMarkup(parent: HTMLElement | null): TElement | never {
+  #attachMarkup(parent: HTMLElement | null): TElement | never {
     if (parent) {
       let element: TElement;
       if (parent.classList.contains(`js-${this.cssClass}`)) {

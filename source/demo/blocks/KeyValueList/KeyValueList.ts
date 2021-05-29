@@ -39,7 +39,7 @@ class KeyValueList extends Component<IKeyValueListState, IKeyValueListProps> {
     super(parent, 'key-value-list', props);
   }
 
-  protected initialize(): void {
+  protected override initialize(): void {
     this.state = {
       items: {},
       tmpKey: '',
@@ -50,19 +50,19 @@ class KeyValueList extends Component<IKeyValueListState, IKeyValueListProps> {
     };
   }
 
-  protected addEventListeners(): void {
+  protected override addEventListeners(): void {
     this.children.addButton?.addEventListener('click', this.handleAddButtonClick);
   }
 
-  protected renderState({ items }: IKeyValueListState): void {
+  protected override renderState({ items }: IKeyValueListState): void {
     if (typeof items !== 'undefined') {
       Object.entries(items).forEach(([key, value]) => {
-        this.createItem(key, value);
+        this.#createItem(key, value);
       });
     }
   }
 
-  private createItem(key?: string | number, value?: string | number):
+  #createItem(key?: string | number, value?: string | number):
   [keyInput: HTMLInputElement, valueInput: HTMLInputElement] {
     const item = document.createElement('span');
     item.setAttribute('class', `${this.cssClass}__item js-${this.cssClass}__item`);
@@ -129,7 +129,7 @@ class KeyValueList extends Component<IKeyValueListState, IKeyValueListProps> {
 
   @bind
   private handleAddButtonClick(): void {
-    const [keyInput, valueInput] = this.createItem();
+    const [keyInput, valueInput] = this.#createItem();
     keyInput.disabled = false;
 
     keyInput.addEventListener('change', this.handleKeyInputChange);

@@ -1,3 +1,5 @@
+/* eslint-disable class-methods-use-this */
+
 import SubView, { ISubViewProps } from './SubView';
 
 interface ITestViewState {
@@ -15,20 +17,18 @@ class TestView extends SubView<ITestViewState> {
     return element;
   }
 
-  protected initialize(): void {
+  protected override initialize(): void {
     this.state = {
       test: '1',
     };
     initializeMock();
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  protected addEventListeners(): void {
+  protected override addEventListeners(): void {
     addEventListenersMock();
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  protected renderState(state: ITestViewState): void {
+  protected override renderState(state: ITestViewState): void {
     renderStateMock(state);
   }
 }

@@ -24,7 +24,7 @@ class Examples extends Component<IExamplesState> {
     super(parent, 'examples');
   }
 
-  protected initialize(): void {
+  protected override initialize(): void {
     const sliderOptionsArray: TOptions[] = [
       {},
       {
@@ -130,11 +130,11 @@ class Examples extends Component<IExamplesState> {
     this.children.themeToggle.setState({ checked: theme === 'dark' });
   }
 
-  protected addEventListeners(): void {
+  protected override addEventListeners(): void {
     this.children.themeToggle.addObserver(this.handleThemeToggleChange);
   }
 
-  protected renderState({ theme }: IExamplesState): void {
+  protected override renderState({ theme }: IExamplesState): void {
     if (typeof theme !== 'undefined') {
       if (theme === 'dark') {
         this.children.root.classList.add('dark');

@@ -12,14 +12,14 @@ class BarView extends SubView<IBarViewState> {
     return element;
   }
 
-  protected initialize(): void {
+  protected override initialize(): void {
     this.state = {
       from: 0,
       to: 1,
     };
   }
 
-  protected renderState({ from, to }: IBarViewState): void {
+  protected override renderState({ from, to }: IBarViewState): void {
     let percentFrom: number;
     let percentTo: number;
     let difference: number;

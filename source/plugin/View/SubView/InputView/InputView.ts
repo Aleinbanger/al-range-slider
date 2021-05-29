@@ -13,7 +13,7 @@ interface IInputViewState {
 }
 
 class InputView extends SubView<IInputViewState, IInputViewProps, HTMLInputElement> {
-  public disable(disabled = true): void {
+  public override disable(disabled = true): void {
     super.disable(disabled);
     this.element.disabled = disabled;
   }
@@ -31,20 +31,20 @@ class InputView extends SubView<IInputViewState, IInputViewProps, HTMLInputEleme
     return element;
   }
 
-  protected initialize(): void {
+  protected override initialize(): void {
     this.state = {
       value: '',
       active: false,
     };
   }
 
-  protected addEventListeners(): void {
+  protected override addEventListeners(): void {
     this.element.addEventListener('focus', this.handleInputFocus);
     this.element.addEventListener('blur', this.handleInputBlur);
     this.element.addEventListener('change', this.handleInputChange);
   }
 
-  protected renderState({ value }: IInputViewState): void {
+  protected override renderState({ value }: IInputViewState): void {
     if (typeof value !== 'undefined') {
       this.element.value = value;
     }

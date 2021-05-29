@@ -15,7 +15,7 @@ class TooltipView extends SubView<ITooltipViewState> {
     return element;
   }
 
-  protected initialize(): void {
+  protected override initialize(): void {
     this.state = {
       value: '',
       lastValue: '',
@@ -25,7 +25,7 @@ class TooltipView extends SubView<ITooltipViewState> {
     };
   }
 
-  protected renderState({ value, active, hidden }: ITooltipViewState): void {
+  protected override renderState({ value, active, hidden }: ITooltipViewState): void {
     if (typeof value !== 'undefined') {
       this.element.textContent = value;
     }

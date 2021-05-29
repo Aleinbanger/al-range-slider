@@ -19,7 +19,7 @@ interface IGridViewState {
 }
 
 class GridView extends SubView<IGridViewState, IGridViewProps> {
-  public destroy(): void {
+  public override destroy(): void {
     super.destroy();
     window.removeEventListener('resize', this.handleWindowResize);
   }
@@ -30,7 +30,7 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
     return element;
   }
 
-  protected initialize(): void {
+  protected override initialize(): void {
     this.state = {
       ticksStep: 1,
     };
@@ -50,12 +50,12 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
     this.updateState();
   }
 
-  protected addEventListeners(): void {
+  protected override addEventListeners(): void {
     window.addEventListener('resize', this.handleWindowResize);
     this.element.addEventListener('pointerdown', this.handleGridPointerDown);
   }
 
-  protected renderState({ ticksStep }: IGridViewState): void {
+  protected override renderState({ ticksStep }: IGridViewState): void {
     if (ticksStep) {
       const ceiledTicksStep = Math.ceil(Math.abs(ticksStep));
       this.props.ticks?.forEach((tick) => tick.remove()); this.props.ticks = [];

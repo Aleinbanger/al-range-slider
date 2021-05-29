@@ -1,3 +1,5 @@
+/* eslint-disable class-methods-use-this */
+
 import Component from './Component';
 
 interface ITestComponentProps {
@@ -18,20 +20,18 @@ class TestComponent extends Component<ITestComponentState, ITestComponentProps> 
     super(parent, cssClass, props);
   }
 
-  protected initialize(): void {
+  protected override initialize(): void {
     this.state = {
       testState: '1',
     };
     initializeMock();
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  protected addEventListeners(): void {
+  protected override addEventListeners(): void {
     addEventListenersMock();
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  protected renderState(state: ITestComponentState): void {
+  protected override renderState(state: ITestComponentState): void {
     renderStateMock(state);
   }
 }

@@ -13,11 +13,11 @@ class TrackView extends SubView<ITrackViewState> {
     return element;
   }
 
-  protected initialize(): void {
+  protected override initialize(): void {
     this.state = {};
   }
 
-  protected addEventListeners(): void {
+  protected override addEventListeners(): void {
     this.element.addEventListener('pointerdown', this.handleTrackPointerDown);
   }
 

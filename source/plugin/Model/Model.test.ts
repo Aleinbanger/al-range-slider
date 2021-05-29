@@ -1,11 +1,15 @@
 import Model, { IModelProps, IModelData } from './Model';
 
-type TPropsCasesDescription = 'initialized from range' | 'initialized from number array'
-| 'initialized from string array' | 'initialized from points map';
+enum PropsCasesDescription {
+  Range = 'initialized from range',
+  NumberArray = 'initialized from number array',
+  StringArray = 'initialized from string array',
+  PointsMap = 'initialized from points map',
+}
 
-const propsCases: [description: TPropsCasesDescription, props: IModelProps][] = [
+const propsCases: [description: PropsCasesDescription, props: IModelProps][] = [
   [
-    'initialized from range',
+    PropsCasesDescription.Range,
     {
       valuesPrecision: 4,
       collideKnobs: true,
@@ -14,7 +18,7 @@ const propsCases: [description: TPropsCasesDescription, props: IModelProps][] = 
     },
   ],
   [
-    'initialized from number array',
+    PropsCasesDescription.NumberArray,
     {
       valuesPrecision: 4,
       collideKnobs: true,
@@ -23,7 +27,7 @@ const propsCases: [description: TPropsCasesDescription, props: IModelProps][] = 
     },
   ],
   [
-    'initialized from string array',
+    PropsCasesDescription.StringArray,
     {
       valuesPrecision: 4,
       collideKnobs: true,
@@ -35,7 +39,7 @@ const propsCases: [description: TPropsCasesDescription, props: IModelProps][] = 
     },
   ],
   [
-    'initialized from points map',
+    PropsCasesDescription.PointsMap,
     {
       valuesPrecision: 4,
       collideKnobs: true,
@@ -97,16 +101,16 @@ describe.each(propsCases)('%s', (description, props) => {
         stateMax: number, observerMax: number,
       ][] = [];
       switch (description) {
-        case 'initialized from range':
+        case PropsCasesDescription.Range:
           idCases = [['from', 0, 0, 0.995, 1], ['to', 0.505, 0.5, 1, 1]];
           break;
-        case 'initialized from number array':
+        case PropsCasesDescription.NumberArray:
           idCases = [['from', 0, 0, 0.01, 0.05], ['to', 0.01, 0, 1, 1]];
           break;
-        case 'initialized from string array':
+        case PropsCasesDescription.StringArray:
           idCases = [['from', 0, 0, 0.2, 0.3], ['to', 0.3, 0.2, 1, 1]];
           break;
-        case 'initialized from points map':
+        case PropsCasesDescription.PointsMap:
           idCases = [['from', 0, 0, 0.4, 0.5], ['to', 0.3, 0.1, 1, 1]];
           break;
         default:
@@ -138,16 +142,16 @@ describe.each(propsCases)('%s', (description, props) => {
         value: number | string,
       ][] = [];
       switch (description) {
-        case 'initialized from range':
+        case PropsCasesDescription.Range:
           idCases = [['from', 0, 0, -50], ['to', 0.5, 0.5, 0], ['from', 1, 0, -50]];
           break;
-        case 'initialized from number array':
+        case PropsCasesDescription.NumberArray:
           idCases = [['from', 0, 0, 0], ['to', 0.55, 0.55, 55], ['from', 1, 0, 0]];
           break;
-        case 'initialized from string array':
+        case PropsCasesDescription.StringArray:
           idCases = [['from', 0, 0, 'qwe'], ['to', 0.5, 0.5, 'edc'], ['from', 1, 0, 'qwe']];
           break;
-        case 'initialized from points map':
+        case PropsCasesDescription.PointsMap:
           idCases = [['from', 0, 0, 0], ['to', 0.3, 0.3, 'asd'], ['from', 1, 0, 0]];
           break;
         default:
@@ -180,16 +184,16 @@ describe.each(propsCases)('%s', (description, props) => {
         value: number | string,
       ][] = [];
       switch (description) {
-        case 'initialized from range':
+        case PropsCasesDescription.Range:
           idCases = [['from', 0.2512, 0.25, -25], ['to', 0.7521, 0.75, 25]];
           break;
-        case 'initialized from number array':
+        case PropsCasesDescription.NumberArray:
           idCases = [['from', 0.014, 0.01, 1], ['to', 0.5, 0.53, 53]];
           break;
-        case 'initialized from string array':
+        case PropsCasesDescription.StringArray:
           idCases = [['from', 0.14, 0.1, 'asd'], ['to', 0.52, 0.5, 'edc']];
           break;
-        case 'initialized from points map':
+        case PropsCasesDescription.PointsMap:
           idCases = [['from', 0.049, 0, 0], ['to', 0.9, 1, 'qwe']];
           break;
         default:
@@ -221,16 +225,16 @@ describe.each(propsCases)('%s', (description, props) => {
         inputValue: number | string, outputValue: number | string,
       ][] = [];
       switch (description) {
-        case 'initialized from range':
+        case PropsCasesDescription.Range:
           idCases = [['from', 0.255, -24.55, -24.5], ['to', 0.75, 24.9, 25], ['from', 0.745, 50, 24.5]];
           break;
-        case 'initialized from number array':
+        case PropsCasesDescription.NumberArray:
           idCases = [['from', 0.01, 2, 1], ['to', 0.53, 50, 53], ['from', 0.34, 100, 34]];
           break;
-        case 'initialized from string array':
+        case PropsCasesDescription.StringArray:
           idCases = [['from', 0.1, 'asd', 'asd'], ['to', 0.6, '1a', '1a'], ['from', 0.5, '2a', 'edc']];
           break;
-        case 'initialized from points map':
+        case PropsCasesDescription.PointsMap:
           idCases = [['from', 0, 0, 0], ['to', 0.4, '1a', '1a'], ['from', 0.3, 'qwe', 'asd']];
           break;
         default:
