@@ -16,6 +16,7 @@ mixin ConfigPanel({ titleText } = {})
     const gridClass = [`${cssClass}__inputs`, `js-${cssClass}__grid`];
     const gridInputClass = [`${cssClass}__input`, `js-${cssClass}__grid-input`];
     const prettifyClass = [`${cssClass}__input`, `${cssClass}__input_big`, `js-${cssClass}__prettify`];
+    const disableClass = [`${cssClass}__toggle`, `js-${cssClass}__disable`];
     const orientationClass = [`${cssClass}__toggle`, `js-${cssClass}__orientation`];
     const showTooltipsClass = [`${cssClass}__toggle`, `js-${cssClass}__show-tooltips`];
     const collideTooltipsClass = [`${cssClass}__toggle`, `js-${cssClass}__collide-tooltips`];
@@ -63,6 +64,8 @@ mixin ConfigPanel({ titleText } = {})
             placeholder='return value',
           )
         div(class=`${cssClass}__toggles`)
+          div(class=disableClass)
+            +InputToggle({ labelText: 'Disabled' })
           div(class=orientationClass)
             +InputToggle({ labelText: 'Vertical' })
           div(class=showTooltipsClass)

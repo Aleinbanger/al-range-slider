@@ -18,6 +18,7 @@ interface IConfigPanelProps {
 interface IConfigPanelState {
   theme?: 'light' | 'dark';
   orientation?: 'horizontal' | 'vertical';
+  disabled?: boolean;
   sliderSelectedValues?: Record<string, string | number>;
 }
 
@@ -39,6 +40,7 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
     collideTooltipsToggle: InputToggle;
     collideKnobsToggle: InputToggle;
     smoothTransitionToggle: InputToggle;
+    disableToggle: InputToggle;
     rangeInputs?: {
       min: InputField;
       max: InputField;
@@ -55,6 +57,9 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
   protected override initialize(): void {
     this.state = {
       theme: 'dark',
+      orientation: 'horizontal',
+      disabled: false,
+      sliderSelectedValues: {},
     };
     this.children = {
       rangeSlider: $(this.element).find(`.js-${this.cssClass}__range-slider`)
@@ -97,6 +102,9 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
       smoothTransitionToggle: new InputToggle(
         this.element.querySelector(`.js-${this.cssClass}__smooth-transition`),
       ),
+      disableToggle: new InputToggle(
+        this.element.querySelector(`.js-${this.cssClass}__disable`),
+      ),
     };
     this.children.knobsList.setState({ items: this.state.sliderSelectedValues });
 
@@ -118,6 +126,7 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
     this.children.collideTooltipsToggle.setState({ checked: collideTooltips });
     this.children.collideKnobsToggle.setState({ checked: collideKnobs });
     this.children.smoothTransitionToggle.setState({ checked: allowSmoothTransition });
+    this.children.disableToggle.setState({ checked: this.state.disabled });
 
     const rangeContainer = this.element.querySelector<HTMLElement>(`.js-${this.cssClass}__range`);
     const arrayContainer = this.element.querySelector<HTMLElement>(`.js-${this.cssClass}__array`);
@@ -170,6 +179,7 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
     this.children.collideTooltipsToggle.addObserver(this.handleCollideTooltipsToggleChange);
     this.children.collideKnobsToggle.addObserver(this.handleCollideKnobsToggleChange);
     this.children.smoothTransitionToggle.addObserver(this.handleSmoothTransitionToggleChange);
+    this.children.disableToggle.addObserver(this.handleDisableToggleChange);
 
     this.children.pointsList?.addObserver(this.handlePointsListChange);
     this.children.arrayInput?.addObserver(this.handleArrayInputChange);
@@ -184,6 +194,7 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
         initialSelectedValues: this.state.sliderSelectedValues,
         theme,
       });
+      this.handleDisableToggleChange({ checked: this.state.disabled });
     }
     if (typeof orientation !== 'undefined') {
       if (orientation === 'vertical') {
@@ -200,6 +211,7 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
       this.children.rangeSlider.alRangeSlider('restart', {
         initialSelectedValues: items,
       });
+      this.handleDisableToggleChange({ checked: this.state.disabled });
     }
   }
 
@@ -213,6 +225,7 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
         initialSelectedValues: this.state.sliderSelectedValues,
         grid,
       });
+      this.handleDisableToggleChange({ checked: this.state.disabled });
     }
   }
 
@@ -226,6 +239,7 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
         initialSelectedValues: this.state.sliderSelectedValues,
         prettify,
       });
+      this.handleDisableToggleChange({ checked: this.state.disabled });
     }
   }
 
@@ -238,6 +252,7 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
         initialSelectedValues: this.state.sliderSelectedValues,
         orientation,
       });
+      this.handleDisableToggleChange({ checked: this.state.disabled });
     }
   }
 
@@ -248,6 +263,7 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
         initialSelectedValues: this.state.sliderSelectedValues,
         showTooltips: checked,
       });
+      this.handleDisableToggleChange({ checked: this.state.disabled });
     }
   }
 
@@ -258,6 +274,7 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
         initialSelectedValues: this.state.sliderSelectedValues,
         collideTooltips: checked,
       });
+      this.handleDisableToggleChange({ checked: this.state.disabled });
     }
   }
 
@@ -268,6 +285,7 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
         initialSelectedValues: this.state.sliderSelectedValues,
         collideKnobs: checked,
       });
+      this.handleDisableToggleChange({ checked: this.state.disabled });
     }
   }
 
@@ -278,6 +296,15 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
         initialSelectedValues: this.state.sliderSelectedValues,
         allowSmoothTransition: checked,
       });
+      this.handleDisableToggleChange({ checked: this.state.disabled });
+    }
+  }
+
+  @bind
+  private handleDisableToggleChange({ checked }: IInputToggleState): void {
+    if (typeof checked !== 'undefined') {
+      this.setState({ disabled: checked });
+      this.children.rangeSlider.alRangeSlider('disable', checked);
     }
   }
 
@@ -288,6 +315,7 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
         initialSelectedValues: this.state.sliderSelectedValues,
         pointsMap: items,
       });
+      this.handleDisableToggleChange({ checked: this.state.disabled });
     }
   }
 
@@ -303,6 +331,7 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
         initialSelectedValues: this.state.sliderSelectedValues,
         valuesArray,
       });
+      this.handleDisableToggleChange({ checked: this.state.disabled });
     }
   }
 
@@ -316,6 +345,7 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
         initialSelectedValues: this.state.sliderSelectedValues,
         range,
       });
+      this.handleDisableToggleChange({ checked: this.state.disabled });
     }
   }
 }
