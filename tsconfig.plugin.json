@@ -2,10 +2,9 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noEmit": false,
-    "isolatedModules": false,
     "declaration": true,
     "emitDeclarationOnly": true,
-    "outFile": "./build/plugin/ts/al-range-slider"
+    "outDir": "./build/plugin/ts/"
   },
   "include": [],
   "files": [

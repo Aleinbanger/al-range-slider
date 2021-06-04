@@ -1,5 +1,7 @@
 /* eslint-disable import/prefer-default-export */
 
+import { TPointValue } from '../Model/ModelTypes';
+
 type TOrientation = 'horizontal' | 'vertical';
 
 type TTheme = 'light' | 'dark';
@@ -10,8 +12,6 @@ type TReferenceFrame = {
   width: number;
   height: number;
 };
-
-type TPointValue = number | string;
 
 type TPointsMap = [position: string, value: TPointValue][];
 

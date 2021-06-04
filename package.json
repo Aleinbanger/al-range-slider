@@ -20,7 +20,8 @@
     "eslint": "eslint . --ext .js,.ts",
     "test": "tsc && jest",
     "prod-demo": "tsc && webpack --config webpack.prod-demo.js",
-    "prod-plugin": "tsc && webpack --config webpack.prod-plugin.js && tsc --project tsconfig.plugin.json"
+    "prod-plugin": "tsc && webpack --config webpack.prod-plugin.js",
+    "deploy-demo": "gh-pages -d build/demo/"
   },
   "peerDependencies": {
     "jquery": "3.x"
@@ -44,6 +45,7 @@
     "core-js": "^3.13.0",
     "css-loader": "^5.2.6",
     "css-minimizer-webpack-plugin": "^3.0.0",
+    "dts-bundle-generator": "^5.9.0",
     "eslint": "^7.27.0",
     "eslint-config-airbnb-typescript": "^12.3.1",
     "eslint-plugin-fsd": "^1.0.1",
@@ -71,7 +73,8 @@
     "webpack": "^5.38.0",
     "webpack-cli": "^4.7.0",
     "webpack-dev-server": "^3.11.2",
-    "webpack-merge": "^5.7.3"
+    "webpack-merge": "^5.7.3",
+    "webpack-shell-plugin-next": "^2.2.2"
   },
   "browserslist": [
     "defaults"

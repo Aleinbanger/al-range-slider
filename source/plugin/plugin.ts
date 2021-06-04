@@ -65,4 +65,4 @@ $.fn[pluginName] = Object.assign(
   },
 );
 
-export type { TOptions };
+export type { TOptions, TMethod, TMethodArg };
