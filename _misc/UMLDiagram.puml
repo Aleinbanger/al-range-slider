@@ -1,6 +1,8 @@
 @startuml
 !theme spacelab
 skinparam defaultFontName Consolas
+skinparam linetype ortho
+
 abstract class Observable<TData> {
     -#observers: TObserverMethod<TData>[]
     +addObserver(observer: TObserverMethod<TData>): void
@@ -265,6 +267,7 @@ together {
         -handleUnknownPositionChange(__0: IViewState): void
     }
 }
+
 SubView *-- ISubViewProps
 GridView *-- IGridViewState
 KnobView *-- IKnobViewState

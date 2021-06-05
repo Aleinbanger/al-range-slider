@@ -1,0 +1,62 @@
+@startuml
+!theme spacelab
+skinparam defaultFontName Consolas
+skinparam linetype ortho
+
+abstract class Observable<TData> {
+    -#observers: TObserverMethod<TData>[]
+    +addObserver(observer: TObserverMethod<TData>): void
+    +removeObserver(observer: TObserverMethod<TData>): void
+    +getObserverNames(): string[]
+    #notifyObservers(data: TData): void
+}
+class Presenter {
+    -#parent: HTMLElement
+    -#props: IProps
+    -#state?: IState | undefined
+    -#model?: Model | undefined
+    -#view?: View | undefined
+    +destroy(): void
+    +disable(disabled?: boolean): void
+    +restart(props?: Partial<IProps> | undefined): void
+    +update(data?: IData | undefined): void
+    +getState(): IState | undefined
+}
+class Model {
+    -#props: IModelProps
+    -#state: IModelState
+    +getState(): IModelState
+    +getSelectedPoints(): TCurrentPoint[]
+    +getPointsMap(): [position: string, value: TPointValue][]
+    +selectPointByUnknownPosition(positionRatio: number): void
+    +selectPointByPosition(__0: [string, number]): void
+    +selectPointByValue(__0: [string, TPointValue]): void
+    +selectPointLimits(id: string): void
+}
+class View {
+    -#parent: HTMLElement
+    -#props: IViewProps
+    -#state: IViewState
+    -#subViews: ISubViews
+    +destroy(): void
+    +disable(disabled?: boolean): void
+    +getState(): IViewState
+    +setState(state: IViewState): void
+}
+abstract class SubView<TState, TProps extends ISubViewProps, TElement extends HTMLElement> extends Observable {
+    +element: TElement
+    #parent: HTMLElement
+    #props: TProps
+    #state?: TState | undefined
+    +destroy(): void
+    +disable(disabled?: boolean): void
+    +getState(): TState | undefined
+    +setState(state: TState): void
+}
+
+Observable <|-right- Model
+Observable <|-left- View
+View *-- SubView
+Presenter *-- Model
+Presenter *-- View
+@enduml
