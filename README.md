@@ -1,11 +1,30 @@
 # AlRangeSlider
 
 A customizable range slider jQuery plugin.
+The second practical task for [MetaLamp](https://en.metalamp.io/education) Frontend education program.
 
-The second practical task for [MetaLamp](https://www.metalamp.io/education) Frontend education program.
+### [Demo Page](https://aleinbanger.github.io/al-range-slider/examples)
 
+***
 
-### [View Demo](https://aleinbanger.github.io/al-range-slider/examples)
+## Table of Contents
+* [Getting Started](#Getting-Started)
+  * [Dependencies](#Dependencies)
+  * [Installation](#Installation)
+* [Usage](#Usage)
+  * [Initialization](#Initialization)
+  * [Configuration](#Configuration)
+    * [Configuration Object](#Configuration-Object)
+    * [Default Configuration](#Default-Configuration)
+  * [State Object](#State-Object)
+  * [Public Methods](#Public-Methods)
+* [Contributing](#Contributing)
+  * [Technologies](#Technologies)
+  * [Setup and Scripts](#Setup-and-Scripts)
+  * [Plugin Architecture](#Plugin-Architecture)
+    * [Simple UML Class Diagram](#Simple-UML-Class-Diagram)
+    * [Full UML Class Diagram](#Full-UML-Class-Diagram)
+* [License](#License)
 
 ***
 
@@ -15,7 +34,6 @@ The second practical task for [MetaLamp](https://www.metalamp.io/education) Fron
 * [jQuery v.3.x](https://jquery.com/)
 
 **Note:** The plugin doesn't use jQuery internally (only as a wrapper), so it can be easily converted to a vanilla JS plugin if needed.
-
 
 ### Installation
 
@@ -68,18 +86,18 @@ $('.js-example-class').alRangeSlider(options);
 ### Configuration
 
 The slider can be initialized in 3 ways:
-* `range`: a usual combination of `min`, `max`, `step` numbers; suitable for large ranges, provides the best performance, can be greatly customized with 'prettify' option.
+* `range`: a usual combination of `min`, `max`, `step` `number`s; suitable for large ranges, provides the best performance, can be greatly customized with `prettify` option.
 
-* `valuesArray`: an array of either numbers or strings; numbers are positioned on the track proportionally, which can provide unequal step; the array is converted to `pointsMap` and stored internally, so this method is **not suitable for large ranges**.
+* `valuesArray`: an array of either `number`s or `string`s; `number` values are positioned on the track proportionally, which can provide unequal step; also can be customized with `prettify` option; the array is converted to `pointsMap` and stored internally, so this method is **not suitable for large ranges**.
 
-* `pointsMap`: same as `valuesArray` but with manual positioning; the points map is an object, where each keys is a position ratio (numbers from 0 to 1) and a corresponding value is any number or string; it allows for custom positioning of number and string values; the points map is stored internally, so this method is **not suitable for large ranges**.
+* `pointsMap`: same as `valuesArray` but with manual positioning; the points map is an object, where each key is a position ratio (`number`s from 0 to 1) and a corresponding value is any `number` or `string`; it allows for custom positioning of `number` and `string` values; also can be customized with `prettify` option; the points map is stored internally, so this method is **not suitable for large ranges**.
 
-The type of slider and the number of knobs are determined automatically from `initialSelectedValues` config property with the names of the keys being knobs IDs.
+The type of slider and the number of knobs are determined automatically from `initialSelectedValues` config property, which is an object where the keys are knobs IDs (`string`s) and the values are their initial selected values (`string`s or `number`s).
 Each knob corresponds to `<input name="...">` with the same name.
 If it starts with `'from'` or `'to'`, the knob will be connected to a progress bar;
 `` `from${tail}` `` &mdash; `` `to${tail}` `` pairs with the same `tail` will create range progress bars.
 
-#### Configuration object types
+#### Configuration Object
 ```ts
 type TPointValue = number | string;
 type TPointsMap = [position: string, value: TPointValue][];
@@ -87,7 +105,7 @@ type TOrientation = 'horizontal' | 'vertical';
 type TTheme = 'light' | 'dark';
 
 interface IProps {
-  // an object where keys are knobs IDs and values are their initial selected values
+  // an object where the keys are knobs IDs and the values are their initial selected values
   readonly initialSelectedValues: Record<string, TPointValue>;
 
   // the argument of .toFixed(), used for rounding fractional values
@@ -140,7 +158,7 @@ interface IProps {
   // separates values in a tooltip when 'collideTooltips' is true
   readonly tooltipsSeparator: string;
 
-  // a prettify function, affects displayed values in grid and tooltips but not inputs
+  // a prettify function, affects displayed values on the grid and tooltips but not inputs
   readonly prettify?: (value: string) => string;
 
   // user callbacks
@@ -154,40 +172,7 @@ interface IProps {
 type TOptions = Partial<IProps>;
 ```
 
-#### State object
-The state object can be passed in callbacks to get the slider's state.
-
-```ts
-type TPoint = [position: number, value: TPointValue];
-
-interface IState {
-  // object of shape { ID: [position, value] }, contains the main state
-  selectedPoints?: Record<string, TPoint>;
-
-  // object of shape { ID: limits }, contains limits for each point
-  selectedPointsLimits?: Record<string, { min: number; max: number }>;
-
-  // object of shape { ID: value }, contains only values for each point
-  selectedValues?: Record<string, TPointValue>;
-
-  // object of shape { ID: value }, contains only prettified values
-  selectedPrettyValues?: Record<string, string>;
-
-  // last selected position
-  currentPosition?: [id: string, position: number];
-
-  // last selected limits
-  currentPositionLimits?: [id: string, limits: { min: number; max: number }];
-
-  // last activated knob
-  currentActiveStatus?: [id: string, active: boolean];
-
-  // last selected value
-  currentValue?: [id: string, value: string];
-}
-```
-
-#### Default configuration
+#### Default Configuration
 ```ts
 const defaults: IProps = {
   initialSelectedValues: { to: 0 },
@@ -205,10 +190,46 @@ const defaults: IProps = {
 };
 ```
 
-### Public methods
+### State Object
+The state object can be passed in callbacks to get the slider's state.
+
+```ts
+type TPoint = [position: number, value: TPointValue];
+
+interface IState {
+  // an object where the keys are IDs and the values are [position, value] tuples
+  selectedPoints?: Record<string, TPoint>;
+
+  // an object where the keys are IDs and the values are position limits
+  selectedPointsLimits?: Record<string, { min: number; max: number }>;
+
+  // an object where the keys are IDs and the values are selected values 
+  selectedValues?: Record<string, TPointValue>;
+
+  // an object where the keys are IDs and the values are prettified selected values
+  selectedPrettyValues?: Record<string, string>;
+
+  // a tuple, last selected position
+  currentPosition?: [id: string, position: number];
+
+  // a tuple, last selected limits
+  currentPositionLimits?: [id: string, limits: { min: number; max: number }];
+
+  // a tuple, last active status
+  currentActiveStatus?: [id: string, active: boolean];
+
+  // a tuple, last selected value
+  currentValue?: [id: string, value: string];
+}
+```
+
+### Public Methods
 ```ts
 interface IData {
+  // an object where the keys are IDs and the values are selected values
   values?: IProps['initialSelectedValues'];
+
+  // an object where the keys are IDs and the values are positions (0 -- 1)
   positions?: Record<string, number>;
 }
 
@@ -219,7 +240,7 @@ interface IMethods {
   // disables and enables the slider
   disable(disabled?: boolean): void;
 
-  // restarts the slider with new settings
+  // restarts the slider, optionally with new settings
   restart(props?: Partial<IProps>): void;
 
   // updates the slider's state using either values or positions (0 -- 1)
@@ -238,11 +259,16 @@ const sliderInstance = $('.js-example-class').alRangeSlider(options);
 ```
 And call methods like this:
 ```ts
-// disable
+// disable the slider (including inputs)
 sliderInstance.alRangeSlider('disable');
 
-// enable
+// enable the slider
 sliderInstance.alRangeSlider('disable', false);
+
+// restart with vertical orientation
+sliderInstance.alRangeSlider('restart', {
+  orientation: 'vertical',
+});
 
 // select values for the knobs with IDs 'from' and 'to'
 sliderInstance.alRangeSlider('update', {
@@ -250,20 +276,21 @@ sliderInstance.alRangeSlider('update', {
 });
 ```
 
+***
 
 ## Contributing
 
 ### Technologies
-* **Source code:** TypeScript
-* **Compiling TypeScript to ES5:** Babel
-* **Polyfills:** core-js
-* **Plugin wrapper:** jQuery
-* **Testing:** Jest
-* **Styles:** SCSS, PostCSS
-* **Demo page markup:** Pug
-* **Bundling:** Webpack
+* **Source code:** [TypeScript](https://www.typescriptlang.org/)
+* **Compiling TypeScript to ES5:** [Babel](https://babeljs.io/)
+* **Polyfills:** [core-js](https://babeljs.io/docs/en/babel-preset-env#corejs)
+* **Plugin wrapper:** [jQuery](https://jquery.com/)
+* **Testing:** [Jest](https://jestjs.io/)
+* **Styles:** [SCSS](https://sass-lang.com/), [PostCSS](https://postcss.org/)
+* **Demo page markup:** [Pug](https://pugjs.org/api/getting-started.html)
+* **Bundling:** [Webpack](https://webpack.js.org/)
 
-### Setup and scripts
+### Setup and Scripts
 
 * Clone the repository and install its dependencies:
   ```
@@ -296,20 +323,20 @@ sliderInstance.alRangeSlider('update', {
   npm run deploy-demo
   ```
 
-
 ### Plugin Architecture
 
 The project uses the **MVP** architectural pattern:
-* `Model` defines the data to be displayed or otherwise acted upon in the user interface, notifies `Presenter` about any changes in its state using the *Observer pattern*. Here it is responsible for determining and keeping the relation between currently selected values and their corresponding positions on the grid.
-* `View` displays the data (`Model`), notifies `Presenter` about user commands (events) using the *Observer pattern* to act upon that data .
-    * `SubViews` are independent components of `View`, they notify `View` about specific user commands also using the *Observer pattern*.
-* `Presenter` acts upon `Model` and `View`. Subscribes to `View`, gets notifications from it and correspondingly updates `Model`. Subscribes to `Model`, gets notifications from it and correspondingly updates View. It is the entry point to the plugin and provides the API.
+* `Model` defines the data to be displayed or otherwise acted upon in the user interface, notifies `Presenter` about any changes in its state using the **Observer** pattern. Here it is responsible for determining and keeping the relation between currently selected values and their corresponding positions on the grid.
+* `View` displays the data (`Model`), notifies `Presenter` about user commands (events) using the **Observer** pattern to act upon that data.
+    * `SubViews` are independent components of `View`, they notify `View` about specific user commands also using the **Observer** pattern.
+* `Presenter` acts upon `Model` and `View`. Subscribes to `View`, gets notifications from it and correspondingly updates `Model`. Subscribes to `Model`, gets notifications from it and correspondingly updates `View`. It is the entry point to the plugin and provides the API.
 
-**Simple UML Class Diagram:**
+#### Simple UML Class Diagram
 ![Simple UML Class Diagram](./_misc/UMLDiagramSimple.svg)
 
-**Full UML Class Diagram:**
+#### Full UML Class Diagram
 ![Full UML Class Diagram](./_misc/UMLDiagram.svg)
+
 
 ## License
 This project is licensed under the MIT License. See the `LICENSE` file for details.
