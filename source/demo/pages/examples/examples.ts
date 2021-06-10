@@ -124,7 +124,14 @@ class Examples extends Component<IExamplesState> {
         })),
     };
 
-    const theme = localStorage.getItem('theme') === 'light' ? 'light' : 'dark';
+    let theme: IExamplesState['theme'];
+    try {
+      theme = window.localStorage.getItem('theme') === 'light' ? 'light' : 'dark';
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+      theme = 'dark';
+    }
     this.setState({ theme });
     this.children.configPanels.forEach((panel) => panel.setState({ theme }));
     this.children.themeToggle.setState({ checked: theme === 'dark' });
@@ -150,7 +157,12 @@ class Examples extends Component<IExamplesState> {
       const theme = checked ? 'dark' : 'light';
       this.setState({ theme });
       this.children.configPanels.forEach((panel) => panel.setState({ theme }));
-      localStorage.setItem('theme', theme);
+      try {
+        window.localStorage.setItem('theme', theme);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(error);
+      }
     }
   }
 }

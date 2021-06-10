@@ -290,6 +290,8 @@ sliderInstance.alRangeSlider('update', {
 * **Demo page markup:** [Pug](https://pugjs.org/api/getting-started.html)
 * **Bundling:** [Webpack](https://webpack.js.org/)
 
+The project uses the [BEM methodology](https://en.bem.info/methodology/) for markup and styles.
+
 ### Setup and Scripts
 
 * Clone the repository and install its dependencies:
@@ -301,6 +303,11 @@ sliderInstance.alRangeSlider('update', {
 * Launch dev-server:
   ```
   npm run dev
+  ```
+
+* Run ESLint:
+  ```
+  npm run eslint
   ```
 
 * Run type checking and tests:
