@@ -118,7 +118,7 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
     this.children.gridInputs.ticks.setState({ value: String(grid.minTicksStep) });
     this.children.gridInputs.marks.setState({ value: String(grid.marksStep) });
     this.children.prettifyInput.setState({
-      value: prettify?.toString().replace(/\s+/g, ' ').trim().match(/{\s*(.*);\s*}$/)?.[1],
+      value: prettify?.toString().replace(/\s+/g, ' ').trim().match(/{\s*(.*)\s*}$/)?.[1],
     });
     this.setState({ orientation });
     this.children.orientationToggle.setState({ checked: orientation === 'vertical' });
