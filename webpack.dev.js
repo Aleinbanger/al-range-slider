@@ -27,8 +27,7 @@ module.exports = merge(common, {
   },
 
   plugins: [
-    ...global.pages.filter((page) => !/layout/i.test(page))
-    .map((page) => new HtmlPlugin({
+    ...global.pages.map((page) => new HtmlPlugin({
       template: `${global.paths.demo.pages}/${page}/${page}.pug`,
       filename: `${page}.html`,
     })),

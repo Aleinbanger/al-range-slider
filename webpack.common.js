@@ -18,7 +18,7 @@ global.paths = {
     fonts: path.resolve(__dirname, './source/shared/fonts'),
   },
 };
-global.pages = fs.readdirSync(global.paths.demo.pages);
+global.pages = fs.readdirSync(global.paths.demo.pages).filter((page) => !/^_/i.test(page));
 
 module.exports = {
   context: path.resolve(__dirname, './source'),
