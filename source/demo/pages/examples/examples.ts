@@ -167,9 +167,5 @@ class Examples extends Component<IExamplesState> {
   }
 }
 
-function renderBlock(): void {
-  const parents = document.querySelectorAll<HTMLElement>('.js-examples');
-  parents.forEach((parent) => new Examples(parent));
-}
-
-export default renderBlock();
+export type { IExamplesState };
+export default Examples;
