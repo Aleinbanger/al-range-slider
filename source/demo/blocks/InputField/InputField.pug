@@ -1,29 +1,28 @@
-mixin InputField({ inpType='text', labelText, long=false } = {})
+mixin InputField({ inpType = 'text', labelText, long = false } = {})
   -
     const cssClass = 'input-field';
+    const blockAttributes = {
+      class: [`${cssClass}__field`, `js-${cssClass}__field`, long && `${cssClass}__field_long`],
+    };
     const wrapperClass = [cssClass, `js-${cssClass}`];
-    attributes.class = [`${cssClass}__field`, `js-${cssClass}__field`];
 
   case inpType
     when 'email'
-      - attributes.type = inpType
-      - attributes.name = 'email'
-      if (!attributes.placeholder)
-        - attributes.placeholder = 'Email'
+      -
+        blockAttributes.type = inpType;
+        blockAttributes.name = attributes.name || 'email';
+        blockAttributes.placeholder = attributes.placeholder || 'Email';
     when 'password'
-      - attributes.type = inpType
-      - attributes.name = 'password'
-      if (!attributes.placeholder)
-        - attributes.placeholder = 'Password'
+      -
+        blockAttributes.type = inpType;
+        blockAttributes.name = attributes.name || 'password';
+        blockAttributes.placeholder = attributes.placeholder || 'Пароль';
     when 'number'
-      - attributes.type = inpType
+      - blockAttributes.type = inpType;
     default
-      - attributes.type = 'text'
-
-  if (long)
-    - attributes.class.push(`${cssClass}__field_long`)
+      - blockAttributes.type = 'text';
 
   div(class=wrapperClass)
     if (labelText)
       label(class=`${cssClass}__label`) #{labelText}
-    input&attributes(attributes)
+    input&attributes(Object.assign({}, attributes, blockAttributes))
