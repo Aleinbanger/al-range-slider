@@ -87,27 +87,7 @@ class Model extends Observable<IModelData> {
   }
 
   public selectPointByValue([id, value]: [string, TPointValue]): void | never {
-    let closestValue: TPointValue | undefined;
-    let positionRatio: number | undefined;
-
-    if (this.#props.range) {
-      if (isNumeric(value)) {
-        closestValue = this.#getRoundedByStepValue(Number(value), this.#props.range);
-        positionRatio = this.#getPositionRatioByValue(closestValue, this.#props.range);
-      }
-    } else if (this.#props.pointsMap) {
-      if (isNumberArray(this.#props.valuesArray)) {
-        closestValue = isNumeric(value) ? getClosestNumber(this.#props.valuesArray, Number(value))
-          : undefined;
-      } else {
-        closestValue = isNumeric(value) ? Number(value) : value;
-      }
-      if (typeof closestValue !== 'undefined') {
-        positionRatio = Number(getKeyByValue(this.#props.pointsMap, closestValue));
-      }
-    } else {
-      throw new Error('Neither "range" nor "pointsMap" is defined');
-    }
+    const { closestValue, positionRatio } = this.#getClosestValueAndPosition(value);
     // eslint-disable-next-line fsd/split-conditionals
     if (typeof closestValue !== 'undefined' && typeof positionRatio !== 'undefined'
     && !Number.isNaN(positionRatio)) {
@@ -141,25 +121,9 @@ class Model extends Observable<IModelData> {
     if (this.#props.collideKnobs) {
       const selectedPoints = this.getSelectedPoints();
       const selectedIndex = selectedPoints.findIndex(([pointId]) => pointId === id);
-      let min = 0; let newMin = min;
-      let max = 1; let newMax = max;
-
-      if (selectedPoints[selectedIndex - 1]) {
-        min = Number(selectedPoints[selectedIndex - 1][1][0]);
-        if (this.#props.range?.positionStep) {
-          newMin = min + this.#props.range.positionStep;
-        } else if (this.#props.positionsArray) {
-          newMin = this.#props.positionsArray[this.#props.positionsArray.indexOf(min) + 1];
-        }
-      }
-      if (selectedPoints[selectedIndex + 1]) {
-        max = Number(selectedPoints[selectedIndex + 1][1][0]);
-        if (this.#props.range?.positionStep) {
-          newMax = max - this.#props.range.positionStep;
-        } else if (this.#props.positionsArray) {
-          newMax = this.#props.positionsArray[this.#props.positionsArray.indexOf(max) - 1];
-        }
-      }
+      const {
+        newMin, newMax, min, max,
+      } = this.#getMinMaxPositions(selectedPoints, selectedIndex);
       this.#state.selectedPointsLimits[id] = { min: newMin, max: newMax };
       this.notifyObservers({ currentPointLimits: [id, { min, max }] });
     }
@@ -209,15 +173,15 @@ class Model extends Observable<IModelData> {
       const { min, max, step } = this.#props.range;
       const pointsNumber = Math.ceil((max - min) / step);
       const maxPointsNumber = 100;
-      let visiblePointsNumber = pointsNumber;
-      let visibleStep = step;
+      const visiblePointsNumber = pointsNumber > maxPointsNumber
+        ? Math.round(pointsNumber / Math.round(pointsNumber / maxPointsNumber))
+        : pointsNumber;
+      const visibleStep = pointsNumber > maxPointsNumber
+        ? step * Math.round(pointsNumber / visiblePointsNumber)
+        : step;
       this.#props.range.positionStep = 1 / pointsNumber;
       this.#props.valuesArray = [] as number[];
 
-      if (pointsNumber > maxPointsNumber) {
-        visiblePointsNumber = Math.round(pointsNumber / Math.round(pointsNumber / maxPointsNumber));
-        visibleStep = step * Math.round(pointsNumber / visiblePointsNumber);
-      }
       for (let index = 0; index < visiblePointsNumber; index += 1) {
         const point = index * visibleStep + min;
         this.#props.valuesArray.push(Number(point.toFixed(this.#props.valuesPrecision)));
@@ -228,7 +192,7 @@ class Model extends Observable<IModelData> {
 
   #generatePointsMapFromArray(): void {
     if (this.#props.valuesArray) {
-      let { valuesArray } = this.#props;
+      const { valuesArray } = this.#props;
       const pointsNumber = valuesArray.length;
       let min = 0;
       let max = pointsNumber - 1;
@@ -236,7 +200,7 @@ class Model extends Observable<IModelData> {
       this.#props.pointsMap = {};
 
       if (isNumberArray(valuesArray)) {
-        valuesArray = valuesArray.sort((value1, value2) => value1 - value2);
+        valuesArray.sort((value1, value2) => value1 - value2);
         // eslint-disable-next-line prefer-destructuring
         min = valuesArray[0];
         max = valuesArray[pointsNumber - 1];
@@ -277,6 +241,58 @@ class Model extends Observable<IModelData> {
       this.#props.positionsArray = Object.keys(this.#props.pointsMap)
         .map((position) => Number(position)).sort((position1, position2) => position1 - position2);
     }
+  }
+
+  #getMinMaxPositions(selectedPoints: TCurrentPoint[], selectedIndex: number): {
+    min: number; max: number; newMin: number; newMax: number;
+  } {
+    let min = 0; let newMin = min;
+    let max = 1; let newMax = max;
+    if (selectedPoints[selectedIndex - 1]) {
+      min = Number(selectedPoints[selectedIndex - 1][1][0]);
+      if (this.#props.range?.positionStep) {
+        newMin = min + this.#props.range.positionStep;
+      } else if (this.#props.positionsArray) {
+        newMin = this.#props.positionsArray[this.#props.positionsArray.indexOf(min) + 1];
+      }
+    }
+    if (selectedPoints[selectedIndex + 1]) {
+      max = Number(selectedPoints[selectedIndex + 1][1][0]);
+      if (this.#props.range?.positionStep) {
+        newMax = max - this.#props.range.positionStep;
+      } else if (this.#props.positionsArray) {
+        newMax = this.#props.positionsArray[this.#props.positionsArray.indexOf(max) - 1];
+      }
+    }
+    return {
+      min, max, newMin, newMax,
+    };
+  }
+
+  #getClosestValueAndPosition(value: TPointValue): {
+    closestValue: TPointValue | undefined; positionRatio: number | undefined;
+  } {
+    let closestValue: TPointValue | undefined;
+    let positionRatio: number | undefined;
+    if (this.#props.range) {
+      if (isNumeric(value)) {
+        closestValue = this.#getRoundedByStepValue(Number(value), this.#props.range);
+        positionRatio = this.#getPositionRatioByValue(closestValue, this.#props.range);
+      }
+    } else if (this.#props.pointsMap) {
+      if (isNumberArray(this.#props.valuesArray)) {
+        closestValue = isNumeric(value) ? getClosestNumber(this.#props.valuesArray, Number(value))
+          : undefined;
+      } else {
+        closestValue = isNumeric(value) ? Number(value) : value;
+      }
+      if (typeof closestValue !== 'undefined') {
+        positionRatio = Number(getKeyByValue(this.#props.pointsMap, closestValue));
+      }
+    } else {
+      throw new Error('Neither "range" nor "pointsMap" is defined');
+    }
+    return { closestValue, positionRatio };
   }
 
   #getPositionRatioByValue(

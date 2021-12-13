@@ -203,21 +203,25 @@ class View extends Observable<IViewState> {
 
   #addBars(ids: string[]): void {
     if (this.#subViews.bars) {
+      const getFullId = (id: string) => {
+        const fromMatch = id.match(/^(from)(.*)$/i);
+        const toMatch = id.match(/^(to)(.*)$/i);
+        let pairedId = '';
+        let combinedId = '';
+        if (fromMatch) {
+          pairedId = `to${fromMatch[2]}`;
+          combinedId = `${id}${pairedId}`;
+        } else if (toMatch) {
+          pairedId = `from${toMatch[2]}`;
+          combinedId = `${pairedId}${id}`;
+        }
+        return { pairedId, combinedId };
+      };
       const { cssClass, orientation } = this.#props;
       const usedIds: string[] = [];
       ids.forEach((id) => {
         if (!usedIds.includes(id)) {
-          const fromMatch = id.match(/^(from)(.*)$/i);
-          const toMatch = id.match(/^(to)(.*)$/i);
-          let pairedId = '';
-          let combinedId = '';
-          if (fromMatch) {
-            pairedId = `to${fromMatch[2]}`;
-            combinedId = `${id}${pairedId}`;
-          } else if (toMatch) {
-            pairedId = `from${toMatch[2]}`;
-            combinedId = `${pairedId}${id}`;
-          }
+          const { pairedId, combinedId } = getFullId(id);
           if (ids.includes(pairedId)) {
             usedIds.push(pairedId);
           }

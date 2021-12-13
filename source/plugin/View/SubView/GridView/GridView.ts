@@ -40,12 +40,9 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
     this.props.marksStep = Math.ceil(Math.abs(this.props.marksStep));
     this.setState({ ticksStep: this.props.minTicksStep });
 
-    let marksWidths: number[];
-    if (this.props.orientation === 'vertical') {
-      marksWidths = this.props.marks.map((mark) => mark.getBoundingClientRect().height);
-    } else {
-      marksWidths = this.props.marks.map((mark) => mark.getBoundingClientRect().width);
-    }
+    const marksWidths = this.props.orientation === 'vertical'
+      ? this.props.marks.map((mark) => mark.getBoundingClientRect().height)
+      : this.props.marks.map((mark) => mark.getBoundingClientRect().width);
     this.props.minTicksGap = Math.max(...marksWidths) / this.props.marksStep;
     this.updateState();
   }
@@ -104,12 +101,9 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
               || nextMark === firstMark || nextMark === lastMark;
             if (!wasMarkChecked) {
               const nextRect = nextMark.getBoundingClientRect();
-              let isOverlapping = false;
-              if (this.props.orientation === 'vertical') {
-                isOverlapping = firstRect.top < nextRect.bottom || lastRect.bottom > nextRect.top;
-              } else {
-                isOverlapping = firstRect.right > nextRect.left || lastRect.left < nextRect.right;
-              }
+              const isOverlapping = this.props.orientation === 'vertical'
+                ? firstRect.top < nextRect.bottom || lastRect.bottom > nextRect.top
+                : firstRect.right > nextRect.left || lastRect.left < nextRect.right;
               if (isOverlapping) {
                 nextMark.classList.add(`${this.props.cssClass}-mark_hidden`);
                 usedMarks.push(nextMark);

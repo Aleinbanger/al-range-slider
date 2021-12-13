@@ -95,29 +95,18 @@ describe.each(propsCases)('%s', (description, props) => {
       const mockObserver = jest.fn(({ currentPointLimits }: IModelData) => currentPointLimits);
       model.addObserver(mockObserver);
 
-      let idCases: [
+      const idCasesMap: Record<PropsCasesDescription, [
         id: string,
         stateMin: number, observerMin: number,
         stateMax: number, observerMax: number,
-      ][] = [];
-      switch (description) {
-        case PropsCasesDescription.Range:
-          idCases = [['from', 0, 0, 0.995, 1], ['to', 0.505, 0.5, 1, 1]];
-          break;
-        case PropsCasesDescription.NumberArray:
-          idCases = [['from', 0, 0, 0.01, 0.05], ['to', 0.01, 0, 1, 1]];
-          break;
-        case PropsCasesDescription.StringArray:
-          idCases = [['from', 0, 0, 0.2, 0.3], ['to', 0.3, 0.2, 1, 1]];
-          break;
-        case PropsCasesDescription.PointsMap:
-          idCases = [['from', 0, 0, 0.4, 0.5], ['to', 0.3, 0.1, 1, 1]];
-          break;
-        default:
-          break;
-      }
+      ][]> = {
+        [PropsCasesDescription.Range]: [['from', 0, 0, 0.995, 1], ['to', 0.505, 0.5, 1, 1]],
+        [PropsCasesDescription.NumberArray]: [['from', 0, 0, 0.01, 0.05], ['to', 0.01, 0, 1, 1]],
+        [PropsCasesDescription.StringArray]: [['from', 0, 0, 0.2, 0.3], ['to', 0.3, 0.2, 1, 1]],
+        [PropsCasesDescription.PointsMap]: [['from', 0, 0, 0.4, 0.5], ['to', 0.3, 0.1, 1, 1]],
+      };
 
-      test.each(idCases)('should select the correct point limits for id "%s"', (
+      test.each(idCasesMap[description])('should select the correct point limits for id "%s"', (
         id, stateMin, observerMin, stateMax, observerMax,
       ) => {
         model.selectPointLimits(id);
@@ -136,29 +125,18 @@ describe.each(propsCases)('%s', (description, props) => {
       const mockObserver = jest.fn(({ currentPoint }: IModelData) => currentPoint);
       model.addObserver(mockObserver);
 
-      let idCases: [
+      const idCasesMap: Record<PropsCasesDescription, [
         id: string,
         inputPositionRatio: number, outputPositionRatio: number,
         value: number | string,
-      ][] = [];
-      switch (description) {
-        case PropsCasesDescription.Range:
-          idCases = [['from', 0, 0, -50], ['to', 0.5, 0.5, 0], ['from', 1, 0, -50]];
-          break;
-        case PropsCasesDescription.NumberArray:
-          idCases = [['from', 0, 0, 0], ['to', 0.55, 0.55, 55], ['from', 1, 0, 0]];
-          break;
-        case PropsCasesDescription.StringArray:
-          idCases = [['from', 0, 0, 'qwe'], ['to', 0.5, 0.5, 'edc'], ['from', 1, 0, 'qwe']];
-          break;
-        case PropsCasesDescription.PointsMap:
-          idCases = [['from', 0, 0, 0], ['to', 0.3, 0.3, 'asd'], ['from', 1, 0, 0]];
-          break;
-        default:
-          break;
-      }
+      ][]> = {
+        [PropsCasesDescription.Range]: [['from', 0, 0, -50], ['to', 0.5, 0.5, 0], ['from', 1, 0, -50]],
+        [PropsCasesDescription.NumberArray]: [['from', 0, 0, 0], ['to', 0.55, 0.55, 55], ['from', 1, 0, 0]],
+        [PropsCasesDescription.StringArray]: [['from', 0, 0, 'qwe'], ['to', 0.5, 0.5, 'edc'], ['from', 1, 0, 'qwe']],
+        [PropsCasesDescription.PointsMap]: [['from', 0, 0, 0], ['to', 0.3, 0.3, 'asd'], ['from', 1, 0, 0]],
+      };
 
-      test.each(idCases)('should select the correct point by current position for id "%s"', (
+      test.each(idCasesMap[description])('should select the correct point by current position for id "%s"', (
         id, inputPositionRatio, outputPositionRatio, value,
       ) => {
         model.selectPointLimits(id);
@@ -178,29 +156,18 @@ describe.each(propsCases)('%s', (description, props) => {
       const mockObserver = jest.fn(({ currentPoint }: IModelData) => currentPoint);
       model.addObserver(mockObserver);
 
-      let idCases: [
+      const idCasesMap: Record<PropsCasesDescription, [
         id: string,
         inputPositionRatio: number, outputPositionRatio: number,
         value: number | string,
-      ][] = [];
-      switch (description) {
-        case PropsCasesDescription.Range:
-          idCases = [['from', 0.2512, 0.25, -25], ['to', 0.7521, 0.75, 25]];
-          break;
-        case PropsCasesDescription.NumberArray:
-          idCases = [['from', 0.014, 0.01, 1], ['to', 0.5, 0.53, 53]];
-          break;
-        case PropsCasesDescription.StringArray:
-          idCases = [['from', 0.14, 0.1, 'asd'], ['to', 0.52, 0.5, 'edc']];
-          break;
-        case PropsCasesDescription.PointsMap:
-          idCases = [['from', 0.049, 0, 0], ['to', 0.9, 1, 'qwe']];
-          break;
-        default:
-          break;
-      }
+      ][]> = {
+        [PropsCasesDescription.Range]: [['from', 0.2512, 0.25, -25], ['to', 0.7521, 0.75, 25]],
+        [PropsCasesDescription.NumberArray]: [['from', 0.014, 0.01, 1], ['to', 0.5, 0.53, 53]],
+        [PropsCasesDescription.StringArray]: [['from', 0.14, 0.1, 'asd'], ['to', 0.52, 0.5, 'edc']],
+        [PropsCasesDescription.PointsMap]: [['from', 0.049, 0, 0], ['to', 0.9, 1, 'qwe']],
+      };
 
-      test.each(idCases)('should select the correct point with id "%s" by unknown position', (
+      test.each(idCasesMap[description])('should select the correct point with id "%s" by unknown position', (
         id, inputPositionRatio, outputPositionRatio, value,
       ) => {
         model.selectPointByUnknownPosition(inputPositionRatio);
@@ -219,29 +186,18 @@ describe.each(propsCases)('%s', (description, props) => {
       const mockObserver = jest.fn(({ currentPoint }: IModelData) => currentPoint);
       model.addObserver(mockObserver);
 
-      let idCases: [
+      const idCasesMap: Record<PropsCasesDescription, [
         id: string,
         positionRatio: number,
         inputValue: number | string, outputValue: number | string,
-      ][] = [];
-      switch (description) {
-        case PropsCasesDescription.Range:
-          idCases = [['from', 0.255, -24.55, -24.5], ['to', 0.75, 24.9, 25], ['from', 0.745, 50, 24.5]];
-          break;
-        case PropsCasesDescription.NumberArray:
-          idCases = [['from', 0.01, 2, 1], ['to', 0.53, 50, 53], ['from', 0.34, 100, 34]];
-          break;
-        case PropsCasesDescription.StringArray:
-          idCases = [['from', 0.1, 'asd', 'asd'], ['to', 0.6, '1a', '1a'], ['from', 0.5, '2a', 'edc']];
-          break;
-        case PropsCasesDescription.PointsMap:
-          idCases = [['from', 0, 0, 0], ['to', 0.4, '1a', '1a'], ['from', 0.3, 'qwe', 'asd']];
-          break;
-        default:
-          break;
-      }
+      ][] > = {
+        [PropsCasesDescription.Range]: [['from', 0.255, -24.55, -24.5], ['to', 0.75, 24.9, 25], ['from', 0.745, 50, 24.5]],
+        [PropsCasesDescription.NumberArray]: [['from', 0.01, 2, 1], ['to', 0.53, 50, 53], ['from', 0.34, 100, 34]],
+        [PropsCasesDescription.StringArray]: [['from', 0.1, 'asd', 'asd'], ['to', 0.6, '1a', '1a'], ['from', 0.5, '2a', 'edc']],
+        [PropsCasesDescription.PointsMap]: [['from', 0, 0, 0], ['to', 0.4, '1a', '1a'], ['from', 0.3, 'qwe', 'asd']],
+      };
 
-      test.each(idCases)('should select the correct point by current value for id "%s"', (
+      test.each(idCasesMap[description])('should select the correct point by current value for id "%s"', (
         id, positionRatio, inputValue, outputValue,
       ) => {
         model.selectPointLimits(id);

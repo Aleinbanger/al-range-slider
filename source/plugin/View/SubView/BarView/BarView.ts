@@ -20,22 +20,10 @@ class BarView extends SubView<IBarViewState> {
   }
 
   protected override renderState({ from, to }: IBarViewState): void {
-    let percentFrom: number;
-    let percentTo: number;
-    let difference: number;
     if (typeof from !== 'undefined' && typeof this.state?.to !== 'undefined') {
-      if (from < 0) {
-        percentFrom = 0;
-      } else if (from > 1) {
-        percentFrom = 100;
-      } else {
-        percentFrom = from * 100;
-      }
-      percentTo = this.state.to * 100;
-      difference = percentTo - percentFrom;
-      if (difference < 0) {
-        difference = 0;
-      }
+      const percentFrom = BarView.#getPercent(from);
+      const percentTo = this.state.to * 100;
+      const difference = BarView.#getDifference(percentTo, percentFrom);
       if (this.props.orientation === 'vertical') {
         this.element.style.bottom = `${percentFrom}%`;
         this.element.style.height = `${difference}%`;
@@ -45,24 +33,32 @@ class BarView extends SubView<IBarViewState> {
       }
     }
     if (typeof to !== 'undefined' && typeof this.state?.from !== 'undefined') {
-      if (to < 0) {
-        percentTo = 0;
-      } else if (to > 1) {
-        percentTo = 100;
-      } else {
-        percentTo = to * 100;
-      }
-      percentFrom = this.state.from * 100;
-      difference = percentTo - percentFrom;
-      if (difference < 0) {
-        difference = 0;
-      }
+      const percentTo = BarView.#getPercent(to);
+      const percentFrom = this.state.from * 100;
+      const difference = BarView.#getDifference(percentTo, percentFrom);
       if (this.props.orientation === 'vertical') {
         this.element.style.height = `${difference}%`;
       } else {
         this.element.style.width = `${difference}%`;
       }
     }
+  }
+
+  static #getPercent(positionRatio: number): number {
+    let percent: number;
+    if (positionRatio < 0) {
+      percent = 0;
+    } else if (positionRatio > 1) {
+      percent = 100;
+    } else {
+      percent = positionRatio * 100;
+    }
+    return percent;
+  }
+
+  static #getDifference(percentTo: number, percentFrom: number): number {
+    const difference = percentTo - percentFrom;
+    return difference < 0 ? 0 : difference;
   }
 }
 

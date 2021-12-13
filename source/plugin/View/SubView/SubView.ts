@@ -91,13 +91,10 @@ abstract class SubView<
         width,
         height,
       } = this.props.referenceFrame;
-      let ratio: number;
+      const ratio = this.props.orientation === 'vertical'
+        ? (offsetY + height - event.clientY) / height
+        : (event.clientX - offsetX) / width;
 
-      if (this.props.orientation === 'vertical') {
-        ratio = (offsetY + height - event.clientY) / height;
-      } else {
-        ratio = (event.clientX - offsetX) / width;
-      }
       if (ratio < 0) {
         return 0;
       }
