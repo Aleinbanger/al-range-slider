@@ -1,6 +1,7 @@
 import bind from 'bind-decorator';
 
 import Component from 'shared/scripts/Component/Component';
+import { isNumeric } from 'shared/scripts/utils/utils';
 
 import './KeyValueList.scss';
 
@@ -24,7 +25,7 @@ interface IKeyValueListProps {
 
 interface IKeyValueListState {
   items?: Record<string | number, string | number>;
-  tmpKey?: string;
+  tmpKey?: string | number;
 }
 
 class KeyValueList extends Component<IKeyValueListState, IKeyValueListProps> {
@@ -163,7 +164,8 @@ class KeyValueList extends Component<IKeyValueListState, IKeyValueListProps> {
       input.focus();
     } else {
       input.disabled = true;
-      this.state.tmpKey = input.value;
+      const { value } = input;
+      this.state.tmpKey = isNumeric(value) ? Number(value) : value;
       const nextInput = input.nextElementSibling as HTMLInputElement | null;
       if (nextInput) {
         nextInput.disabled = false;
@@ -186,7 +188,8 @@ class KeyValueList extends Component<IKeyValueListState, IKeyValueListProps> {
     } else {
       input.disabled = true;
       if (this.state.items && this.state.tmpKey) {
-        this.state.items[this.state.tmpKey] = input.value;
+        const { value } = input;
+        this.state.items[this.state.tmpKey] = isNumeric(value) ? Number(value) : value;
       }
       this.notifyObservers(this.state);
 

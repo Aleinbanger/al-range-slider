@@ -162,7 +162,7 @@ interface IProps {
   readonly prettify?: (value: string) => string;
 
   // user callbacks
-  readonly onInit?: (state?: IState) => void; // called on slider initialization
+  readonly onInit?: (state?: IState, props?: IProps) => void; // called on slider initialization
   readonly onStart?: (state?: IState) => void; // called on starting a point change
   readonly onFinish?: (state?: IState) => void; // called on finishing a point change
   readonly onChange?: (state?: IState) => void; // called on each point change

@@ -65,6 +65,11 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
       rangeSlider: $(this.element).find(`.js-${this.cssClass}__range-slider`)
         .alRangeSlider({
           ...(this.props.sliderOptions as TOptions),
+          onInit: (_, props) => {
+            if (props) {
+              this.props.sliderOptions = props;
+            }
+          },
           onChange: (state) => {
             this.state.sliderSelectedValues = state?.selectedValues;
           },
@@ -73,7 +78,11 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
         this.element.querySelector(`.js-${this.cssClass}__knobs-list`),
         {
           keyInput: { type: 'text', placeholder: 'ID' },
-          valueInput: { type: 'text', placeholder: 'Value' },
+          valueInput: {
+            type: Object.values(this.props.sliderOptions.initialSelectedValues ?? {})
+              .every((val) => typeof val === 'number') ? 'number' : 'text',
+            placeholder: 'Value',
+          },
         },
       ),
       gridInputs: {
@@ -108,15 +117,12 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
     };
     this.children.knobsList.setState({ items: this.state.sliderSelectedValues });
 
-    const { defaults } = this.children.rangeSlider.alRangeSlider;
-    const { sliderOptions } = this.props;
     const {
       grid, prettify, orientation, showTooltips, collideTooltips, collideKnobs,
       allowSmoothTransition, range, valuesArray, pointsMap,
-    } = { ...defaults, ...sliderOptions };
-    this.props.sliderOptions.grid = grid;
-    this.children.gridInputs.ticks.setState({ value: String(grid.minTicksStep) });
-    this.children.gridInputs.marks.setState({ value: String(grid.marksStep) });
+    } = this.props.sliderOptions;
+    this.children.gridInputs.ticks.setState({ value: String(grid?.minTicksStep) });
+    this.children.gridInputs.marks.setState({ value: String(grid?.marksStep) });
     this.children.prettifyInput.setState({
       value: prettify?.toString().replace(/\s+/g, ' ').trim().match(/{\s*(.*)\s*}$/)?.[1],
     });
@@ -148,11 +154,10 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
       arrayContainer?.remove();
     } else if (valuesArray && arrayContainer) {
       this.children.arrayInput = new InputField(arrayContainer);
-      this.children.arrayInput.setState({ value: valuesArray?.join(', ') });
+      this.updateArrayInput();
       rangeContainer?.remove();
       mapContainer?.remove();
     } else if (range && rangeContainer) {
-      this.props.sliderOptions.range = range;
       this.children.rangeInputs = {
         min: new InputField(rangeContainer
           .querySelector(`[data-name="min"].js-${this.cssClass}__range-input`)),
@@ -161,9 +166,7 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
         step: new InputField(rangeContainer
           .querySelector(`[data-name="step"].js-${this.cssClass}__range-input`)),
       };
-      Object.entries(this.children.rangeInputs).forEach(([name, input]) => {
-        input.setState({ value: String(range[name as keyof typeof range]) });
-      });
+      this.updateRangeInputs();
       arrayContainer?.remove();
       mapContainer?.remove();
     }
@@ -194,7 +197,7 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
         initialSelectedValues: this.state.sliderSelectedValues,
         theme,
       });
-      this.handleDisableToggleChange({ checked: this.state.disabled });
+      this.children.rangeSlider.alRangeSlider('disable', this.state.disabled);
     }
     if (typeof orientation !== 'undefined') {
       if (orientation === 'vertical') {
@@ -205,27 +208,42 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
     }
   }
 
+  private updateArrayInput(): void {
+    const value = this.props.sliderOptions.valuesArray?.join(', ');
+    this.children.arrayInput?.setState({ value });
+  }
+
+  private updateRangeInputs(): void {
+    const { rangeInputs } = this.children;
+    if (rangeInputs) {
+      (Object.entries(rangeInputs) as [keyof typeof rangeInputs, InputField][])
+        .forEach(([name, input]) => {
+          input.setState({ value: String(this.props.sliderOptions.range?.[name]) });
+        });
+    }
+  }
+
   @bind
   private handleKnobsListChange({ items }: IKeyValueListState): void {
     if (typeof items !== 'undefined') {
       this.children.rangeSlider.alRangeSlider('restart', {
         initialSelectedValues: items,
       });
-      this.handleDisableToggleChange({ checked: this.state.disabled });
+      this.children.rangeSlider.alRangeSlider('disable', this.state.disabled);
     }
   }
 
   private handleGridInputChange(
     name: 'minTicksStep' | 'marksStep', { value }: IInputFieldState,
   ): void {
-    if (typeof value !== 'undefined' && this.props.sliderOptions.grid) {
-      this.props.sliderOptions.grid[name] = Number(value);
-      const { grid } = this.props.sliderOptions;
+    const { grid } = this.props.sliderOptions;
+    if (typeof value !== 'undefined' && grid) {
+      grid[name] = Number(value);
       this.children.rangeSlider.alRangeSlider('restart', {
         initialSelectedValues: this.state.sliderSelectedValues,
         grid,
       });
-      this.handleDisableToggleChange({ checked: this.state.disabled });
+      this.children.rangeSlider.alRangeSlider('disable', this.state.disabled);
     }
   }
 
@@ -239,7 +257,7 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
         initialSelectedValues: this.state.sliderSelectedValues,
         prettify,
       });
-      this.handleDisableToggleChange({ checked: this.state.disabled });
+      this.children.rangeSlider.alRangeSlider('disable', this.state.disabled);
     }
   }
 
@@ -252,7 +270,7 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
         initialSelectedValues: this.state.sliderSelectedValues,
         orientation,
       });
-      this.handleDisableToggleChange({ checked: this.state.disabled });
+      this.children.rangeSlider.alRangeSlider('disable', this.state.disabled);
     }
   }
 
@@ -263,7 +281,7 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
         initialSelectedValues: this.state.sliderSelectedValues,
         showTooltips: checked,
       });
-      this.handleDisableToggleChange({ checked: this.state.disabled });
+      this.children.rangeSlider.alRangeSlider('disable', this.state.disabled);
     }
   }
 
@@ -274,7 +292,7 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
         initialSelectedValues: this.state.sliderSelectedValues,
         collideTooltips: checked,
       });
-      this.handleDisableToggleChange({ checked: this.state.disabled });
+      this.children.rangeSlider.alRangeSlider('disable', this.state.disabled);
     }
   }
 
@@ -285,7 +303,7 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
         initialSelectedValues: this.state.sliderSelectedValues,
         collideKnobs: checked,
       });
-      this.handleDisableToggleChange({ checked: this.state.disabled });
+      this.children.rangeSlider.alRangeSlider('disable', this.state.disabled);
     }
   }
 
@@ -296,7 +314,7 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
         initialSelectedValues: this.state.sliderSelectedValues,
         allowSmoothTransition: checked,
       });
-      this.handleDisableToggleChange({ checked: this.state.disabled });
+      this.children.rangeSlider.alRangeSlider('disable', this.state.disabled);
     }
   }
 
@@ -315,14 +333,14 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
         initialSelectedValues: this.state.sliderSelectedValues,
         pointsMap: items,
       });
-      this.handleDisableToggleChange({ checked: this.state.disabled });
+      this.children.rangeSlider.alRangeSlider('disable', this.state.disabled);
     }
   }
 
   @bind
   private handleArrayInputChange({ value }: IInputFieldState): void {
     if (typeof value !== 'undefined') {
-      let valuesArray: string[] | number[] = value.split(',');
+      let valuesArray: string[] | number[] = value.split(', ');
       const isNumericArray = valuesArray.every((val) => isNumeric(val));
       if (isNumericArray) {
         valuesArray = valuesArray.map((val) => Number(val));
@@ -331,21 +349,23 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
         initialSelectedValues: this.state.sliderSelectedValues,
         valuesArray,
       });
-      this.handleDisableToggleChange({ checked: this.state.disabled });
+      this.children.rangeSlider.alRangeSlider('disable', this.state.disabled);
+      this.updateArrayInput();
     }
   }
 
   private handleRangeInputChange(
     name: 'min' | 'max' | 'step', { value }: IInputFieldState,
   ): void {
-    if (typeof value !== 'undefined' && this.props.sliderOptions.range) {
-      this.props.sliderOptions.range[name] = Number(value);
-      const { range } = this.props.sliderOptions;
+    const { range } = this.props.sliderOptions;
+    if (typeof value !== 'undefined' && range) {
+      range[name] = Number(value);
       this.children.rangeSlider.alRangeSlider('restart', {
         initialSelectedValues: this.state.sliderSelectedValues,
         range,
       });
-      this.handleDisableToggleChange({ checked: this.state.disabled });
+      this.children.rangeSlider.alRangeSlider('disable', this.state.disabled);
+      this.updateRangeInputs();
     }
   }
 }

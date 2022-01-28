@@ -137,7 +137,7 @@ describe('model observers', () => {
     model?.['notifyObservers']({ currentPoint: [id, point] });
     expect(viewSpy).lastCalledWith({
       currentPosition: [id, point[0]],
-      currentValue: [id, String(point[1])],
+      currentValue: [id, point[1]],
     });
     if (props.onChange) {
       const state = presenter.getState();

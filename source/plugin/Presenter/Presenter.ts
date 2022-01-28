@@ -1,6 +1,6 @@
 import bind from 'bind-decorator';
 
-import { cloneDeep } from 'shared/scripts/utils/utils';
+import { cloneDeep, isNumeric, isNumberArray } from 'shared/scripts/utils/utils';
 
 import Model, { IModelData } from '../Model/Model';
 import View, { IViewState } from '../View/View';
@@ -73,6 +73,7 @@ class Presenter {
   }
 
   #initialize(): void {
+    this.#validateProps();
     const {
       initialSelectedValues, valuesPrecision, collideKnobs, range, valuesArray, pointsMap,
       orientation, theme, grid, allowSmoothTransition, showInputs,
@@ -113,8 +114,58 @@ class Presenter {
     });
     if (typeof this.#props.onInit === 'function') {
       this.#updateState();
-      this.#props.onInit.call(this, this.#state);
+      this.#props.onInit.call(this, this.#state, cloneDeep(this.#props));
     }
+  }
+
+  #validateProps(): void {
+    if (this.#props.valuesArray || this.#props.pointsMap) {
+      delete this.#props.range;
+    }
+    if (this.#props.range) {
+      const { min, max, step } = this.#props.range;
+      const minStep = 1 / 10 ** this.#props.valuesPrecision;
+      if (min > max) {
+        this.#props.range.min = max;
+        this.#props.range.max = min;
+      } else if (min === max) {
+        this.#props.range.max = min + minStep;
+      }
+      const rangeDifference = Number((this.#props.range.max - this.#props.range.min)
+        .toFixed(this.#props.valuesPrecision));
+      if (step > rangeDifference) {
+        this.#props.range.step = rangeDifference;
+      }
+      if (this.#props.range.step <= 0) {
+        this.#props.range.step = minStep;
+      }
+    }
+    if (this.#props.valuesArray) {
+      if (!isNumberArray(this.#props.valuesArray)) {
+        this.#props.valuesArray = this.#props.valuesArray.map((value) => String(value).trim())
+          .filter((value) => Boolean(value));
+      }
+    } else if (this.#props.pointsMap) {
+      const validatePositionRatio = (positionRatio: string) => {
+        const numPosition = Number(positionRatio);
+        const isPositionValid = !(Number.isNaN(numPosition) || numPosition < 0 || numPosition > 1);
+        return isPositionValid;
+      };
+      this.#props.pointsMap = Object.fromEntries(Object.entries(this.#props.pointsMap)
+        .filter(([position]) => validatePositionRatio(position)));
+    }
+    const {
+      initialSelectedValues, range, valuesArray, pointsMap,
+    } = this.#props;
+    Object.entries(initialSelectedValues).forEach(([id, value]) => {
+      if (range && !isNumeric(value)) {
+        initialSelectedValues[id] = range.min;
+      } else if (valuesArray && !valuesArray.includes(value as never)) {
+        [initialSelectedValues[id]] = valuesArray;
+      } else if (pointsMap && !Object.values(pointsMap).includes(value)) {
+        [initialSelectedValues[id]] = Object.values(pointsMap);
+      }
+    });
   }
 
   #addObservers(): void {
@@ -155,7 +206,7 @@ class Presenter {
       const [id, point] = currentPoint;
       this.#view?.setState({
         currentPosition: [id, point[0]],
-        currentValue: [id, String(point[1])],
+        currentValue: [id, point[1]],
       });
       if (typeof this.#props.onChange === 'function') {
         this.#updateState();

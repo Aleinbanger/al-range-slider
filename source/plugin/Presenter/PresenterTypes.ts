@@ -8,7 +8,7 @@ interface IProps extends Omit<IModelProps, 'pointsMapPrecision' | 'positionsArra
     readonly marksStep: number;
     readonly pointsMap?: TPointsMap;
   };
-  readonly onInit?: (state?: IState) => void;
+  readonly onInit?: (state?: IState, props?: IProps) => void;
   readonly onStart?: (state?: IState) => void;
   readonly onFinish?: (state?: IState) => void;
   readonly onChange?: (state?: IState) => void;

@@ -44,7 +44,7 @@ mixin ConfigPanel({ titleText } = {})
             )
         div(class=arrayClass)
           +InputField({ inpType: 'text', labelText: 'Values array', long: true })(
-            required=true, pattern='^\\w+(?:,\\s*\\w+)*', placeholder='Comma separated list',
+            required=true, pattern='^\\w+.*(?:,\\s\\w+.*)+', placeholder='value 1, value 2, ...',
           )
         div(class=mapClass)
           +KeyValueList({ labelText: 'Points map' })

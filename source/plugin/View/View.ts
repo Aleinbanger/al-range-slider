@@ -89,7 +89,7 @@ class View extends Observable<IViewState> {
     }
     if (currentValue) {
       const [id, value] = currentValue;
-      const prettyValue = this.#props.prettify?.(value) ?? value;
+      const prettyValue = this.#props.prettify?.(String(value)) ?? String(value);
       this.#state.currentValue = currentValue;
       if (this.#state.selectedValues) {
         this.#state.selectedValues[id] = value;
@@ -97,7 +97,7 @@ class View extends Observable<IViewState> {
       if (this.#state.selectedPrettyValues) {
         this.#state.selectedPrettyValues[id] = prettyValue;
       }
-      this.#subViews.inputs?.[id]?.setState({ value });
+      this.#subViews.inputs?.[id]?.setState({ value: String(value) });
       this.#subViews.tooltips?.[id]?.setState({ value: prettyValue, lastValue: prettyValue });
       if (this.#props.collideTooltips) {
         this.#collideTooltips(id);

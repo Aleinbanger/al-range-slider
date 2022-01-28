@@ -120,7 +120,7 @@ class Examples extends Component<IExamplesState> {
       ),
       configPanels: Array.from(this.element.querySelectorAll(`.js-${this.cssClass}__panel`))
         .map((parent, index) => new ConfigPanel(parent as HTMLElement, {
-          sliderOptions: sliderOptionsArray[index],
+          sliderOptions: sliderOptionsArray[index] ?? {},
         })),
     };
 

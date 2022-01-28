@@ -42,7 +42,7 @@ interface IViewState {
   currentPosition?: [id: string, position: number];
   currentPositionLimits?: [id: string, limits: { min: number; max: number }];
   currentActiveStatus?: [id: string, active: boolean];
-  currentValue?: [id: string, value: string];
+  currentValue?: [id: string, value: TPointValue];
   unknownPosition?: number;
 }
 

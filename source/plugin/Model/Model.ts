@@ -120,10 +120,10 @@ class Model extends Observable<IModelData> {
   public selectPointLimits(id: string): void {
     if (this.#props.collideKnobs) {
       const selectedPoints = this.getSelectedPoints();
-      const selectedIndex = selectedPoints.findIndex(([pointId]) => pointId === id);
+      const currentIndex = selectedPoints.findIndex(([pointId]) => pointId === id);
       const {
         newMin, newMax, min, max,
-      } = this.#getMinMaxPositions(selectedPoints, selectedIndex);
+      } = this.#getMinMaxPositions(selectedPoints, currentIndex);
       this.#state.selectedPointsLimits[id] = { min: newMin, max: newMax };
       this.notifyObservers({ currentPointLimits: [id, { min, max }] });
     }
@@ -151,7 +151,7 @@ class Model extends Observable<IModelData> {
       }
       this.#generatePointsMapFromArray();
     } else if (this.#props.pointsMap) {
-      this.#activatePointsMap();
+      this.#generatePositionsArray();
     } else {
       throw new Error('Neither "range" nor "valuesArray" nor "pointsMap" is defined');
     }
@@ -171,7 +171,7 @@ class Model extends Observable<IModelData> {
   #generateValuesArrayFromRange(): void {
     if (this.#props.range) {
       const { min, max, step } = this.#props.range;
-      const pointsNumber = Math.ceil((max - min) / step);
+      const pointsNumber = Math.round((max - min) / step);
       const maxPointsNumber = 100;
       const visiblePointsNumber = pointsNumber > maxPointsNumber
         ? Math.round(pointsNumber / Math.round(pointsNumber / maxPointsNumber))
@@ -223,19 +223,6 @@ class Model extends Observable<IModelData> {
     }
   }
 
-  #activatePointsMap(): void {
-    if (this.#props.pointsMap) {
-      const pointsMap = Object.entries(this.#props.pointsMap);
-      pointsMap.forEach(([positionRatio]) => {
-        const numPositionRatio = Number(positionRatio);
-        if (numPositionRatio < 0 || numPositionRatio > 1) {
-          delete this.#props.pointsMap?.[numPositionRatio];
-        }
-      });
-      this.#generatePositionsArray();
-    }
-  }
-
   #generatePositionsArray(): void {
     if (this.#props.pointsMap) {
       this.#props.positionsArray = Object.keys(this.#props.pointsMap)
@@ -243,21 +230,21 @@ class Model extends Observable<IModelData> {
     }
   }
 
-  #getMinMaxPositions(selectedPoints: TCurrentPoint[], selectedIndex: number): {
+  #getMinMaxPositions(selectedPoints: TCurrentPoint[], currentIndex: number): {
     min: number; max: number; newMin: number; newMax: number;
   } {
     let min = 0; let newMin = min;
     let max = 1; let newMax = max;
-    if (selectedPoints[selectedIndex - 1]) {
-      min = Number(selectedPoints[selectedIndex - 1][1][0]);
+    if (selectedPoints[currentIndex - 1]) {
+      min = Number(selectedPoints[currentIndex - 1][1][0]);
       if (this.#props.range?.positionStep) {
         newMin = min + this.#props.range.positionStep;
       } else if (this.#props.positionsArray) {
         newMin = this.#props.positionsArray[this.#props.positionsArray.indexOf(min) + 1];
       }
     }
-    if (selectedPoints[selectedIndex + 1]) {
-      max = Number(selectedPoints[selectedIndex + 1][1][0]);
+    if (selectedPoints[currentIndex + 1]) {
+      max = Number(selectedPoints[currentIndex + 1][1][0]);
       if (this.#props.range?.positionStep) {
         newMax = max - this.#props.range.positionStep;
       } else if (this.#props.positionsArray) {
