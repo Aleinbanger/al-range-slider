@@ -1,6 +1,6 @@
 import bind from 'bind-decorator';
 
-import { cloneDeep, isNumeric, isNumberArray } from 'shared/scripts/utils/utils';
+import { cloneDeep, filterObject } from 'shared/scripts/utils/utils';
 
 import Model, { IModelData } from '../Model/Model';
 import View, { IViewState } from '../View/View';
@@ -40,8 +40,7 @@ class Presenter {
 
   public restart(props?: Partial<IProps>): void {
     if (typeof props === 'object') {
-      const oldProps = this.#props;
-      this.#props = { ...oldProps, ...cloneDeep(props) };
+      this.#props = { ...this.#props, ...cloneDeep(props) };
     }
     this.destroy();
     this.#initialize();
@@ -62,18 +61,19 @@ class Presenter {
       }
     }
     if (typeof this.#props.onUpdate === 'function') {
-      this.#updateState();
-      this.#props.onUpdate.call(this, this.#state);
+      this.#props.onUpdate.call(this, this.getState());
     }
   }
 
   public getState(): IState | undefined {
-    this.#updateState();
+    this.#state = {
+      ...this.#model?.getState(),
+      ...this.#view?.getState(),
+    };
     return cloneDeep(this.#state);
   }
 
   #initialize(): void {
-    this.#validateProps();
     const {
       initialSelectedValues, valuesPrecision, collideKnobs, range, valuesArray, pointsMap,
       orientation, theme, grid, allowSmoothTransition, showInputs,
@@ -87,6 +87,14 @@ class Presenter {
       range,
       valuesArray,
       pointsMap,
+      onInit: (_, props) => {
+        if (props) {
+          this.#props = {
+            ...this.#props,
+            ...filterObject(props, ([key]) => key in this.#props && key !== 'onInit'),
+          };
+        }
+      },
     });
     this.#view = new View(
       this.#parent,
@@ -113,59 +121,8 @@ class Presenter {
       this.#model?.selectPointByValue(currentValue);
     });
     if (typeof this.#props.onInit === 'function') {
-      this.#updateState();
-      this.#props.onInit.call(this, this.#state, cloneDeep(this.#props));
+      this.#props.onInit.call(this, this.getState(), cloneDeep(this.#props));
     }
-  }
-
-  #validateProps(): void {
-    if (this.#props.valuesArray || this.#props.pointsMap) {
-      delete this.#props.range;
-    }
-    if (this.#props.range) {
-      const { min, max, step } = this.#props.range;
-      const minStep = 1 / 10 ** this.#props.valuesPrecision;
-      if (min > max) {
-        this.#props.range.min = max;
-        this.#props.range.max = min;
-      } else if (min === max) {
-        this.#props.range.max = min + minStep;
-      }
-      const rangeDifference = Number((this.#props.range.max - this.#props.range.min)
-        .toFixed(this.#props.valuesPrecision));
-      if (step > rangeDifference) {
-        this.#props.range.step = rangeDifference;
-      }
-      if (this.#props.range.step <= 0) {
-        this.#props.range.step = minStep;
-      }
-    }
-    if (this.#props.valuesArray) {
-      if (!isNumberArray(this.#props.valuesArray)) {
-        this.#props.valuesArray = this.#props.valuesArray.map((value) => String(value).trim())
-          .filter((value) => Boolean(value));
-      }
-    } else if (this.#props.pointsMap) {
-      const validatePositionRatio = (positionRatio: string) => {
-        const numPosition = Number(positionRatio);
-        const isPositionValid = !(Number.isNaN(numPosition) || numPosition < 0 || numPosition > 1);
-        return isPositionValid;
-      };
-      this.#props.pointsMap = Object.fromEntries(Object.entries(this.#props.pointsMap)
-        .filter(([position]) => validatePositionRatio(position)));
-    }
-    const {
-      initialSelectedValues, range, valuesArray, pointsMap,
-    } = this.#props;
-    Object.entries(initialSelectedValues).forEach(([id, value]) => {
-      if (range && !isNumeric(value)) {
-        initialSelectedValues[id] = range.min;
-      } else if (valuesArray && !valuesArray.includes(value as never)) {
-        [initialSelectedValues[id]] = valuesArray;
-      } else if (pointsMap && !Object.values(pointsMap).includes(value)) {
-        [initialSelectedValues[id]] = Object.values(pointsMap);
-      }
-    });
   }
 
   #addObservers(): void {
@@ -186,13 +143,6 @@ class Presenter {
     this.#view?.removeObserver(this.handleUnknownPositionChange);
   }
 
-  #updateState(): void {
-    this.#state = {
-      ...this.#model?.getState(),
-      ...this.#view?.getState(),
-    };
-  }
-
   @bind
   private handleCurrentPointLimitsChange({ currentPointLimits }: IModelData): void {
     if (currentPointLimits) {
@@ -209,8 +159,7 @@ class Presenter {
         currentValue: [id, point[1]],
       });
       if (typeof this.#props.onChange === 'function') {
-        this.#updateState();
-        this.#props.onChange.call(this, this.#state);
+        this.#props.onChange.call(this, this.getState());
       }
     }
   }
@@ -223,12 +172,10 @@ class Presenter {
       if (active) {
         this.#model?.selectPointLimits(id);
         if (typeof this.#props.onStart === 'function') {
-          this.#updateState();
-          this.#props.onStart.call(this, this.#state);
+          this.#props.onStart.call(this, this.getState());
         }
       } else if (typeof this.#props.onFinish === 'function') {
-        this.#updateState();
-        this.#props.onFinish.call(this, this.#state);
+        this.#props.onFinish.call(this, this.getState());
       }
     }
   }

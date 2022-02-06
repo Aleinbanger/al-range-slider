@@ -10,6 +10,7 @@ interface IModelProps {
   readonly initialSelectedValues: Record<string, TPointValue>;
   readonly valuesPrecision: number;
   readonly collideKnobs: boolean;
+  readonly onInit?: (state?: IModelState, props?: IModelProps) => void;
   range?: {
     min: number;
     max: number;

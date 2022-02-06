@@ -1,5 +1,6 @@
 import {
   cloneDeep,
+  filterObject,
   getKeyByValue,
   getClosestNumber,
   isNumeric,
@@ -27,6 +28,19 @@ test('should return a deep clone', () => {
   expect(objClone.subObj.subArr[2]).not.toBe(obj.subObj.subArr[2]);
   expect(objClone.subObj.date).toBeInstanceOf(Date);
   expect(objClone.subObj.date).not.toBe(obj.subObj.date);
+});
+
+test('should correctly filter the provided object', () => {
+  const obj = {
+    foo: 1,
+    bar: 2,
+    qwe: 3,
+    asd: 4,
+    zxc: 5,
+  };
+  const filteredObj = filterObject(obj, ([key, value]) => key !== 'asd' && value > 2);
+  expect(filteredObj).toStrictEqual({ qwe: 3, zxc: 5 });
+  expect(filteredObj).not.toBe(obj);
 });
 
 test('should get the key by value from object', () => {

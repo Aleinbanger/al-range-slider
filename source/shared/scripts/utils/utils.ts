@@ -1,3 +1,5 @@
+import { Entry } from './typeUtils';
+
 function requireAll(context: __WebpackModuleApi.RequireContext): Record<string, string> {
   const srcMap: Record<string, string> = {};
   context.keys().forEach((key: string) => {
@@ -28,12 +30,20 @@ function cloneDeep<T>(target: T): T {
   return target;
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-types
+function filterObject<T extends object>(
+  object: T,
+  predicate: (entry: Entry<T>, index: number, array: Entry<T>[]) => boolean,
+): { [k: string]: T[keyof T] } {
+  const filteredObject = Object.fromEntries(
+    (Object.entries(object) as Entry<T>[]).filter(predicate),
+  );
+  return filteredObject;
+}
+
 function getKeyByValue<T>(object: Record<number | string, T>, value: T): string | undefined {
   const keyByValue = Object.keys(object).find((key) => object[key] === value);
-  if (typeof keyByValue !== 'undefined') {
-    return keyByValue;
-  }
-  return undefined;
+  return keyByValue;
 }
 
 function getClosestNumber(array: (number | string)[], number: number): number | undefined {
@@ -74,6 +84,7 @@ function isStringArray(value: unknown): value is string[] {
 export {
   requireAll,
   cloneDeep,
+  filterObject,
   getKeyByValue,
   getClosestNumber,
   isNumeric,

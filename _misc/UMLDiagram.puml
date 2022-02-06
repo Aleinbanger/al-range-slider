@@ -1,6 +1,8 @@
 @startuml
-!theme spacelab
-skinparam defaultFontName Consolas
+!theme reddress-darkorange
+skinparam backgroundColor transparent
+skinparam arrowColor grey
+skinparam defaultFontName monospaced
 skinparam linetype ortho
 
 abstract class Observable<TData> {
@@ -15,6 +17,7 @@ together {
         +initialSelectedValues: Record<string, TPointValue>
         +valuesPrecision: number
         +collideKnobs: boolean
+        +onInit?: ((state?: IModelState | undefined, props?: IModelProps | undefined) => void) | undefined
         +range?: { min: number; max: number; step: number; positionStep?: number | undefined; } | undefined
         +valuesArray?: string[] | number[] | undefined
         +pointsMap?: Record<number, TPointValue> | undefined
@@ -231,9 +234,9 @@ together {
     }
 }
 together {
-    interface IProps << extends Omit<IModelProps, 'pointsMapPrecision' | 'positionsArray'>, Omit<IViewProps, 'cssClass' | 'selectedIds' | 'grid'> >> {
+    interface IProps << extends Omit<IModelProps, 'pointsMapPrecision' | 'positionsArray' | 'onInit'>, Omit<IViewProps, 'cssClass' | 'selectedIds' | 'grid'> >> {
         +grid: { readonly minTicksStep: number; readonly marksStep: number; readonly pointsMap?: TPointsMap | undefined; }
-        +onInit?: ((state?: IState | undefined) => void) | undefined
+        +onInit?: ((state?: IState | undefined, props?: IProps | undefined) => void) | undefined
         +onStart?: ((state?: IState | undefined) => void) | undefined
         +onFinish?: ((state?: IState | undefined) => void) | undefined
         +onChange?: ((state?: IState | undefined) => void) | undefined

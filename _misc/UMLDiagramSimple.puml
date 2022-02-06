@@ -1,6 +1,8 @@
 @startuml
-!theme spacelab
-skinparam defaultFontName Consolas
+!theme reddress-darkorange
+skinparam backgroundColor transparent
+skinparam arrowColor grey
+skinparam defaultFontName monospaced
 skinparam linetype ortho
 
 abstract class Observable<TData> {

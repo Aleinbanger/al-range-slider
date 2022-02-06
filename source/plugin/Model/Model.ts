@@ -5,7 +5,7 @@ import {
   getClosestNumber,
   isNumeric,
   isNumberArray,
-  isStringArray,
+  filterObject,
 } from 'shared/scripts/utils/utils';
 
 import {
@@ -130,25 +130,11 @@ class Model extends Observable<IModelData> {
   }
 
   #initialize(): void | never {
-    if (this.#props.valuesArray || this.#props.pointsMap) {
-      delete this.#props.range;
-    }
+    this.#validateProps();
     if (this.#props.range) {
-      const { min, max, step } = this.#props.range;
-      if (min >= max) {
-        throw new Error('"min" must be less than "max"');
-      }
-      if (step <= 0) {
-        throw new Error('"step" must be greater than 0');
-      }
       this.#generateValuesArrayFromRange();
     }
     if (this.#props.valuesArray) {
-      const isArrayValid = isNumberArray(this.#props.valuesArray)
-        || isStringArray(this.#props.valuesArray);
-      if (!isArrayValid) {
-        throw new Error('Type of "valuesArray" must be either "number[]" or "string[]"');
-      }
       this.#generatePointsMapFromArray();
     } else if (this.#props.pointsMap) {
       this.#generatePositionsArray();
@@ -165,6 +151,59 @@ class Model extends Observable<IModelData> {
     selectedPoints.forEach(([id, point]) => {
       this.selectPointLimits(id);
       this.selectPointByValue([id, point[1]]);
+    });
+    if (typeof this.#props.onInit === 'function') {
+      this.#props.onInit.call(this, this.getState(), cloneDeep(this.#props));
+    }
+  }
+
+  #validateProps(): void {
+    if (this.#props.valuesArray || this.#props.pointsMap) {
+      delete this.#props.range;
+    }
+    if (this.#props.range) {
+      const { min, max, step } = this.#props.range;
+      const minStep = 1 / 10 ** this.#props.valuesPrecision;
+      if (min > max) {
+        this.#props.range.min = max;
+        this.#props.range.max = min;
+      } else if (min === max) {
+        this.#props.range.max = min + minStep;
+      }
+      const rangeDifference = Number((this.#props.range.max - this.#props.range.min)
+        .toFixed(this.#props.valuesPrecision));
+      if (step > rangeDifference) {
+        this.#props.range.step = rangeDifference;
+      }
+      if (this.#props.range.step <= 0) {
+        this.#props.range.step = minStep;
+      }
+    }
+    if (this.#props.valuesArray) {
+      if (!isNumberArray(this.#props.valuesArray)) {
+        this.#props.valuesArray = this.#props.valuesArray.map((value) => String(value).trim())
+          .filter((value) => Boolean(value));
+      }
+    } else if (this.#props.pointsMap) {
+      const validatePositionRatio = (positionRatio: string) => {
+        const numPosition = Number(positionRatio);
+        const isPositionValid = !(Number.isNaN(numPosition) || numPosition < 0 || numPosition > 1);
+        return isPositionValid;
+      };
+      this.#props.pointsMap = filterObject(this.#props.pointsMap,
+        ([position]) => validatePositionRatio(position));
+    }
+    const {
+      initialSelectedValues, range, valuesArray, pointsMap,
+    } = this.#props;
+    Object.entries(initialSelectedValues).forEach(([id, value]) => {
+      if (range && !isNumeric(value)) {
+        initialSelectedValues[id] = range.min;
+      } else if (valuesArray && !valuesArray.includes(value as never)) {
+        [initialSelectedValues[id]] = valuesArray;
+      } else if (pointsMap && !Object.values(pointsMap).includes(value)) {
+        [initialSelectedValues[id]] = Object.values(pointsMap);
+      }
     });
   }
 

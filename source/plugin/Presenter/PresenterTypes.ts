@@ -1,7 +1,7 @@
 import { IModelProps, IModelState } from '../Model/ModelTypes';
 import { IViewProps, IViewState, TPointsMap } from '../View/ViewTypes';
 
-interface IProps extends Omit<IModelProps, 'pointsMapPrecision' | 'positionsArray'>,
+interface IProps extends Omit<IModelProps, 'pointsMapPrecision' | 'positionsArray' | 'onInit'>,
   Omit<IViewProps, 'cssClass' | 'selectedIds' | 'grid'> {
   readonly grid: {
     readonly minTicksStep: number;
