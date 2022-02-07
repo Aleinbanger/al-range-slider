@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/dot-notation */
 
-import { ExtractFunctionKeys } from 'shared/scripts/utils/typeUtils';
+import { ExtractMethodsKeys } from 'shared/scripts/utils/typeUtils';
 import { mockElementDimensions } from 'shared/scripts/utils/jestUtils';
 
 import View, { IViewProps, IViewState, ISubViews } from './View';
@@ -55,7 +55,7 @@ describe.each(propsCases)('%s', (_description, props) => {
     subViews = view['__private_3_subViews' as keyof View] as unknown as ISubViews;
   };
   const spyOnAllSubViews = (
-    method: ExtractFunctionKeys<SubView>, sViews = subViews,
+    method: ExtractMethodsKeys<SubView>, sViews = subViews,
   ) => {
     const spies: Array<jest.SpyInstance> = [];
     Object.values(sViews).forEach((subView) => {

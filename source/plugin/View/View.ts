@@ -2,7 +2,7 @@ import bind from 'bind-decorator';
 
 import Observable from 'shared/scripts/Observable/Observable';
 import { cloneDeep, getClosestNumber } from 'shared/scripts/utils/utils';
-import { ExtractFunctionKeys, ExtractFunctionArgs } from 'shared/scripts/utils/typeUtils';
+import { ExtractMethodsKeys, ExtractMethodArgs } from 'shared/scripts/utils/typeUtils';
 
 import SubView from './SubView/SubView';
 import WrapperView from './SubView/WrapperView/WrapperView';
@@ -388,8 +388,8 @@ class View extends Observable<IViewState> {
     }
   }
 
-  #callAllSubViews<T extends ExtractFunctionKeys<SubView>>(
-    method: T, arg?: ExtractFunctionArgs<SubView, T>, subViews = this.#subViews,
+  #callAllSubViews<T extends ExtractMethodsKeys<SubView>>(
+    method: T, arg?: ExtractMethodArgs<SubView, T>, subViews = this.#subViews,
   ): void {
     Object.values(subViews).forEach((subView) => {
       if (subView instanceof SubView && typeof subView[method] === 'function') {

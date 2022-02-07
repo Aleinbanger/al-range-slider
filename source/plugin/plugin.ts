@@ -1,6 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 
-import { ExtractFunctionArgs } from 'shared/scripts/utils/typeUtils';
+import { ExtractMethodArgs } from 'shared/scripts/utils/typeUtils';
 
 import Presenter, { IProps } from './Presenter/Presenter';
 
@@ -32,8 +32,8 @@ const defaults: IProps = {
 const methods = ['destroy', 'disable', 'restart', 'update'] as const;
 type TOptions = Partial<IProps>;
 type TMethod = typeof methods[number];
-type TMethodArg<T extends TMethod> = ExtractFunctionArgs<Presenter, T>;
-type TMethodFunc<T extends TMethod> = (arg: TMethodArg<T>) => void;
+type TMethodArg<T extends TMethod> = ExtractMethodArgs<Presenter, T>;
+type TMethodFunc<T extends TMethod> = (arg?: TMethodArg<T>) => void;
 
 function plugin<T extends TMethod>(
   this: JQuery, optionsOrMethod?: TOptions | T, methodArg?: TMethodArg<T>,
