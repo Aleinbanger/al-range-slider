@@ -20,9 +20,9 @@ class BarView extends SubView<IBarViewState> {
   }
 
   protected override renderState({ from, to }: IBarViewState): void {
-    if (typeof from !== 'undefined' && typeof this.state?.to !== 'undefined') {
+    if (typeof from !== 'undefined') {
       const percentFrom = BarView.#getPercent(from);
-      const percentTo = this.state.to * 100;
+      const percentTo = (this.state?.to ?? 1) * 100;
       const difference = BarView.#getDifference(percentTo, percentFrom);
       if (this.props.orientation === 'vertical') {
         this.element.style.bottom = `${percentFrom}%`;
@@ -32,9 +32,9 @@ class BarView extends SubView<IBarViewState> {
         this.element.style.width = `${difference}%`;
       }
     }
-    if (typeof to !== 'undefined' && typeof this.state?.from !== 'undefined') {
+    if (typeof to !== 'undefined') {
       const percentTo = BarView.#getPercent(to);
-      const percentFrom = this.state.from * 100;
+      const percentFrom = (this.state?.from ?? 0) * 100;
       const difference = BarView.#getDifference(percentTo, percentFrom);
       if (this.props.orientation === 'vertical') {
         this.element.style.height = `${difference}%`;

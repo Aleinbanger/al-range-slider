@@ -137,7 +137,10 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
     const rangeContainer = this.element.querySelector<HTMLElement>(`.js-${this.cssClass}__range`);
     const arrayContainer = this.element.querySelector<HTMLElement>(`.js-${this.cssClass}__array`);
     const mapContainer = this.element.querySelector<HTMLElement>(`.js-${this.cssClass}__map`);
-    if (pointsMap && mapContainer) {
+    const isRangeDefined = range && rangeContainer;
+    const isValuesArrayDefined = valuesArray && arrayContainer;
+    const isPointsMapDefined = pointsMap && mapContainer;
+    if (isPointsMapDefined) {
       this.children.pointsList = new KeyValueList(
         mapContainer,
         {
@@ -152,12 +155,12 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
       this.children.pointsList.setState({ items: pointsMap });
       rangeContainer?.remove();
       arrayContainer?.remove();
-    } else if (valuesArray && arrayContainer) {
+    } else if (isValuesArrayDefined) {
       this.children.arrayInput = new InputField(arrayContainer);
       this.updateArrayInput();
       rangeContainer?.remove();
       mapContainer?.remove();
-    } else if (range && rangeContainer) {
+    } else if (isRangeDefined) {
       this.children.rangeInputs = {
         min: new InputField(rangeContainer
           .querySelector(`[data-name="min"].js-${this.cssClass}__range-input`)),
@@ -237,7 +240,8 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
     name: 'minTicksStep' | 'marksStep', { value }: IInputFieldState,
   ): void {
     const { grid } = this.props.sliderOptions;
-    if (typeof value !== 'undefined' && grid) {
+    const isChangeValid = typeof value !== 'undefined' && grid;
+    if (isChangeValid) {
       grid[name] = Number(value);
       this.children.rangeSlider.alRangeSlider('restart', {
         initialSelectedValues: this.state.sliderSelectedValues,
@@ -358,7 +362,8 @@ class ConfigPanel extends Component<IConfigPanelState, IConfigPanelProps> {
     name: 'min' | 'max' | 'step', { value }: IInputFieldState,
   ): void {
     const { range } = this.props.sliderOptions;
-    if (typeof value !== 'undefined' && range) {
+    const isChangeValid = typeof value !== 'undefined' && range;
+    if (isChangeValid) {
       range[name] = Number(value);
       this.children.rangeSlider.alRangeSlider('restart', {
         initialSelectedValues: this.state.sliderSelectedValues,

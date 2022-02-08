@@ -45,6 +45,10 @@ const propsCases: [description: string, props: IViewProps][] = [
 ];
 
 describe.each(propsCases)('%s', (_description, props) => {
+  const {
+    cssClass, orientation, grid, allowSmoothTransition, showInputs,
+    showTooltips, collideTooltips, tooltipsSeparator, prettify,
+  } = props;
   const initializeView = (mockObserver?: jest.Mock) => {
     parent = document.createElement('div');
     document.body.appendChild(parent);
@@ -59,7 +63,8 @@ describe.each(propsCases)('%s', (_description, props) => {
   ) => {
     const spies: Array<jest.SpyInstance> = [];
     Object.values(sViews).forEach((subView) => {
-      if (subView instanceof SubView && typeof subView[method] === 'function') {
+      const isMethodValid = subView instanceof SubView && typeof subView[method] === 'function';
+      if (isMethodValid) {
         spies.push(jest.spyOn(subView, method));
       } else if (typeof subView === 'object') {
         spies.push(...spyOnAllSubViews(method, subView as ISubViews));
@@ -78,25 +83,25 @@ describe.each(propsCases)('%s', (_description, props) => {
     });
 
     test('should initialize necessary SubViews in the constructor', () => {
-      const wrapper = parent.querySelector(`.${props.cssClass}`);
-      expect(wrapper).toBeTruthy();
-      const track = parent.querySelector(`.${props.cssClass}__track`);
-      expect(track).toBeTruthy();
-      const knobs = parent.querySelectorAll(`.${props.cssClass}__knob`);
-      expect(knobs.length).toBe(2);
-      const bars = parent.querySelectorAll(`.${props.cssClass}__bar`);
-      expect(bars.length).toBe(1);
-      if (props.grid) {
-        const grid = parent.querySelector(`.${props.cssClass}__grid`);
-        expect(grid).toBeTruthy();
+      const wrapperElement = parent.querySelector(`.${cssClass}`);
+      expect(wrapperElement).toBeTruthy();
+      const trackElement = parent.querySelector(`.${cssClass}__track`);
+      expect(trackElement).toBeTruthy();
+      const knobElements = parent.querySelectorAll(`.${cssClass}__knob`);
+      expect(knobElements.length).toBe(2);
+      const barElements = parent.querySelectorAll(`.${cssClass}__bar`);
+      expect(barElements.length).toBe(1);
+      if (grid) {
+        const gridElement = parent.querySelector(`.${cssClass}__grid`);
+        expect(gridElement).toBeTruthy();
       }
-      if (props.showInputs) {
-        const inputs = parent.querySelectorAll(`.${props.cssClass}__input`);
-        expect(inputs.length).toBe(2);
+      if (showInputs) {
+        const inputElements = parent.querySelectorAll(`.${cssClass}__input`);
+        expect(inputElements.length).toBe(2);
       }
-      if (props.showTooltips) {
-        const tooltips = parent.querySelectorAll(`.${props.cssClass}__tooltip`);
-        expect(tooltips.length).toBe(2);
+      if (showTooltips) {
+        const tooltipElements = parent.querySelectorAll(`.${cssClass}__tooltip`);
+        expect(tooltipElements.length).toBe(2);
       }
     });
 
@@ -156,12 +161,12 @@ describe.each(propsCases)('%s', (_description, props) => {
       const knobSpy = jest.spyOn(knob!, 'setState');
       let inputSpy: jest.SpyInstance | undefined;
       let tooltipSpy: jest.SpyInstance | undefined;
-      if (props.showInputs) {
+      if (showInputs) {
         const input = subViews.inputs?.[id];
         expect(input).toBeDefined();
         inputSpy = jest.spyOn(input!, 'setState');
       }
-      if (props.showTooltips) {
+      if (showTooltips) {
         const tooltip = subViews.tooltips?.[id];
         expect(tooltip).toBeDefined();
         tooltipSpy = jest.spyOn(tooltip!, 'setState');
@@ -185,12 +190,12 @@ describe.each(propsCases)('%s', (_description, props) => {
     ])('should set "currentValue" state on the corresponding SubViews with id "%s"', (id, value) => {
       let inputSpy: jest.SpyInstance | undefined;
       let tooltipSpy: jest.SpyInstance | undefined;
-      if (props.showInputs) {
+      if (showInputs) {
         const input = subViews.inputs?.[id];
         expect(input).toBeDefined();
         inputSpy = jest.spyOn(input!, 'setState');
       }
-      if (props.showTooltips) {
+      if (showTooltips) {
         const tooltip = subViews.tooltips?.[id];
         expect(tooltip).toBeDefined();
         tooltipSpy = jest.spyOn(tooltip!, 'setState');
@@ -200,18 +205,19 @@ describe.each(propsCases)('%s', (_description, props) => {
         expect(inputSpy).lastCalledWith({ value });
       }
       if (tooltipSpy) {
-        const prettyValue = props.prettify?.(value) ?? value;
+        const prettyValue = prettify?.(value) ?? value;
         expect(tooltipSpy).nthCalledWith(1, { value: prettyValue, lastValue: prettyValue });
-        if (props.collideTooltips) {
+        if (collideTooltips) {
           expect(tooltipSpy).nthCalledWith(2, { value: prettyValue, hidden: false });
         }
       }
     });
 
-    if (props.showTooltips && props.collideTooltips) {
+    const isTooltipsCollisionDefined = showTooltips && collideTooltips;
+    if (isTooltipsCollisionDefined) {
       describe('collide tooltips', () => {
         const getValue = (from: string, to: string) => (
-          (props.prettify?.(from) ?? from) + props.tooltipsSeparator + (props.prettify?.(to) ?? to)
+          (prettify?.(from) ?? from) + tooltipsSeparator + (prettify?.(to) ?? to)
         );
         const initFromValue = '0';
         const initToValue = '100';
@@ -223,7 +229,7 @@ describe.each(propsCases)('%s', (_description, props) => {
           expect(track).toBeDefined();
           expect(tooltipFrom).toBeDefined();
           expect(tooltipTo).toBeDefined();
-          if (props.orientation === 'vertical') {
+          if (orientation === 'vertical') {
             mockElementDimensions(track!.element, { width: 10, height: 100 });
             mockElementDimensions(tooltipFrom!.element, { width: 25, height: 25, y: 100 });
             mockElementDimensions(tooltipTo!.element, { width: 25, height: 25, y: 0 });
@@ -250,7 +256,7 @@ describe.each(propsCases)('%s', (_description, props) => {
           const expectedValue = activeId === 'from'
             ? getValue(value, initToValue)
             : getValue(initFromValue, value);
-          if (props.orientation === 'vertical') {
+          if (orientation === 'vertical') {
             mockElementDimensions(tooltipActive!.element, { width: 25, height: 25, y });
           } else {
             mockElementDimensions(tooltipActive!.element, { width: 25, height: 25, x });
@@ -275,7 +281,7 @@ describe.each(propsCases)('%s', (_description, props) => {
       initializeView(mockObserver);
       subViews.track?.['notifyObservers']({ positionRatio: 0 });
       expect(mockObserver).nthReturnedWith(1, 0);
-      if (props.grid) {
+      if (grid) {
         subViews.grid?.['notifyObservers']({ positionRatio: 0.5 });
         expect(mockObserver).nthReturnedWith(2, 0.5);
       }
@@ -289,7 +295,7 @@ describe.each(propsCases)('%s', (_description, props) => {
       initializeView(mockObserver);
       subViews.knobs?.[id]?.['notifyObservers']({ active });
       expect(mockObserver).nthReturnedWith(1, [id, active]);
-      if (props.showInputs) {
+      if (showInputs) {
         subViews.inputs?.[id]?.['notifyObservers']({ active });
         expect(mockObserver).nthReturnedWith(2, [id, active]);
       }
@@ -306,7 +312,7 @@ describe.each(propsCases)('%s', (_description, props) => {
       const barSpy = jest.spyOn(bar!, 'setState');
       subViews.knobs?.[id]?.['notifyObservers']({ positionRatio });
       expect(mockObserver).lastReturnedWith([id, positionRatio]);
-      if (props.allowSmoothTransition) {
+      if (allowSmoothTransition) {
         expect(barSpy).lastCalledWith({ [id]: positionRatio });
       }
     });
@@ -317,7 +323,7 @@ describe.each(propsCases)('%s', (_description, props) => {
     ])('should notify observers about currentValue change by input with id "%s"', (id, value) => {
       const mockObserver = jest.fn(({ currentValue }: IViewState) => currentValue);
       initializeView(mockObserver);
-      if (props.showInputs) {
+      if (showInputs) {
         subViews.inputs?.[id]?.['notifyObservers']({ value });
         expect(mockObserver).lastReturnedWith([id, value]);
       }

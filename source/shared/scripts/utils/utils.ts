@@ -20,7 +20,8 @@ function cloneDeep<T>(target: T): T {
     const clone = [...target];
     return clone.map((value) => cloneDeep(value)) as unknown as T;
   }
-  if (typeof target === 'object' && target !== {}) {
+  const isTargetObject = typeof target === 'object' && target !== {};
+  if (isTargetObject) {
     const clone = { ...target } as Record<string | number | symbol, unknown>;
     Object.keys(clone).forEach((key) => {
       clone[key] = cloneDeep(clone[key]);
@@ -47,9 +48,10 @@ function getKeyByValue<T>(object: Record<number | string, T>, value: T): string 
 }
 
 function getClosestNumber(array: (number | string)[], number: number): number | undefined {
-  const numbers = array.filter((el) => typeof el === 'number') as number[];
-  if (numbers.length > 0 && !Number.isNaN(number)) {
-    const closestNumber = numbers.reduce((prev, curr) => (
+  const numberArray = array.filter((el) => typeof el === 'number') as number[];
+  const areArgumentsValid = numberArray.length > 0 && !Number.isNaN(number);
+  if (areArgumentsValid) {
+    const closestNumber = numberArray.reduce((prev, curr) => (
       Math.abs(curr - number) < Math.abs(prev - number) ? curr : prev
     ));
     return closestNumber;

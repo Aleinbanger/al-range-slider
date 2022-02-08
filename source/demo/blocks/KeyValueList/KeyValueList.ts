@@ -159,8 +159,8 @@ class KeyValueList extends Component<IKeyValueListState, IKeyValueListProps> {
     } else {
       input.setCustomValidity('');
     }
-    const isValid = input.reportValidity();
-    if (isKeyDuplicated || !isValid) {
+    const isInvalid = isKeyDuplicated || !input.reportValidity();
+    if (isInvalid) {
       input.focus();
     } else {
       input.disabled = true;
@@ -183,13 +183,16 @@ class KeyValueList extends Component<IKeyValueListState, IKeyValueListProps> {
   @bind
   private handleValueInputChange(event: Event): void {
     const input = event.currentTarget as HTMLInputElement;
-    if (!input.reportValidity()) {
+    const isInvalid = !input.reportValidity();
+    if (isInvalid) {
       input.focus();
     } else {
       input.disabled = true;
-      if (this.state.items && this.state.tmpKey) {
+      const { items, tmpKey } = this.state;
+      const isStateDefined = items && typeof tmpKey !== 'undefined';
+      if (isStateDefined) {
         const { value } = input;
-        this.state.items[this.state.tmpKey] = isNumeric(value) ? Number(value) : value;
+        items[tmpKey] = isNumeric(value) ? Number(value) : value;
       }
       this.notifyObservers(this.state);
 

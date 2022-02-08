@@ -33,8 +33,8 @@ class InputField extends Component<IInputFieldState> {
   }
 
   protected override renderState({ value }: IInputFieldState): void {
-    if (typeof value !== 'undefined' && this.children.input) {
-      this.children.input.value = value;
+    if (typeof value !== 'undefined') {
+      if (this.children.input) this.children.input.value = value;
     }
   }
 

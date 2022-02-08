@@ -63,22 +63,24 @@ class Model extends Observable<IModelData> {
   }
 
   public selectPointByPosition([id, positionRatio]: [string, number]): void | never {
-    if (this.#props.range) {
+    const { range, pointsMap, positionsArray } = this.#props;
+    const isPointsMapDefined = pointsMap && positionsArray;
+    if (range) {
       if (this.#checkPointLimits([id, positionRatio])) {
-        const tmpValue = this.#getValueByPositionRatio(positionRatio, this.#props.range);
-        const roundedValue = this.#getRoundedByStepValue(tmpValue, this.#props.range);
+        const tmpValue = this.#getValueByPositionRatio(positionRatio, range);
+        const roundedValue = this.#getRoundedByStepValue(tmpValue, range);
         this.#state.selectedPoints[id][1] = roundedValue;
         this.#state.selectedPoints[id][0] = this.#getPositionRatioByValue(
           roundedValue,
-          this.#props.range,
+          range,
         );
       }
-    } else if (this.#props.pointsMap && this.#props.positionsArray) {
-      const closestPosition = getClosestNumber(this.#props.positionsArray, positionRatio)
+    } else if (isPointsMapDefined) {
+      const closestPosition = getClosestNumber(positionsArray, positionRatio)
         ?? positionRatio;
       if (this.#checkPointLimits([id, closestPosition])) {
         this.#state.selectedPoints[id][0] = closestPosition;
-        this.#state.selectedPoints[id][1] = this.#props.pointsMap[closestPosition];
+        this.#state.selectedPoints[id][1] = pointsMap[closestPosition];
       }
     } else {
       throw new Error('Neither "range" nor "pointsMap" is defined');
@@ -88,9 +90,9 @@ class Model extends Observable<IModelData> {
 
   public selectPointByValue([id, value]: [string, TPointValue]): void | never {
     const { closestValue, positionRatio } = this.#getClosestValueAndPosition(value);
-    // eslint-disable-next-line fsd/split-conditionals
-    if (typeof closestValue !== 'undefined' && typeof positionRatio !== 'undefined'
-    && !Number.isNaN(positionRatio)) {
+    const isPointValid = typeof closestValue !== 'undefined' && typeof positionRatio !== 'undefined'
+      && !Number.isNaN(positionRatio);
+    if (isPointValid) {
       if (this.#checkPointLimits([id, positionRatio])) {
         this.#state.selectedPoints[id][0] = positionRatio;
         this.#state.selectedPoints[id][1] = closestValue;
@@ -158,7 +160,8 @@ class Model extends Observable<IModelData> {
   }
 
   #validateProps(): void {
-    if (this.#props.valuesArray || this.#props.pointsMap) {
+    const isRangeRedundant = this.#props.valuesArray || this.#props.pointsMap;
+    if (isRangeRedundant) {
       delete this.#props.range;
     }
     if (this.#props.range) {
@@ -197,11 +200,14 @@ class Model extends Observable<IModelData> {
       initialSelectedValues, range, valuesArray, pointsMap,
     } = this.#props;
     Object.entries(initialSelectedValues).forEach(([id, value]) => {
-      if (range && !isNumeric(value)) {
+      const isInitRangeValueInvalid = range && !isNumeric(value);
+      const isInitArrayValueInvalid = valuesArray && !valuesArray.includes(value as never);
+      const isInitMapValueInvalid = pointsMap && !Object.values(pointsMap).includes(value);
+      if (isInitRangeValueInvalid) {
         initialSelectedValues[id] = range.min;
-      } else if (valuesArray && !valuesArray.includes(value as never)) {
+      } else if (isInitArrayValueInvalid) {
         [initialSelectedValues[id]] = valuesArray;
-      } else if (pointsMap && !Object.values(pointsMap).includes(value)) {
+      } else if (isInitMapValueInvalid) {
         [initialSelectedValues[id]] = Object.values(pointsMap);
       }
     });

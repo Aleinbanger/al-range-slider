@@ -33,8 +33,8 @@ class InputToggle extends Component<IInputToggleState> {
   }
 
   protected override renderState({ checked }: IInputToggleState): void {
-    if (typeof checked !== 'undefined' && this.children.input) {
-      this.children.input.checked = checked;
+    if (typeof checked !== 'undefined') {
+      if (this.children.input) this.children.input.checked = checked;
     }
   }
 

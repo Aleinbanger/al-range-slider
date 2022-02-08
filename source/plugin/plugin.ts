@@ -38,7 +38,9 @@ type TMethodFunc<T extends TMethod> = (arg?: TMethodArg<T>) => void;
 function plugin<T extends TMethod>(
   this: JQuery, optionsOrMethod?: TOptions | T, methodArg?: TMethodArg<T>,
 ): JQuery {
-  if (typeof optionsOrMethod === 'undefined' || typeof optionsOrMethod === 'object') {
+  const isInitMode = typeof optionsOrMethod === 'undefined'
+    || typeof optionsOrMethod === 'object';
+  if (isInitMode) {
     const config = $.extend({}, $.fn[pluginName].defaults, optionsOrMethod);
     return this.each((_, element) => {
       if (!$.data(element, pluginName)) {
@@ -46,10 +48,13 @@ function plugin<T extends TMethod>(
       }
     });
   }
-  if (methods.includes(optionsOrMethod)) {
+  const isMethodMode = methods.includes(optionsOrMethod);
+  if (isMethodMode) {
     return this.each((_, element) => {
       const instance = $.data(element, pluginName);
-      if (instance instanceof Presenter && typeof instance[optionsOrMethod] === 'function') {
+      const isMethodValid = instance instanceof Presenter
+        && typeof instance[optionsOrMethod] === 'function';
+      if (isMethodValid) {
         (instance[optionsOrMethod] as TMethodFunc<T>).call(instance, methodArg);
       }
     });

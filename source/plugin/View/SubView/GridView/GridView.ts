@@ -55,13 +55,16 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
   protected override renderState({ ticksStep }: IGridViewState): void {
     if (ticksStep) {
       const ceiledTicksStep = Math.ceil(Math.abs(ticksStep));
+      const { cssClass, orientation, pointsMap } = this.props;
       this.props.ticks?.forEach((tick) => tick.remove()); this.props.ticks = [];
       this.props.marks?.forEach((mark) => mark.remove()); this.props.marks = [];
-      this.props.pointsMap.forEach(([positionRatio], index) => {
-        if (index % ceiledTicksStep === 0 || index === this.props.pointsMap.length - 1) {
+      pointsMap.forEach(([positionRatio], index) => {
+        const isIndexValid = index % ceiledTicksStep === 0
+          || index === pointsMap.length - 1;
+        if (isIndexValid) {
           const tick = document.createElement('span');
-          tick.setAttribute('class', `${this.props.cssClass}-tick js-${this.props.cssClass}-tick`);
-          if (this.props.orientation === 'vertical') {
+          tick.setAttribute('class', `${cssClass}-tick js-${cssClass}-tick`);
+          if (orientation === 'vertical') {
             tick.style.bottom = `${Number(positionRatio) * 100}%`;
           } else {
             tick.style.left = `${Number(positionRatio) * 100}%`;
@@ -71,50 +74,59 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
           this.element.appendChild(tick);
         }
       });
+      const getMarkIndex = (tickIndex: number): number | undefined => {
+        let markIndex: number | undefined;
+        if (tickIndex % this.props.marksStep === 0) {
+          markIndex = tickIndex * ceiledTicksStep;
+        }
+        const isLastIndex = this.props.ticks && tickIndex === this.props.ticks.length - 1;
+        if (isLastIndex) {
+          markIndex = pointsMap.length - 1;
+        }
+        return markIndex;
+      };
       this.props.ticks.forEach((tick, index) => {
-        let newIndex: number | undefined;
-        if (index % this.props.marksStep === 0) {
-          newIndex = index * ceiledTicksStep;
-        }
-        if (this.props.ticks && index === this.props.ticks.length - 1) {
-          newIndex = this.props.pointsMap.length - 1;
-        }
-        if (typeof newIndex !== 'undefined' && newIndex < this.props.pointsMap.length) {
-          const value = String(this.props.pointsMap[newIndex][1]);
+        const markIndex = getMarkIndex(index);
+        const isMarksIndexValid = typeof markIndex !== 'undefined'
+          && markIndex < pointsMap.length;
+        if (isMarksIndexValid) {
+          const value = String(pointsMap[markIndex][1]);
           const mark = document.createElement('span');
-          mark.setAttribute('class', `${this.props.cssClass}-mark js-${this.props.cssClass}-mark`);
+          mark.setAttribute('class', `${cssClass}-mark js-${cssClass}-mark`);
           mark.textContent = this.props.prettify?.(value) ?? value;
           this.props.marks?.push(mark);
           tick.appendChild(mark);
-          tick.classList.add(`${this.props.cssClass}-tick_long`);
+          tick.classList.add(`${cssClass}-tick_long`);
         }
       });
-      const usedMarks: HTMLElement[] = [];
+      const checkedMarks: HTMLElement[] = [];
       for (let index = 0; index < this.props.marks.length / 2; index += 1) {
         const firstMark = this.props.marks[index];
         const lastMark = this.props.marks[this.props.marks.length - index - 1];
-        if (!usedMarks.includes(firstMark) && !usedMarks.includes(lastMark)) {
+        const wereMarksChecked = checkedMarks.includes(firstMark)
+          || checkedMarks.includes(lastMark);
+        if (!wereMarksChecked) {
           const firstRect = firstMark.getBoundingClientRect();
           const lastRect = lastMark.getBoundingClientRect();
           this.props.marks?.forEach((nextMark) => {
-            const wasMarkChecked = usedMarks.includes(nextMark)
+            const wasNextMarkChecked = checkedMarks.includes(nextMark)
               || nextMark === firstMark || nextMark === lastMark;
-            if (!wasMarkChecked) {
+            if (!wasNextMarkChecked) {
               const nextRect = nextMark.getBoundingClientRect();
-              const isOverlapping = this.props.orientation === 'vertical'
+              const isOverlapping = orientation === 'vertical'
                 ? firstRect.top < nextRect.bottom || lastRect.bottom > nextRect.top
                 : firstRect.right > nextRect.left || lastRect.left < nextRect.right;
               if (isOverlapping) {
-                nextMark.classList.add(`${this.props.cssClass}-mark_hidden`);
-                usedMarks.push(nextMark);
+                nextMark.classList.add(`${cssClass}-mark_hidden`);
+                checkedMarks.push(nextMark);
               } else {
-                nextMark.classList.remove(`${this.props.cssClass}-mark_hidden`);
+                nextMark.classList.remove(`${cssClass}-mark_hidden`);
               }
             }
           });
         }
-        usedMarks.push(firstMark);
-        usedMarks.push(lastMark);
+        checkedMarks.push(firstMark);
+        checkedMarks.push(lastMark);
       }
     }
   }
@@ -123,13 +135,11 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
     const { minTicksStep, minTicksGap } = this.props;
     let ticksStep = minTicksStep;
     this.setReferenceFrame(this.parent);
-    if (this.props.referenceFrame && minTicksGap) {
+    if (this.props.referenceFrame) {
       const { width, height } = this.props.referenceFrame;
-      if (this.props.orientation === 'vertical') {
-        ticksStep = Math.ceil((minTicksGap * this.props.pointsMap.length) / height);
-      } else {
-        ticksStep = Math.ceil((minTicksGap * this.props.pointsMap.length) / width);
-      }
+      ticksStep = this.props.orientation === 'vertical'
+        ? Math.ceil(((minTicksGap ?? 0) * this.props.pointsMap.length) / height)
+        : Math.ceil(((minTicksGap ?? 0) * this.props.pointsMap.length) / width);
     }
     if (ticksStep < minTicksStep) {
       ticksStep = minTicksStep;

@@ -202,7 +202,8 @@ class View extends Observable<IViewState> {
   }
 
   #addBars(ids: string[]): void {
-    if (this.#subViews.bars) {
+    const { bars } = this.#subViews;
+    if (bars) {
       const getFullId = (id: string) => {
         const fromMatch = id.match(/^(from)(.*)$/i);
         const toMatch = id.match(/^(to)(.*)$/i);
@@ -225,8 +226,9 @@ class View extends Observable<IViewState> {
           if (ids.includes(pairedId)) {
             usedIds.push(pairedId);
           }
-          if (this.#subViews.bars && combinedId) {
-            this.#subViews.bars[combinedId] = new BarView(
+          const isIdValid = bars && combinedId;
+          if (isIdValid) {
+            bars[combinedId] = new BarView(
               this.#subViews.track?.element ?? this.#subViews.wrapper.element,
               { cssClass: `${cssClass}__bar`, orientation },
             );
@@ -287,30 +289,30 @@ class View extends Observable<IViewState> {
   }
 
   #collideTooltips(currentId: string): void {
-    if (this.#subViews.tooltips && this.#subViews.knobs) {
-      const tooltips = Object.entries(this.#subViews.tooltips);
+    const { tooltips, knobs } = this.#subViews;
+    const isCollisionDefined = tooltips && knobs;
+    if (isCollisionDefined) {
+      const tooltipsEntries = Object.entries(tooltips);
       const collidedIdsSets: Set<string>[] = [];
-      tooltips.forEach(([tooltipId, tooltip]) => {
+      tooltipsEntries.forEach(([tooltipId, tooltip]) => {
         if (tooltip) {
           const currentRect = tooltip.element.getBoundingClientRect();
           const collidedIdsSet = new Set([tooltipId]);
-          tooltips.forEach(([nextTooltipId, nextTooltip]) => {
-            if (nextTooltip && nextTooltipId !== tooltipId) {
+          tooltipsEntries.forEach(([nextTooltipId, nextTooltip]) => {
+            const isNextTooltipDefined = nextTooltip && nextTooltipId !== tooltipId;
+            if (isNextTooltipDefined) {
               const nextRect = nextTooltip.element.getBoundingClientRect();
-              let isColliding = false;
-              if (this.#props.orientation === 'vertical') {
-                const isCollidingOnTop = currentRect.top < nextRect.bottom
-                  && currentRect.top > nextRect.top;
-                const isCollidingOnBottom = currentRect.bottom > nextRect.top
-                  && currentRect.bottom < nextRect.bottom;
-                isColliding = isCollidingOnTop || isCollidingOnBottom;
-              } else {
-                const isCollidingOnLeft = currentRect.left < nextRect.right
-                  && currentRect.left > nextRect.left;
-                const isCollidingOnRight = currentRect.right > nextRect.left
-                  && currentRect.right < nextRect.right;
-                isColliding = isCollidingOnLeft || isCollidingOnRight;
-              }
+              const isCollidingOnTop = currentRect.top < nextRect.bottom
+                && currentRect.top > nextRect.top;
+              const isCollidingOnBottom = currentRect.bottom > nextRect.top
+                && currentRect.bottom < nextRect.bottom;
+              const isCollidingOnLeft = currentRect.left < nextRect.right
+                && currentRect.left > nextRect.left;
+              const isCollidingOnRight = currentRect.right > nextRect.left
+                && currentRect.right < nextRect.right;
+              const isColliding = this.#props.orientation === 'vertical'
+                ? isCollidingOnTop || isCollidingOnBottom
+                : isCollidingOnLeft || isCollidingOnRight;
               if (isColliding) {
                 collidedIdsSet.add(nextTooltipId);
               }
@@ -341,46 +343,46 @@ class View extends Observable<IViewState> {
         if (idsArray.length > 1) {
           let mainId = '';
           let lastUsedId = idsArray
-            .find((tmpId) => this.#subViews.tooltips?.[tmpId]?.getState()?.lastUsed) ?? '';
+            .find((tmpId) => tooltips?.[tmpId]?.getState()?.lastUsed) ?? '';
           if (idsSet.has(currentId)) {
             mainId = currentId;
-            tooltips.forEach(([, tooltip]) => {
+            tooltipsEntries.forEach(([, tooltip]) => {
               if (tooltip?.getState()?.lastUsed) {
                 tooltip.setState({ lastUsed: false });
               }
             });
-            this.#subViews.tooltips?.[currentId]?.setState({ lastUsed: true });
+            tooltips?.[currentId]?.setState({ lastUsed: true });
           } else if (idsSet.has(lastUsedId)) {
             mainId = lastUsedId;
           } else {
             const positionsArray = idsArray
-              .map((tmpId) => this.#subViews.knobs?.[tmpId]?.getState()?.positionRatio ?? 0);
+              .map((tmpId) => knobs?.[tmpId]?.getState()?.positionRatio ?? 0);
             const closestPosition = getClosestNumber(
               positionsArray,
-              this.#subViews.knobs?.[currentId]?.getState()?.positionRatio ?? 0,
+              knobs?.[currentId]?.getState()?.positionRatio ?? 0,
             );
             lastUsedId = idsArray.find((tmpId) => (
-              this.#subViews.knobs?.[tmpId]?.getState()?.positionRatio === closestPosition)) ?? '';
+              knobs?.[tmpId]?.getState()?.positionRatio === closestPosition)) ?? '';
             if (lastUsedId !== '') {
               mainId = lastUsedId;
             }
           }
           const sortedIdsArray = idsArray.sort((id1, id2) => (
-            (this.#subViews.knobs?.[id1]?.getState()?.positionRatio ?? 0)
-              - (this.#subViews.knobs?.[id2]?.getState()?.positionRatio ?? 0)));
+            (knobs?.[id1]?.getState()?.positionRatio ?? 0)
+              - (knobs?.[id2]?.getState()?.positionRatio ?? 0)));
           const value = sortedIdsArray
-            .map((tmpId) => this.#subViews.tooltips?.[tmpId]?.getState()?.lastValue)
+            .map((tmpId) => tooltips?.[tmpId]?.getState()?.lastValue)
             .join(this.#props.tooltipsSeparator);
-          this.#subViews.tooltips?.[mainId]?.setState({ value, hidden: false });
+          tooltips?.[mainId]?.setState({ value, hidden: false });
           idsArray.forEach((tmpId) => {
             if (tmpId !== mainId) {
-              this.#subViews.tooltips?.[tmpId]?.setState({ hidden: true });
+              tooltips?.[tmpId]?.setState({ hidden: true });
             }
           });
         } else {
           const tmpId = idsArray[0];
-          this.#subViews.tooltips?.[tmpId]?.setState({
-            value: this.#subViews.tooltips[tmpId]?.getState()?.lastValue,
+          tooltips?.[tmpId]?.setState({
+            value: tooltips[tmpId]?.getState()?.lastValue,
             hidden: false,
           });
         }
@@ -392,7 +394,8 @@ class View extends Observable<IViewState> {
     method: T, arg?: ExtractMethodArgs<SubView, T>, subViews = this.#subViews,
   ): void {
     Object.values(subViews).forEach((subView) => {
-      if (subView instanceof SubView && typeof subView[method] === 'function') {
+      const isMethodValid = subView instanceof SubView && typeof subView[method] === 'function';
+      if (isMethodValid) {
         (subView[method] as ((tArg: typeof arg) => void)).call(subView, arg);
       } else if (typeof subView === 'object') {
         this.#callAllSubViews(method, arg, subView as ISubViews);
