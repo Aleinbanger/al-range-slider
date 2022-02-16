@@ -16,6 +16,7 @@ The second practical task for [MetaLamp](https://en.metalamp.io/education) Front
   * [Configuration](#Configuration)
     * [Configuration Object](#Configuration-Object)
     * [Default Configuration](#Default-Configuration)
+    * [Data Attributes Configuration](#Data-Attributes-Configuration)
   * [State Object](#State-Object)
   * [Public Methods](#Public-Methods)
 * [Contributing](#Contributing)
@@ -189,6 +190,26 @@ const defaults: IProps = {
   tooltipsSeparator: ' \u2192 ',
 };
 ```
+
+#### Data Attributes Configuration
+| Option                      | `data-*` attribute             | Type                         |
+|-----------------------------|--------------------------------|------------------------------|
+| `initialSelectedValues[ID]` | `data-value-ID`                | `number \| string`           |
+| `range.min`                 | `data-min`                     | `number`                     |
+| `range.max`                 | `data-max`                     | `number`                     |
+| `range.step`                | `data-step`                    | `number`                     |
+| `valuesArray`               | `data-values-array`            | `number[] \| string[]`       |
+| `valuesPrecision`           | `data-values-precision`        | `number`                     |
+| `collideKnobs`              | `data-collide-knobs`           | `boolean`                    |
+| `orientation`               | `data-orientation`             | `'horizontal' \| 'vertical'` |
+| `theme`                     | `data-theme`                   | `'light' \| 'dark'`          |
+| `grid.minTicksStep`         | `data-min-ticks-step`          | `number`                     |
+| `grid.marksStep`            | `data-marks-step`              | `number`                     |
+| `allowSmoothTransition`     | `data-allow-smooth-transition` | `boolean`                    |
+| `showInputs`                | `data-show-inputs`             | `boolean \| 'hidden'`        |
+| `showTooltips`              | `data-show-tooltips`           | `boolean`                    |
+| `collideTooltips`           | `data-collide-tooltips`        | `boolean`                    |
+| `tooltipsSeparator`         | `data-tooltips-separator`      | `string`                     |
 
 ### State Object
 The state object can be passed in callbacks to get the slider's state.
