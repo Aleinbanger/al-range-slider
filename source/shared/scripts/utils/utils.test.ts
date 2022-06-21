@@ -16,6 +16,8 @@ test('should return a deep clone', () => {
       date: new Date(),
       null: null,
     },
+    set: new Set([1, 2, 3]),
+    map: new Map([[1, 'one'], [2, 'two']]),
   };
   const objClone = cloneDeep(obj);
   expect(objClone.arr).toBeInstanceOf(Array);
@@ -28,6 +30,12 @@ test('should return a deep clone', () => {
   expect(objClone.subObj.subArr[2]).not.toBe(obj.subObj.subArr[2]);
   expect(objClone.subObj.date).toBeInstanceOf(Date);
   expect(objClone.subObj.date).not.toBe(obj.subObj.date);
+  expect(objClone.set).toBeInstanceOf(Set);
+  expect(objClone.set.has(2)).toBeTruthy();
+  expect(objClone.set).not.toBe(obj.set);
+  expect(objClone.map).toBeInstanceOf(Map);
+  expect(objClone.map.has(2)).toBeTruthy();
+  expect(objClone.map).not.toBe(obj.map);
 });
 
 test('should correctly filter the provided object', () => {

@@ -20,6 +20,17 @@ function cloneDeep<T>(target: T): T {
     const clone = [...target];
     return clone.map((value) => cloneDeep(value)) as unknown as T;
   }
+  if (target instanceof Set) {
+    const array = [...target];
+    return new Set(array.map((value) => cloneDeep(value))) as unknown as T;
+  }
+  if (target instanceof Map) {
+    const clone = new Map(target);
+    [...clone.keys()].forEach((key) => {
+      clone.set(key, cloneDeep(clone.get(key)));
+    });
+    return clone as unknown as T;
+  }
   const isTargetObject = typeof target === 'object' && target !== {};
   if (isTargetObject) {
     const clone = { ...target } as Record<string | number | symbol, unknown>;
