@@ -5,7 +5,7 @@ interface ITooltipViewState {
   lastValue?: string;
   active?: boolean;
   hidden?: boolean;
-  lastUsed?: boolean;
+  mergedWith?: Set<string>;
 }
 
 class TooltipView extends SubView<ITooltipViewState> {
@@ -21,7 +21,7 @@ class TooltipView extends SubView<ITooltipViewState> {
       lastValue: '',
       active: false,
       hidden: false,
-      lastUsed: false,
+      mergedWith: new Set(),
     };
   }
 

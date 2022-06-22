@@ -207,9 +207,6 @@ describe.each(propsCases)('%s', (_description, props) => {
       if (tooltipSpy) {
         const prettyValue = prettify?.(value) ?? value;
         expect(tooltipSpy).nthCalledWith(1, { value: prettyValue, lastValue: prettyValue });
-        if (collideTooltips) {
-          expect(tooltipSpy).nthCalledWith(2, { value: prettyValue, hidden: false });
-        }
       }
     });
 
@@ -219,8 +216,10 @@ describe.each(propsCases)('%s', (_description, props) => {
         const getValue = (from: string, to: string) => (
           (prettify?.(from) ?? from) + tooltipsSeparator + (prettify?.(to) ?? to)
         );
-        const initFromValue = '0';
-        const initToValue = '100';
+        const trackSize = 100;
+        const tooltipSize = 25;
+        const initFromPoint: [positionRatio: number, value: string] = [0, '0'];
+        const initToPoint: [positionRatio: number, value: string] = [1, '100'];
 
         beforeEach(() => {
           const { track } = subViews;
@@ -230,16 +229,26 @@ describe.each(propsCases)('%s', (_description, props) => {
           expect(tooltipFrom).toBeDefined();
           expect(tooltipTo).toBeDefined();
           if (orientation === 'vertical') {
-            mockElementDimensions(track!.element, { width: 10, height: 100 });
-            mockElementDimensions(tooltipFrom!.element, { width: 25, height: 25, y: 100 });
-            mockElementDimensions(tooltipTo!.element, { width: 25, height: 25, y: 0 });
+            mockElementDimensions(track!.element, { width: 10, height: trackSize });
+            mockElementDimensions(tooltipFrom!.element,
+              { width: tooltipSize, height: tooltipSize, y: (1 - initFromPoint[0]) * trackSize });
+            mockElementDimensions(tooltipTo!.element,
+              { width: tooltipSize, height: tooltipSize, y: (1 - initToPoint[0]) * trackSize });
           } else {
-            mockElementDimensions(track!.element, { width: 100, height: 10 });
-            mockElementDimensions(tooltipFrom!.element, { width: 25, height: 25, x: 0 });
-            mockElementDimensions(tooltipTo!.element, { width: 25, height: 25, x: 100 });
+            mockElementDimensions(track!.element, { width: trackSize, height: 10 });
+            mockElementDimensions(tooltipFrom!.element,
+              { width: tooltipSize, height: tooltipSize, x: initFromPoint[0] * trackSize });
+            mockElementDimensions(tooltipTo!.element,
+              { width: tooltipSize, height: tooltipSize, x: initToPoint[0] * trackSize });
           }
-          view.setState({ currentValue: ['from', initFromValue] });
-          view.setState({ currentValue: ['to', initToValue] });
+          view.setState({
+            currentPosition: ['from', initFromPoint[0]],
+            currentValue: ['from', initFromPoint[1]],
+          });
+          view.setState({
+            currentPosition: ['to', initToPoint[0]],
+            currentValue: ['to', initToPoint[1]],
+          });
         });
 
         test.each([
@@ -254,16 +263,22 @@ describe.each(propsCases)('%s', (_description, props) => {
           const tooltipActiveSpy = jest.spyOn(tooltipActive!, 'setState');
           const tooltipPassiveSpy = jest.spyOn(tooltipPassive!, 'setState');
           const expectedValue = activeId === 'from'
-            ? getValue(value, initToValue)
-            : getValue(initFromValue, value);
+            ? getValue(value, initToPoint[1])
+            : getValue(initFromPoint[1], value);
+          const positionRatio = orientation === 'vertical'
+            ? (1 - y / trackSize) : x / trackSize;
           if (orientation === 'vertical') {
-            mockElementDimensions(tooltipActive!.element, { width: 25, height: 25, y });
+            mockElementDimensions(tooltipActive!.element,
+              { width: tooltipSize, height: tooltipSize, y });
           } else {
-            mockElementDimensions(tooltipActive!.element, { width: 25, height: 25, x });
+            mockElementDimensions(tooltipActive!.element,
+              { width: tooltipSize, height: tooltipSize, x });
           }
-          view.setState({ currentValue: [activeId, value] });
-          expect(tooltipActiveSpy).nthCalledWith(2, { lastUsed: true });
-          expect(tooltipActiveSpy).nthCalledWith(3, { value: expectedValue, hidden: false });
+          view.setState({
+            currentPosition: [activeId, positionRatio],
+            currentValue: [activeId, value],
+          });
+          expect(tooltipActiveSpy).nthCalledWith(2, { value: expectedValue });
           expect(tooltipPassiveSpy).nthCalledWith(1, { hidden: true });
         });
       });

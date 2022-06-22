@@ -48,6 +48,7 @@ class Examples extends Component<IExamplesState> {
         },
         grid: { minTicksStep: 1, marksStep: 5 },
         orientation: 'vertical',
+        tooltipsSeparator: '; ',
         prettify: (value) => Number(value).toLocaleString(
           undefined, { style: 'currency', currency: 'USD' },
         ),

@@ -1,7 +1,7 @@
 import bind from 'bind-decorator';
 
 import Observable from 'shared/scripts/Observable/Observable';
-import { cloneDeep, getClosestNumber } from 'shared/scripts/utils/utils';
+import { cloneDeep } from 'shared/scripts/utils/utils';
 import { ExtractMethodsKeys, ExtractMethodArgs } from 'shared/scripts/utils/typeUtils';
 
 import SubView from './SubView/SubView';
@@ -288,105 +288,69 @@ class View extends Observable<IViewState> {
     }
   }
 
-  #collideTooltips(currentId: string): void {
+  #collideTooltips(currentId:string): void {
+    const { tooltips } = this.#subViews;
+    const resetTooltip = (tooltip?: TooltipView) => {
+      const value = tooltip?.getState()?.lastValue;
+      tooltip?.setState({ hidden: false, value, mergedWith: new Set() });
+    };
+    if (tooltips) {
+      const currentTooltip = tooltips[currentId];
+      const mergedTooltipsIds = currentTooltip?.getState()?.mergedWith;
+      const isCurrentTooltipMerged = currentTooltip
+        && mergedTooltipsIds && mergedTooltipsIds.size > 0;
+      if (isCurrentTooltipMerged) {
+        mergedTooltipsIds.delete(currentId);
+        mergedTooltipsIds.forEach((id) => {
+          resetTooltip(tooltips[id]);
+        });
+        resetTooltip(currentTooltip);
+        mergedTooltipsIds.forEach((id) => {
+          this.#checkTooltipsCollision(id, [...mergedTooltipsIds]);
+        });
+        this.#checkTooltipsCollision(currentId, [...mergedTooltipsIds]);
+      }
+      this.#checkTooltipsCollision(currentId, Object.keys(tooltips));
+    }
+  }
+
+  #checkTooltipsCollision(currentId: string, restIds: string[]): void {
     const { tooltips, knobs } = this.#subViews;
-    const isCollisionDefined = tooltips && knobs;
-    if (isCollisionDefined) {
-      const tooltipsEntries = Object.entries(tooltips);
-      const collidedIdsSets: Set<string>[] = [];
-      tooltipsEntries.forEach(([tooltipId, tooltip]) => {
-        if (tooltip) {
-          const currentRect = tooltip.element.getBoundingClientRect();
-          const collidedIdsSet = new Set([tooltipId]);
-          tooltipsEntries.forEach(([nextTooltipId, nextTooltip]) => {
-            const isNextTooltipDefined = nextTooltip && nextTooltipId !== tooltipId;
-            if (isNextTooltipDefined) {
-              const nextRect = nextTooltip.element.getBoundingClientRect();
-              const isCollidingOnTop = currentRect.top < nextRect.bottom
-                && currentRect.top > nextRect.top;
-              const isCollidingOnBottom = currentRect.bottom > nextRect.top
-                && currentRect.bottom < nextRect.bottom;
-              const isCollidingOnLeft = currentRect.left < nextRect.right
-                && currentRect.left > nextRect.left;
-              const isCollidingOnRight = currentRect.right > nextRect.left
-                && currentRect.right < nextRect.right;
-              const isColliding = this.#props.orientation === 'vertical'
-                ? isCollidingOnTop || isCollidingOnBottom
-                : isCollidingOnLeft || isCollidingOnRight;
-              if (isColliding) {
-                collidedIdsSet.add(nextTooltipId);
-              }
-            }
-          });
-          collidedIdsSets.push(collidedIdsSet);
-        }
-      });
-      const mergedCollidedIdsSets: Set<string>[] = [];
-      const usedCollidedIdsSets: Set<string>[] = [];
-      collidedIdsSets.forEach((idsSet) => {
-        if (!usedCollidedIdsSets.includes(idsSet)) {
-          let mergedCollidedIdsSet = new Set([...idsSet]);
-          collidedIdsSets.forEach((nextIdsSet) => {
-            if (idsSet !== nextIdsSet) {
-              const isIdDuplicated = [...idsSet].some((tmpSet) => nextIdsSet.has(tmpSet));
-              if (isIdDuplicated) {
-                mergedCollidedIdsSet = new Set([...mergedCollidedIdsSet, ...nextIdsSet]);
-                usedCollidedIdsSets.push(nextIdsSet);
-              }
-            }
-          });
-          mergedCollidedIdsSets.push(mergedCollidedIdsSet);
-        }
-      });
-      mergedCollidedIdsSets.forEach((idsSet) => {
-        const idsArray = [...idsSet];
-        if (idsArray.length > 1) {
-          let mainId = '';
-          let lastUsedId = idsArray
-            .find((tmpId) => tooltips?.[tmpId]?.getState()?.lastUsed) ?? '';
-          if (idsSet.has(currentId)) {
-            mainId = currentId;
-            tooltipsEntries.forEach(([, tooltip]) => {
-              if (tooltip?.getState()?.lastUsed) {
-                tooltip.setState({ lastUsed: false });
-              }
-            });
-            tooltips?.[currentId]?.setState({ lastUsed: true });
-          } else if (idsSet.has(lastUsedId)) {
-            mainId = lastUsedId;
-          } else {
-            const positionsArray = idsArray
-              .map((tmpId) => knobs?.[tmpId]?.getState()?.positionRatio ?? 0);
-            const closestPosition = getClosestNumber(
-              positionsArray,
-              knobs?.[currentId]?.getState()?.positionRatio ?? 0,
-            );
-            lastUsedId = idsArray.find((tmpId) => (
-              knobs?.[tmpId]?.getState()?.positionRatio === closestPosition)) ?? '';
-            if (lastUsedId !== '') {
-              mainId = lastUsedId;
-            }
-          }
-          const sortedIdsArray = idsArray.sort((id1, id2) => (
-            (knobs?.[id1]?.getState()?.positionRatio ?? 0)
-              - (knobs?.[id2]?.getState()?.positionRatio ?? 0)));
-          const value = sortedIdsArray
-            .map((tmpId) => tooltips?.[tmpId]?.getState()?.lastValue)
+    const currentTooltip = tooltips?.[currentId];
+    const currentRect = currentTooltip?.element.getBoundingClientRect();
+    const sortIds = (ids: string[]) => ids.sort((id1, id2) => (
+      (knobs?.[id1]?.getState()?.positionRatio ?? 0)
+        - (knobs?.[id2]?.getState()?.positionRatio ?? 0)));
+    // eslint-disable-next-line no-restricted-syntax
+    for (const nextId of sortIds(restIds)) {
+      const nextTooltip = tooltips?.[nextId];
+      const nextRect = nextTooltip?.element.getBoundingClientRect();
+      const isComparisonValid = currentId !== nextId && currentTooltip && currentRect
+        && nextTooltip && nextRect;
+      if (isComparisonValid) {
+        const isColliding = this.#props.orientation === 'vertical'
+          ? currentRect.top < nextRect.bottom && currentRect.bottom > nextRect.top
+          : currentRect.left < nextRect.right && currentRect.right > nextRect.left;
+        if (isColliding) {
+          const currentTooltipMergedWith = currentTooltip.getState()?.mergedWith;
+          const nextTooltipMergedWith = nextTooltip.getState()?.mergedWith;
+          currentTooltipMergedWith?.add(nextId);
+          nextTooltipMergedWith?.add(currentId);
+          const mergedWith = new Set([
+            ...(currentTooltipMergedWith ?? []),
+            ...(nextTooltipMergedWith ?? []),
+          ]);
+          const value = sortIds([...mergedWith])
+            .map((id) => tooltips?.[id]?.getState()?.lastValue)
             .join(this.#props.tooltipsSeparator);
-          tooltips?.[mainId]?.setState({ value, hidden: false });
-          idsArray.forEach((tmpId) => {
-            if (tmpId !== mainId) {
-              tooltips?.[tmpId]?.setState({ hidden: true });
-            }
+          currentTooltip.setState({ value });
+          nextTooltip.setState({ hidden: true });
+          mergedWith.forEach((id) => {
+            tooltips[id]?.setState({ mergedWith });
           });
-        } else {
-          const tmpId = idsArray[0];
-          tooltips?.[tmpId]?.setState({
-            value: tooltips[tmpId]?.getState()?.lastValue,
-            hidden: false,
-          });
+          break;
         }
-      });
+      }
     }
   }
 
