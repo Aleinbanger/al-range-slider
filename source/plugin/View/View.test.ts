@@ -133,7 +133,7 @@ describe.each(propsCases)('%s', (_description, props) => {
       const knob = subViews.knobs?.[id];
       expect(knob).toBeDefined();
       const knobSpy = jest.spyOn(knob!, 'setState');
-      const bar = subViews.bars?.fromto;
+      const bar = subViews.bars?.['from-to'];
       expect(bar).toBeDefined();
       const barSpy = jest.spyOn(bar!, 'setState');
       view.setState({ currentPosition: [id, positionRatio] });
@@ -322,7 +322,7 @@ describe.each(propsCases)('%s', (_description, props) => {
     ])('should notify observers about currentPosition change by knob with id "%s"', (id, positionRatio) => {
       const mockObserver = jest.fn(({ currentPosition }: IViewState) => currentPosition);
       initializeView(mockObserver);
-      const bar = subViews.bars?.fromto;
+      const bar = subViews.bars?.['from-to'];
       expect(bar).toBeDefined();
       const barSpy = jest.spyOn(bar!, 'setState');
       subViews.knobs?.[id]?.['notifyObservers']({ positionRatio });

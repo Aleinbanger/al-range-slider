@@ -204,54 +204,49 @@ class View extends Observable<IViewState> {
   #addBars(ids: string[]): void {
     const { bars } = this.#subViews;
     if (bars) {
-      const getFullId = (id: string) => {
-        const fromMatch = id.match(/^(from)(.*)$/i);
-        const toMatch = id.match(/^(to)(.*)$/i);
-        let pairedId = '';
-        let combinedId = '';
-        if (fromMatch) {
-          pairedId = `to${fromMatch[2]}`;
-          combinedId = `${id}${pairedId}`;
-        } else if (toMatch) {
-          pairedId = `from${toMatch[2]}`;
-          combinedId = `${pairedId}${id}`;
-        }
-        return { pairedId, combinedId };
-      };
       const { cssClass, orientation } = this.#props;
-      const usedIds: string[] = [];
-      ids.forEach((id) => {
-        if (!usedIds.includes(id)) {
-          const { pairedId, combinedId } = getFullId(id);
-          if (ids.includes(pairedId)) {
-            usedIds.push(pairedId);
-          }
-          const isIdValid = bars && combinedId;
-          if (isIdValid) {
-            bars[combinedId] = new BarView(
-              this.#subViews.track?.element ?? this.#subViews.wrapper.element,
-              { cssClass: `${cssClass}__bar`, orientation },
-            );
-          }
-        }
+      const fullIds = new Set(ids.map((id) => View.#getBarId(id)?.fullId ?? ''));
+      fullIds.delete('');
+      fullIds.forEach((id) => {
+        bars[id] = new BarView(
+          this.#subViews.track?.element ?? this.#subViews.wrapper.element,
+          { cssClass: `${cssClass}__bar`, orientation },
+        );
       });
     }
   }
 
   #updateBar([id, positionRatio]: [string, number]): void {
-    if (this.#subViews.bars) {
-      const fromMatch = id.match(/^(from)(.*)$/i);
-      const toMatch = id.match(/^(to)(.*)$/i);
-      if (fromMatch) {
-        const pairedId = `to${fromMatch[2]}`;
-        const combinedId = `${id}${pairedId}`;
-        this.#subViews.bars[combinedId]?.setState({ from: positionRatio });
-      } else if (toMatch) {
-        const pairedId = `from${toMatch[2]}`;
-        const combinedId = `${pairedId}${id}`;
-        this.#subViews.bars[combinedId]?.setState({ to: positionRatio });
-      }
+    const { bars } = this.#subViews;
+    const barId = View.#getBarId(id);
+    const isBarDefined = bars && barId;
+    if (isBarDefined) {
+      bars[barId.fullId]?.setState({ [barId.match]: positionRatio });
     }
+  }
+
+  static #getBarId(id: string): {
+    match: 'from';
+    fullId: string;
+  } | {
+    match: 'to';
+    fullId: string;
+  } | null {
+    const fromMatch = id.match(/^(from)(.*)$/i);
+    const toMatch = id.match(/^(to)(.*)$/i);
+    let pairedId = '';
+    let fullId = '';
+    if (fromMatch) {
+      pairedId = `to${fromMatch[2]}`;
+      fullId = `${id}-${pairedId}`;
+      return { match: 'from' as const, fullId };
+    }
+    if (toMatch) {
+      pairedId = `from${toMatch[2]}`;
+      fullId = `${pairedId}-${id}`;
+      return { match: 'to' as const, fullId };
+    }
+    return null;
   }
 
   #addInput(id: string): void {
