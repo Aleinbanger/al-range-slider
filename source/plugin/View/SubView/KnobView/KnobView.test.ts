@@ -2,7 +2,7 @@ import {
   mockElementDimensions, mockPointerEvent,
 } from 'shared/scripts/utils/jestUtils';
 
-import KnobView, { IKnobViewProps, IKnobViewState } from './KnobView';
+import KnobView, { IKnobViewProps, TKnobViewEvent } from './KnobView';
 
 let knob: KnobView;
 let parent: HTMLElement;
@@ -89,31 +89,21 @@ describe.each(propsCases)('%s', (_description, props) => {
       parent.remove();
     });
 
-    test('should notify observers about pointer positionRatio', () => {
-      const mockObserver = jest.fn(({ positionRatio }: IKnobViewState) => positionRatio);
+    test('should notify observers about active status and pointer positionRatio', () => {
+      const mockObserver = jest.fn(({ kind, data }: TKnobViewEvent) => [kind, data]);
       initializeKnob(mockObserver);
       mockPointerEvent(knob.element, { eventType: 'pointerdown' });
-      expect(mockObserver).nthReturnedWith(1, undefined);
+      expect(mockObserver).nthReturnedWith(1, ['knob active change', true]);
       if (props.orientation === 'vertical') {
         mockPointerEvent(knob.element, { eventType: 'pointermove', clientY: 100 });
-        expect(mockObserver).nthReturnedWith(2, 0.8);
+        expect(mockObserver).nthReturnedWith(2, ['knob position change', 0.8]);
       } else {
         mockPointerEvent(knob.element, { eventType: 'pointermove', clientX: 250 });
-        expect(mockObserver).nthReturnedWith(2, 0.5);
+        expect(mockObserver).nthReturnedWith(2, ['knob position change', 0.5]);
       }
       mockPointerEvent(knob.element, { eventType: 'pointerup' });
-      expect(mockObserver).nthReturnedWith(3, expect.any(Number));
-    });
-
-    test('should notify observers about active status', () => {
-      const mockObserver = jest.fn(({ active }: IKnobViewState) => active);
-      initializeKnob(mockObserver);
-      mockPointerEvent(knob.element, { eventType: 'pointerdown' });
-      expect(mockObserver).nthReturnedWith(1, true);
-      mockPointerEvent(knob.element, { eventType: 'pointermove' });
-      expect(mockObserver).nthReturnedWith(2, undefined);
-      mockPointerEvent(knob.element, { eventType: 'pointerup' });
-      expect(mockObserver).nthReturnedWith(3, false);
+      expect(mockObserver).nthReturnedWith(3, ['knob position change', expect.any(Number)]);
+      expect(mockObserver).nthReturnedWith(4, ['knob active change', false]);
     });
   });
 });

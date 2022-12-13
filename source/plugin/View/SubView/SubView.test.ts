@@ -10,7 +10,7 @@ const initializeMock = jest.fn();
 const addEventListenersMock = jest.fn();
 const renderStateMock = jest.fn((state: ITestViewState) => state);
 
-class TestView extends SubView<ITestViewState> {
+class TestView extends SubView<never, ITestViewState> {
   protected renderMarkup(): HTMLElement {
     const element = document.createElement('div');
     element.setAttribute('class', `${this.props.cssClass} js-${this.props.cssClass}`);

@@ -41,8 +41,8 @@ const initializePresenter = () => {
 };
 const testIfObserversExist = (doExist: boolean) => {
   if (doExist) {
-    expect(model?.getObserverNames().length).toBe(2);
-    expect(view?.getObserverNames().length).toBe(4);
+    expect(model?.getObserverNames().length).toBe(1);
+    expect(view?.getObserverNames().length).toBe(1);
   } else {
     expect(model?.getObserverNames().length).toBe(0);
     expect(view?.getObserverNames().length).toBe(0);
@@ -124,17 +124,17 @@ describe('general methods', () => {
 });
 
 describe('model observers', () => {
-  test('should handle currentPointLimits change', () => {
+  test('should handle position limits change', () => {
     const [id, limits] = ['to', { min: 0.1, max: 0.9 }];
     const viewSpy = jest.spyOn(view!, 'setState');
-    model?.['notifyObservers']({ currentPointLimits: [id, limits] });
+    model?.['notifyObservers']({ kind: 'position limits change', data: [id, limits] });
     expect(viewSpy).lastCalledWith({ currentPositionLimits: [id, limits] });
   });
 
-  test('should handle currentPoint change', () => {
+  test('should handle point change', () => {
     const [id, point]: [string, [number, number]] = ['to', [0, -100]];
     const viewSpy = jest.spyOn(view!, 'setState');
-    model?.['notifyObservers']({ currentPoint: [id, point] });
+    model?.['notifyObservers']({ kind: 'point change', data: [id, point] });
     expect(viewSpy).lastCalledWith({
       currentPosition: [id, point[0]],
       currentValue: [id, point[1]],
@@ -150,10 +150,10 @@ describe('view observers', () => {
   test.each([
     ['to', true],
     ['to', false],
-  ])('should handle currentActiveStatus change', (id, active) => {
+  ])('should handle active status change', (id, active) => {
     const viewSpy = jest.spyOn(view!, 'setState');
     const modelSpy = jest.spyOn(model!, 'selectPointLimits');
-    view?.['notifyObservers']({ currentActiveStatus: [id, active] });
+    view?.['notifyObservers']({ kind: 'active status change', data: [id, active] });
     expect(viewSpy).nthCalledWith(1, { currentActiveStatus: [id, active] });
     const state = presenter.getState();
     if (active) {
@@ -166,24 +166,24 @@ describe('view observers', () => {
     }
   });
 
-  test('should handle currentPosition change', () => {
+  test('should handle position change', () => {
     const [id, position] = ['to', 1];
     const modelSpy = jest.spyOn(model!, 'selectPointByPosition');
-    view?.['notifyObservers']({ currentPosition: [id, position] });
+    view?.['notifyObservers']({ kind: 'position change', data: [id, position] });
     expect(modelSpy).lastCalledWith([id, position]);
   });
 
-  test('should handle currentValue change', () => {
+  test('should handle value change', () => {
     const [id, value] = ['to', '100'];
     const modelSpy = jest.spyOn(model!, 'selectPointByValue');
-    view?.['notifyObservers']({ currentValue: [id, value] });
+    view?.['notifyObservers']({ kind: 'value change', data: [id, value] });
     expect(modelSpy).lastCalledWith([id, value]);
   });
 
-  test('should handle unknownPosition change', () => {
+  test('should handle unknown position change', () => {
     const unknownPosition = 1;
     const modelSpy = jest.spyOn(model!, 'selectPointByUnknownPosition');
-    view?.['notifyObservers']({ unknownPosition });
+    view?.['notifyObservers']({ kind: 'unknown position change', data: unknownPosition });
     expect(modelSpy).lastCalledWith(unknownPosition);
   });
 });

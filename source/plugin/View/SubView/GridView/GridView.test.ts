@@ -2,7 +2,7 @@ import {
   mockElementDimensions, mockPointerEvent,
 } from 'shared/scripts/utils/jestUtils';
 
-import GridView, { IGridViewProps, IGridViewState } from './GridView';
+import GridView, { IGridViewProps, TGridViewEvent } from './GridView';
 
 let grid: GridView;
 let parent: HTMLElement;
@@ -106,14 +106,14 @@ describe.each(propsCases)('%s', (_description, props) => {
     test.each([
       [0], [0.1], [0.5], [1],
     ])('should notify observers about positionRatio of the clicked mark with data-position="%f"', (position) => {
-      const mockObserver = jest.fn(({ positionRatio }: IGridViewState) => positionRatio);
+      const mockObserver = jest.fn(({ kind, data }: TGridViewEvent) => [kind, data]);
       initializeGrid(mockObserver);
       const mark = grid.element.querySelector(`[data-position="${position}"]`)
         ?.firstChild as HTMLElement;
       expect(mark).toBeDefined();
       mockPointerEvent(mark, { eventType: 'pointerdown' });
       mockPointerEvent(mark, { eventType: 'pointerup' });
-      expect(mockObserver).lastReturnedWith(position);
+      expect(mockObserver).lastReturnedWith(['grid position change', position]);
     });
   });
 });

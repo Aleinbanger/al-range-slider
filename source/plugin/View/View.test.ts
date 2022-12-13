@@ -4,7 +4,7 @@
 import { ExtractMethodsKeys } from 'shared/scripts/utils/typeUtils';
 import { mockElementDimensions } from 'shared/scripts/utils/jestUtils';
 
-import View, { IViewProps, IViewState, ISubViews } from './View';
+import View, { IViewProps, TViewEvent, ISubViews } from './View';
 import SubView from './SubView/SubView';
 
 let parent: HTMLElement;
@@ -291,14 +291,15 @@ describe.each(propsCases)('%s', (_description, props) => {
       parent.remove();
     });
 
+    const mockObserver = jest.fn(({ kind, data }: TViewEvent) => [kind, data]);
+
     test('should notify observers about unknownPosition change by track and gird', () => {
-      const mockObserver = jest.fn(({ unknownPosition }: IViewState) => unknownPosition);
       initializeView(mockObserver);
-      subViews.track?.['notifyObservers']({ positionRatio: 0 });
-      expect(mockObserver).nthReturnedWith(1, 0);
+      subViews.track?.['notifyObservers']({ kind: 'track position change', data: 0 });
+      expect(mockObserver).nthReturnedWith(1, ['unknown position change', 0]);
       if (grid) {
-        subViews.grid?.['notifyObservers']({ positionRatio: 0.5 });
-        expect(mockObserver).nthReturnedWith(2, 0.5);
+        subViews.grid?.['notifyObservers']({ kind: 'grid position change', data: 0.5 });
+        expect(mockObserver).nthReturnedWith(2, ['unknown position change', 0.5]);
       }
     });
 
@@ -306,13 +307,12 @@ describe.each(propsCases)('%s', (_description, props) => {
       ['from', false],
       ['to', true],
     ])('should notify observers about currentActiveStatus change by knob and input with id "%s"', (id, active) => {
-      const mockObserver = jest.fn(({ currentActiveStatus }: IViewState) => currentActiveStatus);
       initializeView(mockObserver);
-      subViews.knobs?.[id]?.['notifyObservers']({ active });
-      expect(mockObserver).nthReturnedWith(1, [id, active]);
+      subViews.knobs?.[id]?.['notifyObservers']({ kind: 'knob active change', data: active });
+      expect(mockObserver).nthReturnedWith(1, ['active status change', [id, active]]);
       if (showInputs) {
-        subViews.inputs?.[id]?.['notifyObservers']({ active });
-        expect(mockObserver).nthReturnedWith(2, [id, active]);
+        subViews.inputs?.[id]?.['notifyObservers']({ kind: 'input active change', data: active });
+        expect(mockObserver).nthReturnedWith(2, ['active status change', [id, active]]);
       }
     });
 
@@ -320,13 +320,12 @@ describe.each(propsCases)('%s', (_description, props) => {
       ['from', 0.1],
       ['to', 0.9],
     ])('should notify observers about currentPosition change by knob with id "%s"', (id, positionRatio) => {
-      const mockObserver = jest.fn(({ currentPosition }: IViewState) => currentPosition);
       initializeView(mockObserver);
       const bar = subViews.bars?.['from-to'];
       expect(bar).toBeDefined();
       const barSpy = jest.spyOn(bar!, 'setState');
-      subViews.knobs?.[id]?.['notifyObservers']({ positionRatio });
-      expect(mockObserver).lastReturnedWith([id, positionRatio]);
+      subViews.knobs?.[id]?.['notifyObservers']({ kind: 'knob position change', data: positionRatio });
+      expect(mockObserver).lastReturnedWith(['position change', [id, positionRatio]]);
       if (allowSmoothTransition) {
         expect(barSpy).lastCalledWith({ [id]: positionRatio });
       }
@@ -336,11 +335,10 @@ describe.each(propsCases)('%s', (_description, props) => {
       ['from', '10'],
       ['to', '100'],
     ])('should notify observers about currentValue change by input with id "%s"', (id, value) => {
-      const mockObserver = jest.fn(({ currentValue }: IViewState) => currentValue);
       initializeView(mockObserver);
       if (showInputs) {
-        subViews.inputs?.[id]?.['notifyObservers']({ value });
-        expect(mockObserver).lastReturnedWith([id, value]);
+        subViews.inputs?.[id]?.['notifyObservers']({ kind: 'input value change', data: value });
+        expect(mockObserver).lastReturnedWith(['value change', [id, value]]);
       }
     });
   });

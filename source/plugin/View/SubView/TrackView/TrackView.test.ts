@@ -3,7 +3,7 @@ import {
 } from 'shared/scripts/utils/jestUtils';
 
 import { ISubViewProps } from '../SubView';
-import TrackView, { ITrackViewState } from './TrackView';
+import TrackView, { TTrackViewEvent } from './TrackView';
 
 let track: TrackView;
 let parent: HTMLElement;
@@ -58,15 +58,15 @@ describe.each(propsCases)('%s', (_description, props) => {
     });
 
     test('should notify observers about pointer positionRatio', () => {
-      const mockObserver = jest.fn(({ positionRatio }: ITrackViewState) => positionRatio);
+      const mockObserver = jest.fn(({ kind, data }: TTrackViewEvent) => [kind, data]);
       initializeTrack(mockObserver);
       mockPointerEvent(track.element, { eventType: 'pointerdown' });
       if (props.orientation === 'vertical') {
         mockPointerEvent(track.element, { eventType: 'pointerup', clientY: 100 });
-        expect(mockObserver).lastReturnedWith(0.8);
+        expect(mockObserver).lastReturnedWith(['track position change', 0.8]);
       } else {
         mockPointerEvent(track.element, { eventType: 'pointerup', clientX: 500 });
-        expect(mockObserver).lastReturnedWith(1);
+        expect(mockObserver).lastReturnedWith(['track position change', 1]);
       }
     });
   });

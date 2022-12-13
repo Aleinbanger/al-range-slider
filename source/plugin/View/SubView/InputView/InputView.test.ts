@@ -1,4 +1,4 @@
-import InputView, { IInputViewProps, IInputViewState } from './InputView';
+import InputView, { IInputViewProps, TInputViewEvent } from './InputView';
 
 let input: InputView;
 let parent: HTMLElement;
@@ -77,21 +77,21 @@ describe.each(propsCases)('%s', (_description, props) => {
       parent.remove();
     });
 
+    const mockObserver = jest.fn(({ kind, data }: TInputViewEvent) => [kind, data]);
+
     test('should notify observers about active status', () => {
-      const mockObserver = jest.fn(({ active }: IInputViewState) => active);
       initializeInput(mockObserver);
       input.element.dispatchEvent(new FocusEvent('focus'));
-      expect(mockObserver).nthReturnedWith(1, true);
+      expect(mockObserver).nthReturnedWith(1, ['input active change', true]);
       input.element.dispatchEvent(new FocusEvent('blur'));
-      expect(mockObserver).nthReturnedWith(2, false);
+      expect(mockObserver).nthReturnedWith(2, ['input active change', false]);
     });
 
     test('should notify observers about value', () => {
-      const mockObserver = jest.fn(({ value }: IInputViewState) => value);
       initializeInput(mockObserver);
       input.element.value = '100';
       input.element.dispatchEvent(new Event('change', { bubbles: true }));
-      expect(mockObserver).lastReturnedWith('100');
+      expect(mockObserver).lastReturnedWith(['input value change', '100']);
     });
   });
 });

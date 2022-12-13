@@ -1,4 +1,4 @@
-import Model, { IModelProps, IModelData } from './Model';
+import Model, { IModelProps, TModelEvent } from './Model';
 
 enum PropsCasesDescription {
   Range = 'initialized from range',
@@ -90,9 +90,10 @@ describe.each(propsCases)('%s', (description, props) => {
   });
 
   describe('notifying methods', () => {
+    const mockObserver = jest.fn(({ kind, data }: TModelEvent) => [kind, data]);
+
     describe('select point limits', () => {
       const model = new Model(props);
-      const mockObserver = jest.fn(({ currentPointLimits }: IModelData) => currentPointLimits);
       model.addObserver(mockObserver);
 
       const idCasesMap: Record<PropsCasesDescription, [
@@ -111,18 +112,15 @@ describe.each(propsCases)('%s', (description, props) => {
       ) => {
         model.selectPointLimits(id);
         const { selectedPointsLimits } = model.getState();
-        const observerResult = mockObserver.mock.results[0].value as IModelData['currentPointLimits'];
-        expect(selectedPointsLimits[id].min).toBe(stateMin);
-        expect(selectedPointsLimits[id].max).toBe(stateMax);
-        expect(observerResult?.[0]).toBe(id);
-        expect(observerResult?.[1].min).toBe(observerMin);
-        expect(observerResult?.[1].max).toBe(observerMax);
+        expect(selectedPointsLimits[id]).toEqual({ min: stateMin, max: stateMax });
+        expect(mockObserver).lastReturnedWith(
+          ['position limits change', [id, { min: observerMin, max: observerMax }]],
+        );
       });
     });
 
     describe('select point by current position', () => {
       const model = new Model(props);
-      const mockObserver = jest.fn(({ currentPoint }: IModelData) => currentPoint);
       model.addObserver(mockObserver);
 
       const idCasesMap: Record<PropsCasesDescription, [
@@ -142,18 +140,13 @@ describe.each(propsCases)('%s', (description, props) => {
         model.selectPointLimits(id);
         model.selectPointByPosition([id, inputPositionRatio]);
         const { selectedPoints } = model.getState();
-        const observerResult = mockObserver.mock.results[1].value as IModelData['currentPoint'];
-        expect(selectedPoints[id][0]).toBe(outputPositionRatio);
-        expect(selectedPoints[id][1]).toBe(value);
-        expect(observerResult?.[0]).toBe(id);
-        expect(observerResult?.[1][0]).toBe(selectedPoints[id][0]);
-        expect(observerResult?.[1][1]).toBe(selectedPoints[id][1]);
+        expect(selectedPoints[id]).toEqual([outputPositionRatio, value]);
+        expect(mockObserver).lastReturnedWith(['point change', [id, selectedPoints[id]]]);
       });
     });
 
     describe('select point by unknown position', () => {
       const model = new Model(props);
-      const mockObserver = jest.fn(({ currentPoint }: IModelData) => currentPoint);
       model.addObserver(mockObserver);
 
       const idCasesMap: Record<PropsCasesDescription, [
@@ -172,25 +165,20 @@ describe.each(propsCases)('%s', (description, props) => {
       ) => {
         model.selectPointByUnknownPosition(inputPositionRatio);
         const { selectedPoints } = model.getState();
-        const observerResult = mockObserver.mock.results[1].value as IModelData['currentPoint'];
-        expect(selectedPoints[id][0]).toBe(outputPositionRatio);
-        expect(selectedPoints[id][1]).toBe(value);
-        expect(observerResult?.[0]).toBe(id);
-        expect(observerResult?.[1][0]).toBe(selectedPoints[id][0]);
-        expect(observerResult?.[1][1]).toBe(selectedPoints[id][1]);
+        expect(selectedPoints[id]).toEqual([outputPositionRatio, value]);
+        expect(mockObserver).lastReturnedWith(['point change', [id, selectedPoints[id]]]);
       });
     });
 
     describe('select point by current value', () => {
       const model = new Model(props);
-      const mockObserver = jest.fn(({ currentPoint }: IModelData) => currentPoint);
       model.addObserver(mockObserver);
 
       const idCasesMap: Record<PropsCasesDescription, [
         id: string,
         positionRatio: number,
         inputValue: number | string, outputValue: number | string,
-      ][] > = {
+      ][]> = {
         [PropsCasesDescription.Range]: [['from', 0.255, -24.55, -24.5], ['to', 0.75, 24.9, 25], ['from', 0.745, 50, 24.5]],
         [PropsCasesDescription.NumberArray]: [['from', 0.01, 2, 1], ['to', 0.53, 50, 53], ['from', 0.34, 100, 34]],
         [PropsCasesDescription.StringArray]: [['from', 0.1, 'asd', 'asd'], ['to', 0.6, '1a', '1a'], ['from', 0.5, '2a', 'edc']],
@@ -203,12 +191,8 @@ describe.each(propsCases)('%s', (description, props) => {
         model.selectPointLimits(id);
         model.selectPointByValue([id, inputValue]);
         const { selectedPoints } = model.getState();
-        const observerResult = mockObserver.mock.results[1].value as IModelData['currentPoint'];
-        expect(selectedPoints[id][0]).toBe(positionRatio);
-        expect(selectedPoints[id][1]).toBe(outputValue);
-        expect(observerResult?.[0]).toBe(id);
-        expect(observerResult?.[1][0]).toBe(selectedPoints[id][0]);
-        expect(observerResult?.[1][1]).toBe(selectedPoints[id][1]);
+        expect(selectedPoints[id]).toEqual([positionRatio, outputValue]);
+        expect(mockObserver).lastReturnedWith(['point change', [id, selectedPoints[id]]]);
       });
     });
   });
