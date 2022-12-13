@@ -10,17 +10,18 @@ interface ISubViewProps extends ICommonViewProps {
 }
 
 abstract class SubView<
-  TState = undefined,
+  TEvent = never,
+  TState = never,
   TProps extends ISubViewProps = ISubViewProps,
   TElement extends HTMLElement = HTMLElement,
-> extends Observable<TState> {
+> extends Observable<TEvent> {
   public readonly element: TElement;
 
   protected readonly parent: HTMLElement;
 
   protected readonly props: TProps;
 
-  protected state?: TState;
+  protected state!: TState;
 
   constructor(parent: HTMLElement, props: TProps) {
     super();
@@ -44,7 +45,7 @@ abstract class SubView<
     }
   }
 
-  public getState(): TState | undefined {
+  public getState(): TState {
     return cloneDeep(this.state);
   }
 

@@ -6,13 +6,13 @@ import { ExtractMethodsKeys, ExtractMethodArgs } from 'shared/scripts/utils/type
 
 import SubView from './SubView/SubView';
 import WrapperView from './SubView/WrapperView/WrapperView';
-import TrackView, { ITrackViewState } from './SubView/TrackView/TrackView';
-import GridView, { IGridViewState } from './SubView/GridView/GridView';
-import KnobView, { IKnobViewState } from './SubView/KnobView/KnobView';
+import TrackView, { TTrackViewEvent } from './SubView/TrackView/TrackView';
+import GridView, { TGridViewEvent } from './SubView/GridView/GridView';
+import KnobView, { TKnobViewEvent } from './SubView/KnobView/KnobView';
 import BarView from './SubView/BarView/BarView';
-import InputView, { IInputViewState } from './SubView/InputView/InputView';
+import InputView, { TInputViewEvent } from './SubView/InputView/InputView';
 import TooltipView from './SubView/TooltipView/TooltipView';
-import { IViewProps, IViewState } from './ViewTypes';
+import { IViewProps, IViewState, TViewEvent } from './ViewTypes';
 
 require('./View.scss');
 
@@ -26,7 +26,7 @@ interface ISubViews {
   tooltips?: Record<string, TooltipView | undefined>;
 }
 
-class View extends Observable<IViewState> {
+class View extends Observable<TViewEvent> {
   readonly #parent: HTMLElement;
 
   readonly #props: IViewProps;
@@ -116,7 +116,7 @@ class View extends Observable<IViewState> {
       this.#subViews.wrapper.element,
       { cssClass: `${cssClass}__track`, orientation },
     );
-    this.#subViews.track.addObserver(this.handleTrackPositionChange);
+    this.#subViews.track.addObserver(this.handleTrackGridChange);
     if (grid) {
       const { pointsMap, minTicksStep, marksStep } = grid;
       this.#subViews.grid = new GridView(
@@ -130,7 +130,7 @@ class View extends Observable<IViewState> {
           prettify,
         },
       );
-      this.#subViews.grid.addObserver(this.handleTrackPositionChange);
+      this.#subViews.grid.addObserver(this.handleTrackGridChange);
     }
 
     this.#subViews.knobs = {};
@@ -150,10 +150,11 @@ class View extends Observable<IViewState> {
   }
 
   @bind
-  private handleTrackPositionChange({ positionRatio }:
-  ITrackViewState | IGridViewState): void {
-    if (typeof positionRatio !== 'undefined') {
-      this.notifyObservers({ unknownPosition: positionRatio });
+  private handleTrackGridChange(event: TTrackViewEvent | TGridViewEvent): void {
+    const { kind, data } = event;
+    const isEventCorrect = kind === 'track position change' || kind === 'grid position change';
+    if (isEventCorrect) {
+      this.notifyObservers({ kind: 'unknown position change', data });
     }
   }
 
@@ -164,24 +165,27 @@ class View extends Observable<IViewState> {
         this.#subViews.track?.element ?? this.#subViews.wrapper.element,
         { cssClass: `${cssClass}__knob`, orientation, allowSmoothTransition },
       );
-      this.#subViews.knobs[id]?.addObserver(this.handleKnobActiveStatusChange.bind(this, id));
-      this.#subViews.knobs[id]?.addObserver(this.handleKnobPositionChange.bind(this, id));
+      this.#subViews.knobs[id]?.addObserver(this.handleKnobChange.bind(this, id));
     }
   }
 
-  private handleKnobActiveStatusChange(id: string, { active }:
-  IKnobViewState | IInputViewState): void {
-    if (typeof active !== 'undefined') {
-      this.notifyObservers({ currentActiveStatus: [id, active] });
-    }
-  }
-
-  private handleKnobPositionChange(id: string, { positionRatio }: IKnobViewState): void {
-    if (typeof positionRatio !== 'undefined') {
-      this.notifyObservers({ currentPosition: [id, positionRatio] });
-      if (this.#props.allowSmoothTransition) {
-        this.#updateBar([id, positionRatio]);
+  private handleKnobChange(id: string, event: TKnobViewEvent): void {
+    switch (event.kind) {
+      case 'knob active change': {
+        const active = event.data;
+        this.notifyObservers({ kind: 'active status change', data: [id, active] });
+        break;
       }
+      case 'knob position change': {
+        const positionRatio = event.data;
+        this.notifyObservers({ kind: 'position change', data: [id, positionRatio] });
+        if (this.#props.allowSmoothTransition) {
+          this.#updateBar([id, positionRatio]);
+        }
+        break;
+      }
+      default:
+        break;
     }
   }
 
@@ -234,16 +238,14 @@ class View extends Observable<IViewState> {
   } | null {
     const fromMatch = id.match(/^(from)(.*)$/i);
     const toMatch = id.match(/^(to)(.*)$/i);
-    let pairedId = '';
-    let fullId = '';
     if (fromMatch) {
-      pairedId = `to${fromMatch[2]}`;
-      fullId = `${id}-${pairedId}`;
+      const pairedId = `to${fromMatch[2]}`;
+      const fullId = `${id}-${pairedId}`;
       return { match: 'from' as const, fullId };
     }
     if (toMatch) {
-      pairedId = `from${toMatch[2]}`;
-      fullId = `${pairedId}-${id}`;
+      const pairedId = `from${toMatch[2]}`;
+      const fullId = `${pairedId}-${id}`;
       return { match: 'to' as const, fullId };
     }
     return null;
@@ -262,14 +264,24 @@ class View extends Observable<IViewState> {
           hidden,
         },
       );
-      this.#subViews.inputs[id]?.addObserver(this.handleKnobActiveStatusChange.bind(this, id));
-      this.#subViews.inputs[id]?.addObserver(this.handleInputValueChange.bind(this, id));
+      this.#subViews.inputs[id]?.addObserver(this.handleInputChange.bind(this, id));
     }
   }
 
-  private handleInputValueChange(id: string, { value }: IInputViewState): void {
-    if (typeof value !== 'undefined') {
-      this.notifyObservers({ currentValue: [id, value] });
+  private handleInputChange(id: string, event: TInputViewEvent): void {
+    switch (event.kind) {
+      case 'input active change': {
+        const active = event.data;
+        this.notifyObservers({ kind: 'active status change', data: [id, active] });
+        break;
+      }
+      case 'input value change': {
+        const value = event.data;
+        this.notifyObservers({ kind: 'value change', data: [id, value] });
+        break;
+      }
+      default:
+        break;
     }
   }
 
@@ -363,5 +375,7 @@ class View extends Observable<IViewState> {
   }
 }
 
-export type { IViewProps, IViewState, ISubViews };
+export type {
+  IViewProps, IViewState, ISubViews, TViewEvent,
+};
 export default View;

@@ -4,7 +4,11 @@ type TPointValue = number | string;
 
 type TPoint = [position: number, value: TPointValue];
 
-type TCurrentPoint = [id: string, point: TPoint];
+type TSelectedPoint = [id: string, point: TPoint];
+
+type TPositionLimits = { min: number; max: number };
+
+type TSelectedPositionLimits = [id: string, limits: TPositionLimits];
 
 interface IModelProps {
   readonly initialSelectedValues: Record<string, TPointValue>;
@@ -25,18 +29,26 @@ interface IModelProps {
 
 interface IModelState {
   selectedPoints: Record<string, TPoint>;
-  selectedPointsLimits: Record<string, { min: number; max: number }>;
+  selectedPointsLimits: Record<string, TPositionLimits>;
 }
 
-interface IModelData {
-  currentPoint?: TCurrentPoint;
-  currentPointLimits?: [id: string, limits: { min: number; max: number }];
-}
+type TPointEvent = {
+  kind: 'point change';
+  data: TSelectedPoint;
+};
+
+type TPositionLimitsEvent = {
+  kind: 'position limits change';
+  data: TSelectedPositionLimits;
+};
+
+type TModelEvent = TPointEvent | TPositionLimitsEvent;
 
 export type {
   TPointValue,
-  TCurrentPoint,
+  TSelectedPoint,
+  TSelectedPositionLimits,
   IModelProps,
   IModelState,
-  IModelData,
+  TModelEvent,
 };

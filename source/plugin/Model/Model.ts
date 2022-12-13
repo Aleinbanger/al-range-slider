@@ -10,13 +10,13 @@ import {
 
 import {
   TPointValue,
-  TCurrentPoint,
+  TSelectedPoint,
   IModelProps,
   IModelState,
-  IModelData,
+  TModelEvent,
 } from './ModelTypes';
 
-class Model extends Observable<IModelData> {
+class Model extends Observable<TModelEvent> {
   readonly #props: IModelProps;
 
   #state: IModelState;
@@ -35,7 +35,7 @@ class Model extends Observable<IModelData> {
     return cloneDeep(this.#state);
   }
 
-  public getSelectedPoints(): TCurrentPoint[] {
+  public getSelectedPoints(): TSelectedPoint[] {
     const selectedPoints = Object.entries(this.#state.selectedPoints);
     return selectedPoints.sort(([, point1], [, point2]) => point1[0] - point2[0]);
   }
@@ -85,7 +85,7 @@ class Model extends Observable<IModelData> {
     } else {
       throw new Error('Neither "range" nor "pointsMap" is defined');
     }
-    this.notifyObservers({ currentPoint: [id, this.#state.selectedPoints[id]] });
+    this.notifyObservers({ kind: 'point change', data: [id, this.#state.selectedPoints[id]] });
   }
 
   public selectPointByValue([id, value]: [string, TPointValue]): void | never {
@@ -111,7 +111,7 @@ class Model extends Observable<IModelData> {
         }
       }
     }
-    this.notifyObservers({ currentPoint: [id, this.#state.selectedPoints[id]] });
+    this.notifyObservers({ kind: 'point change', data: [id, this.#state.selectedPoints[id]] });
   }
 
   public selectPointLimits(id: string): void {
@@ -122,7 +122,7 @@ class Model extends Observable<IModelData> {
         newMin, newMax, min, max,
       } = this.#getMinMaxPositions(selectedPoints, currentIndex);
       this.#state.selectedPointsLimits[id] = { min: newMin, max: newMax };
-      this.notifyObservers({ currentPointLimits: [id, { min, max }] });
+      this.notifyObservers({ kind: 'position limits change', data: [id, { min, max }] });
     }
   }
 
@@ -266,7 +266,7 @@ class Model extends Observable<IModelData> {
     }
   }
 
-  #getMinMaxPositions(selectedPoints: TCurrentPoint[], currentIndex: number): {
+  #getMinMaxPositions(selectedPoints: TSelectedPoint[], currentIndex: number): {
     min: number; max: number; newMin: number; newMax: number;
   } {
     let min = 0; let newMin = min;
@@ -363,5 +363,5 @@ class Model extends Observable<IModelData> {
   }
 }
 
-export type { IModelProps, IModelState, IModelData };
+export type { IModelProps, IModelState, TModelEvent };
 export default Model;

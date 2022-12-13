@@ -12,7 +12,16 @@ interface IInputViewState {
   active?: boolean;
 }
 
-class InputView extends SubView<IInputViewState, IInputViewProps, HTMLInputElement> {
+type TInputViewEvent = {
+  kind: 'input value change';
+  data: NonNullable<IInputViewState['value']>;
+} | {
+  kind: 'input active change';
+  data: NonNullable<IInputViewState['active']>;
+};
+
+class InputView extends SubView<
+TInputViewEvent, IInputViewState, IInputViewProps, HTMLInputElement> {
   public override disable(disabled = true): void {
     super.disable(disabled);
     this.element.disabled = disabled;
@@ -52,20 +61,20 @@ class InputView extends SubView<IInputViewState, IInputViewProps, HTMLInputEleme
 
   @bind
   private handleInputFocus(): void {
-    this.notifyObservers({ active: true });
+    this.notifyObservers({ kind: 'input active change', data: true });
   }
 
   @bind
   private handleInputBlur(): void {
-    this.notifyObservers({ active: false });
+    this.notifyObservers({ kind: 'input active change', data: false });
   }
 
   @bind
   private handleInputChange(event: Event): void {
     const { value } = event.currentTarget as HTMLInputElement;
-    this.notifyObservers({ value });
+    this.notifyObservers({ kind: 'input value change', data: value });
   }
 }
 
-export type { IInputViewProps, IInputViewState };
+export type { IInputViewProps, IInputViewState, TInputViewEvent };
 export default InputView;

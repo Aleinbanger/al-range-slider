@@ -5,7 +5,7 @@ interface IBarViewState {
   to?: number;
 }
 
-class BarView extends SubView<IBarViewState> {
+class BarView extends SubView<never, IBarViewState> {
   protected renderMarkup(): HTMLElement {
     const element = document.createElement('span');
     element.setAttribute('class', `${this.props.cssClass} js-${this.props.cssClass}`);

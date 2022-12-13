@@ -1,6 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 
-import { TPointValue } from '../Model/ModelTypes';
+import { TPointValue, TSelectedPositionLimits } from '../Model/ModelTypes';
 
 type TOrientation = 'horizontal' | 'vertical';
 
@@ -39,12 +39,33 @@ interface IViewProps extends ICommonViewProps {
 interface IViewState {
   selectedValues?: Record<string, TPointValue>;
   selectedPrettyValues?: Record<string, string>;
+  currentPositionLimits?: TSelectedPositionLimits;
   currentPosition?: [id: string, position: number];
-  currentPositionLimits?: [id: string, limits: { min: number; max: number }];
-  currentActiveStatus?: [id: string, active: boolean];
   currentValue?: [id: string, value: TPointValue];
-  unknownPosition?: number;
+  currentActiveStatus?: [id: string, active: boolean];
 }
+
+type TPositionEvent = {
+  kind: 'position change';
+  data: NonNullable<IViewState['currentPosition']>;
+};
+
+type TValueEvent = {
+  kind: 'value change';
+  data: NonNullable<IViewState['currentValue']>;
+};
+
+type TActiveStatusEvent = {
+  kind: 'active status change';
+  data: NonNullable<IViewState['currentActiveStatus']>;
+};
+
+type TUnknownPositionEvent = {
+  kind: 'unknown position change';
+  data: number;
+};
+
+type TViewEvent = TPositionEvent | TValueEvent | TActiveStatusEvent | TUnknownPositionEvent;
 
 export type {
   TOrientation,
@@ -54,4 +75,5 @@ export type {
   ICommonViewProps,
   IViewProps,
   IViewState,
+  TViewEvent,
 };

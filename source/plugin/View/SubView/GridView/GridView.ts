@@ -15,10 +15,14 @@ interface IGridViewProps extends ISubViewProps {
 
 interface IGridViewState {
   ticksStep?: number;
-  positionRatio?: number;
 }
 
-class GridView extends SubView<IGridViewState, IGridViewProps> {
+type TGridViewEvent = {
+  kind: 'grid position change';
+  data: number;
+};
+
+class GridView extends SubView<TGridViewEvent, IGridViewState, IGridViewProps> {
   public override destroy(): void {
     super.destroy();
     window.removeEventListener('resize', this.handleWindowResize);
@@ -168,12 +172,12 @@ class GridView extends SubView<IGridViewState, IGridViewProps> {
     if (target.classList.contains(`js-${this.props.cssClass}-mark`)) {
       const positionRatio = Number(target.parentElement?.dataset.position);
       if (!Number.isNaN(positionRatio)) {
-        this.notifyObservers({ positionRatio });
+        this.notifyObservers({ kind: 'grid position change', data: positionRatio });
       }
     }
     this.element.removeEventListener('pointerup', this.handleGridPointerUp);
   }
 }
 
-export type { IGridViewProps, IGridViewState };
+export type { IGridViewProps, IGridViewState, TGridViewEvent };
 export default GridView;

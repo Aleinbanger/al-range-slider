@@ -2,8 +2,8 @@ import bind from 'bind-decorator';
 
 import { cloneDeep, filterObject } from 'shared/scripts/utils/utils';
 
-import Model, { IModelData } from '../Model/Model';
-import View, { IViewState } from '../View/View';
+import Model, { TModelEvent } from '../Model/Model';
+import View, { TViewEvent } from '../View/View';
 import { IProps, IState, IData } from './PresenterTypes';
 
 class Presenter {
@@ -126,78 +126,69 @@ class Presenter {
   }
 
   #addObservers(): void {
-    this.#model?.addObserver(this.handleCurrentPointLimitsChange);
-    this.#model?.addObserver(this.handleCurrentPointChange);
-    this.#view?.addObserver(this.handleCurrentActiveStatusChange);
-    this.#view?.addObserver(this.handleCurrentPositionChange);
-    this.#view?.addObserver(this.handleCurrentValueChange);
-    this.#view?.addObserver(this.handleUnknownPositionChange);
+    this.#model?.addObserver(this.handleModelChange);
+    this.#view?.addObserver(this.handleViewChange);
   }
 
   #removeObservers(): void {
-    this.#model?.removeObserver(this.handleCurrentPointLimitsChange);
-    this.#model?.removeObserver(this.handleCurrentPointChange);
-    this.#view?.removeObserver(this.handleCurrentActiveStatusChange);
-    this.#view?.removeObserver(this.handleCurrentPositionChange);
-    this.#view?.removeObserver(this.handleCurrentValueChange);
-    this.#view?.removeObserver(this.handleUnknownPositionChange);
+    this.#model?.removeObserver(this.handleModelChange);
+    this.#view?.removeObserver(this.handleViewChange);
   }
 
   @bind
-  private handleCurrentPointLimitsChange({ currentPointLimits }: IModelData): void {
-    if (currentPointLimits) {
-      this.#view?.setState({ currentPositionLimits: currentPointLimits });
-    }
-  }
-
-  @bind
-  private handleCurrentPointChange({ currentPoint }: IModelData): void {
-    if (currentPoint) {
-      const [id, point] = currentPoint;
-      this.#view?.setState({
-        currentPosition: [id, point[0]],
-        currentValue: [id, point[1]],
-      });
-      if (typeof this.#props.onChange === 'function') {
-        this.#props.onChange.call(this, this.getState());
+  private handleModelChange(event: TModelEvent): void {
+    switch (event.kind) {
+      case 'position limits change': {
+        this.#view?.setState({ currentPositionLimits: event.data });
+        break;
       }
-    }
-  }
-
-  @bind
-  private handleCurrentActiveStatusChange({ currentActiveStatus }: IViewState): void {
-    if (currentActiveStatus) {
-      const [id, active] = currentActiveStatus;
-      this.#view?.setState({ currentActiveStatus });
-      if (active) {
-        this.#model?.selectPointLimits(id);
-        if (typeof this.#props.onStart === 'function') {
-          this.#props.onStart.call(this, this.getState());
+      case 'point change': {
+        const [id, point] = event.data;
+        this.#view?.setState({
+          currentPosition: [id, point[0]],
+          currentValue: [id, point[1]],
+        });
+        if (typeof this.#props.onChange === 'function') {
+          this.#props.onChange.call(this, this.getState());
         }
-      } else if (typeof this.#props.onFinish === 'function') {
-        this.#props.onFinish.call(this, this.getState());
+        break;
       }
+      default:
+        break;
     }
   }
 
   @bind
-  private handleCurrentPositionChange({ currentPosition }: IViewState): void {
-    if (currentPosition) {
-      this.#model?.selectPointByPosition(currentPosition);
-    }
-  }
-
-  @bind
-  private handleCurrentValueChange({ currentValue }: IViewState): void {
-    if (currentValue) {
-      this.#model?.selectPointByValue(currentValue);
-    }
-  }
-
-  @bind
-  private handleUnknownPositionChange({ unknownPosition }: IViewState): void {
-    if (typeof unknownPosition !== 'undefined') {
-      this.#model?.selectPointByUnknownPosition(unknownPosition);
+  private handleViewChange(event: TViewEvent): void {
+    switch (event.kind) {
+      case 'active status change': {
+        const currentActiveStatus = event.data;
+        const [id, active] = currentActiveStatus;
+        this.#view?.setState({ currentActiveStatus });
+        if (active) {
+          this.#model?.selectPointLimits(id);
+          if (typeof this.#props.onStart === 'function') {
+            this.#props.onStart.call(this, this.getState());
+          }
+        } else if (typeof this.#props.onFinish === 'function') {
+          this.#props.onFinish.call(this, this.getState());
+        }
+        break;
+      }
+      case 'position change': {
+        this.#model?.selectPointByPosition(event.data);
+        break;
+      }
+      case 'value change': {
+        this.#model?.selectPointByValue(event.data);
+        break;
+      }
+      case 'unknown position change': {
+        this.#model?.selectPointByUnknownPosition(event.data);
+        break;
+      }
+      default:
+        break;
     }
   }
 }

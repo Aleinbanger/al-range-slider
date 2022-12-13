@@ -5,7 +5,7 @@ interface IWrapperViewProps extends ISubViewProps {
   readonly theme: TTheme;
 }
 
-class WrapperView extends SubView<undefined, IWrapperViewProps> {
+class WrapperView extends SubView<never, never, IWrapperViewProps> {
   protected renderMarkup(): HTMLElement {
     const { cssClass, orientation, theme } = this.props;
     const element = document.createElement('div');

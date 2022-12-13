@@ -16,7 +16,15 @@ interface IKnobViewState {
   zIndex?: number;
 }
 
-class KnobView extends SubView<IKnobViewState, IKnobViewProps> {
+type TKnobViewEvent = {
+  kind: 'knob position change';
+  data: NonNullable<IKnobViewState['positionRatio']>;
+} | {
+  kind: 'knob active change';
+  data: NonNullable<IKnobViewState['active']>;
+};
+
+class KnobView extends SubView<TKnobViewEvent, IKnobViewState, IKnobViewProps> {
   protected renderMarkup(): HTMLElement {
     const element = document.createElement('span');
     element.setAttribute('class', `${this.props.cssClass} js-${this.props.cssClass}`);
@@ -75,7 +83,7 @@ class KnobView extends SubView<IKnobViewState, IKnobViewProps> {
   private handleKnobPointerDown(event: PointerEvent): void {
     event.stopPropagation();
     this.setReferenceFrame(this.parent);
-    this.notifyObservers({ active: true });
+    this.notifyObservers({ kind: 'knob active change', data: true });
 
     this.element.setPointerCapture(event.pointerId);
     this.element.addEventListener('pointermove', this.handleKnobPointerMove);
@@ -88,7 +96,7 @@ class KnobView extends SubView<IKnobViewState, IKnobViewProps> {
     event.preventDefault();
     const positionRatio = this.getRelativePointerPositionRatio(event);
     if (this.#checkLimits(positionRatio)) {
-      this.notifyObservers({ positionRatio });
+      this.notifyObservers({ kind: 'knob position change', data: positionRatio });
       if (this.props.allowSmoothTransition) {
         this.renderState({ positionRatio });
       }
@@ -97,10 +105,12 @@ class KnobView extends SubView<IKnobViewState, IKnobViewProps> {
 
   @bind
   private handleKnobPointerUp(event: PointerEvent): void {
-    this.setState({ active: false });
-    if (this.state) {
-      this.notifyObservers(this.state);
+    // this.setState({ active: false });
+    const { positionRatio } = this.state;
+    if (typeof positionRatio !== 'undefined') {
+      this.notifyObservers({ kind: 'knob position change', data: positionRatio });
     }
+    this.notifyObservers({ kind: 'knob active change', data: false });
 
     this.handleKnobPointerCancel(event);
   }
@@ -114,7 +124,7 @@ class KnobView extends SubView<IKnobViewState, IKnobViewProps> {
   }
 
   #checkLimits(positionRatio: number): boolean {
-    if (this.state?.positionRatioLimits) {
+    if (this.state.positionRatioLimits) {
       const { min, max } = this.state.positionRatioLimits;
       const isInsideLimits = positionRatio >= min && positionRatio <= max;
       if (isInsideLimits) {
@@ -126,5 +136,5 @@ class KnobView extends SubView<IKnobViewState, IKnobViewProps> {
   }
 }
 
-export type { IKnobViewProps, IKnobViewState };
+export type { IKnobViewProps, IKnobViewState, TKnobViewEvent };
 export default KnobView;

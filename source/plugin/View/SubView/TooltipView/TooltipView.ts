@@ -8,7 +8,7 @@ interface ITooltipViewState {
   mergedWith?: Set<string>;
 }
 
-class TooltipView extends SubView<ITooltipViewState> {
+class TooltipView extends SubView<never, ITooltipViewState> {
   protected renderMarkup(): HTMLElement {
     const element = document.createElement('span');
     element.setAttribute('class', `${this.props.cssClass} js-${this.props.cssClass}`);
